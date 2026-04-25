@@ -12,8 +12,7 @@ if (signupForm && formNote) {
       return;
     }
 
-    formNote.textContent =
-      "已記錄在這次頁面互動中。正式收信前，請先用 LINE 領清單；電子報平台註冊後再接表單。";
+    formNote.textContent = "已收到，謝謝你。也可以先加入 LINE 領取醫美必問清單。";
     signupForm.reset();
   });
 }
