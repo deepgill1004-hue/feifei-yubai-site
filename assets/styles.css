@@ -80,7 +80,7 @@ nav a:hover {
   align-items: center;
   padding: 118px clamp(20px, 5vw, 72px) 72px;
   overflow: hidden;
-  background-image: url("hero-yubai.png");
+  background-image: url("sophie-clinic-hero.png");
   background-size: cover;
   background-position: center right;
 }
@@ -89,7 +89,7 @@ nav a:hover {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(90deg, rgba(251, 248, 243, 0.95) 0%, rgba(251, 248, 243, 0.78) 42%, rgba(251, 248, 243, 0.24) 100%),
+    linear-gradient(90deg, rgba(251, 248, 243, 0.97) 0%, rgba(251, 248, 243, 0.84) 38%, rgba(251, 248, 243, 0.16) 72%, rgba(251, 248, 243, 0.02) 100%),
     linear-gradient(0deg, rgba(251, 248, 243, 0.76), rgba(251, 248, 243, 0.04));
 }
 

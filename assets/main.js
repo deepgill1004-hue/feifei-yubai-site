@@ -13,7 +13,7 @@ if (signupForm && formNote) {
     }
 
     formNote.textContent =
-      "已收到。正式上線時，這裡會接到 beehiiv 或 Brevo 的訂閱名單。";
+      "已記錄在這次頁面互動中。正式收信前，請先用 LINE 領清單；電子報平台註冊後再接表單。";
     signupForm.reset();
   });
 }
