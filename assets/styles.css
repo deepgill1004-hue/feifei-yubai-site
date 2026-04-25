@@ -85,8 +85,10 @@ nav a:hover {
   padding: 118px clamp(20px, 5vw, 72px) 72px;
   overflow: hidden;
   background-image: url("sophie-clinic-hero.png");
-  background-size: cover;
-  background-position: center right;
+  background-repeat: no-repeat;
+  background-size: auto 100%;
+  background-position: right top;
+  background-color: var(--paper);
 }
 
 .hero-overlay {
@@ -318,26 +320,29 @@ h3 {
 
 .letter-home-visual,
 .letter-portrait {
+  justify-self: end;
   margin: 0;
   overflow: hidden;
   border-radius: 8px;
+  background: #f8f4ed;
   box-shadow: var(--shadow);
 }
 
 .letter-home-visual {
-  aspect-ratio: 4 / 5;
+  width: min(100%, 520px);
 }
 
 .letter-home-visual img,
 .letter-portrait img {
   width: 100%;
-  height: 100%;
+  height: auto;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center top;
 }
 
 .letter-home-visual img {
-  object-position: 64% center;
+  max-height: 720px;
 }
 
 .letters-heading {
@@ -421,11 +426,11 @@ h3 {
 }
 
 .letter-portrait {
-  aspect-ratio: 5 / 4;
+  width: min(100%, 540px);
 }
 
 .letter-portrait img {
-  object-position: 62% center;
+  max-height: 640px;
 }
 
 .letter-reading-grid {
@@ -548,8 +553,8 @@ ul {
 .resource-map img {
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
+  height: auto;
+  object-fit: contain;
 }
 
 .check-list {
@@ -664,7 +669,8 @@ select {
 
   .hero {
     min-height: 86svh;
-    background-position: 68% center;
+    background-size: auto 100%;
+    background-position: 70% top;
   }
 
   .intro-grid,
@@ -682,6 +688,12 @@ select {
 
   .letter-sidebar {
     position: static;
+  }
+
+  .letter-home-visual,
+  .letter-portrait {
+    justify-self: stretch;
+    width: 100%;
   }
 
   .topic-card {
