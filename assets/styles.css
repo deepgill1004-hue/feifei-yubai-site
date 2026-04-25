@@ -85,6 +85,12 @@ nav a:hover {
   background-position: center right;
 }
 
+.page-hero {
+  padding: 132px clamp(20px, 5vw, 72px) 72px;
+  background: var(--paper-strong);
+  border-bottom: 1px solid var(--line);
+}
+
 .hero-overlay {
   position: absolute;
   inset: 0;
@@ -270,6 +276,52 @@ h3 {
 .path-list {
   display: grid;
   gap: 16px;
+}
+
+.letter-list {
+  display: grid;
+  gap: 16px;
+}
+
+.letter-item {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 253, 248, 0.82);
+  padding: 26px;
+}
+
+.letter-item p {
+  color: var(--muted-ink);
+}
+
+.letter-article {
+  padding: 132px clamp(20px, 5vw, 72px) 72px;
+}
+
+.narrow {
+  width: min(780px, 100%);
+}
+
+.letter-meta {
+  color: var(--muted-ink);
+  font-weight: 700;
+}
+
+.letter-article h1 {
+  font-size: clamp(40px, 6vw, 72px);
+}
+
+.letter-article h2 {
+  margin-top: 42px;
+  font-size: clamp(26px, 3vw, 36px);
+}
+
+.letter-cta {
+  margin-top: 48px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper-strong);
 }
 
 .path-item {

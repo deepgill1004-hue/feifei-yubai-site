@@ -5,6 +5,7 @@
 ## 目前包含
 
 - `index.html`：一頁式品牌網站
+- `letters/`：《蘇菲餘白》電子報 archive
 - `assets/styles.css`：網站樣式
 - `assets/main.js`：訂閱表單的本機互動
 - `assets/sophie-clinic-hero.png`：蘇菲醫美場景首頁主視覺
@@ -33,6 +34,6 @@ Framer / Carrd 路線：
 ## 下一步要替換
 
 - LINE 連結：目前先接到 `@371arhqu`。
-- 電子報表單：目前只是前端預留；註冊 beehiiv / Brevo 後再接正式表單。
+- 電子報表單：目前只是前端預留；註冊 beehiiv / Substack / Brevo 後再接正式表單。
 - 閱讀路徑文章：補上方格子正式連結。
 - LINE CTA：補上 LINE 官方帳號或 LIFF 連結。
