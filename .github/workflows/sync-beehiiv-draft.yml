@@ -11,10 +11,17 @@ on:
 jobs:
   create-draft:
     runs-on: ubuntu-latest
-    if: ${{ secrets.BEEHIIV_API_KEY != '' && secrets.BEEHIIV_PUBLICATION_ID != '' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Check beehiiv secrets
+        run: |
+          test -n "$BEEHIIV_API_KEY"
+          test -n "$BEEHIIV_PUBLICATION_ID"
+        env:
+          BEEHIIV_API_KEY: ${{ secrets.BEEHIIV_API_KEY }}
+          BEEHIIV_PUBLICATION_ID: ${{ secrets.BEEHIIV_PUBLICATION_ID }}
 
       - name: Create beehiiv draft
         run: node scripts/create-beehiiv-drafts.mjs
