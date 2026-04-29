@@ -40,6 +40,16 @@ AI 變現
 - 1 個連到同主題延伸文
 - 1 個連到 CTA / 清單 / LINE / 電子報
 
+## 每篇完整文章文末固定三連結
+
+每次從每日內容包生成文章時，先選適合網站文章新增功能的篇幅與段落；必要時轉成電子報格式，不需要時不要硬轉。
+
+完整文章文末必須固定附上：
+
+- 官方 LINE：https://line.me/R/ti/p/@371arhqu
+- 一頁式網頁：https://deepgill1004-hue.github.io/feifei-yubai-site/
+- 電子報：https://sophie-yubai.beehiiv.com/
+
 ## SEO / GEO 檢查指標
 
 - Search intent：每篇到底回答哪一種搜尋意圖
