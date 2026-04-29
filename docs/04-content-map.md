@@ -47,7 +47,7 @@ AI 變現
 完整文章文末必須固定附上：
 
 - 官方 LINE：https://line.me/R/ti/p/@371arhqu
-- 一頁式網頁：https://deepgill1004-hue.github.io/feifei-yubai-site/
+- 蘇菲餘白網站：https://deepgill1004-hue.github.io/feifei-yubai-site/
 - 電子報：https://sophie-yubai.beehiiv.com/
 
 ## SEO / GEO 檢查指標
