@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://deepgill1004-hue.github.io/feifei-yubai-site/sitemap.xml

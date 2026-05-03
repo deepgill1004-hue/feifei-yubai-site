@@ -1,15 +1,20 @@
-# 蘇菲餘白網站落地包
+# 蘇菲餘白網站
 
-這個資料夾目前是一個可直接預覽、已部署到 GitHub Pages 的靜態網站 MVP。方格子可以維持目前命名承接搜尋流量，但後續品牌與電子報主名統一為「蘇菲餘白」。
+這個資料夾是一個可直接部署到 GitHub Pages 或 Vercel 的靜態網站。主架構收斂為兩個資產：蘇菲餘白網站負責品牌、SEO 與內容沉澱；Beehiiv 負責電子報訂閱。
 
 ## 目前包含
 
-- `index.html`：一頁式品牌網站
-- `letters/`：《蘇菲餘白》電子報 archive
-- `assets/styles.css`：網站樣式
-- `assets/main.js`：訂閱表單的本機互動
-- `assets/sophie-clinic-hero.png`：蘇菲醫美場景首頁主視覺
-- `docs/`：電子報、方格子、LINE、內容地圖與即刻上線文件
+- `index.html`：品牌首頁
+- `about.html`：關於蘇菲餘白
+- `treatments.html`：療程主題入口
+- `topics/`：鳳凰電波、音波、玻尿酸、肉毒、水光主題頁
+- `letters/`：《蘇菲餘白》文章 archive
+- `faq.html`：常見問題
+- `consult.html`：諮詢整理入口
+- `assets/styles-v2.css`：網站樣式
+- `feed.xml`：RSS feed
+- `sitemap.xml`、`robots.txt`：搜尋引擎收錄用檔案
+- `docs/`：內容地圖、發布文案與營運文件
 
 ## 預覽方式
 
@@ -17,23 +22,28 @@
 
 ## 上線路線
 
+推薦路線：
+
+1. 目前維持 GitHub Pages 立即上線。
+2. 正式網域準備好後，優先接 Cloudflare Pages。
+3. Vercel 保留為未來需要 API、會員功能或 AI 工具頁時的選項。
+
 GitHub Pages 路線：
 
 1. 在 GitHub 建立新 repo。
 2. 上傳這個資料夾內容。
 3. 到 repo 的 Settings > Pages，選擇從 `main` branch 的根目錄部署。
-4. 自訂網域時，把 DNS 指向 GitHub Pages。
+4. 部署後把 `sitemap.xml` 提交到 Google Search Console。
 
-Framer / Carrd 路線：
+Beehiiv 路線：
 
-1. 把 `index.html` 的文案搬到 Framer 或 Carrd。
-2. 在 beehiiv 或 Brevo 建立《蘇菲餘白》。
-3. 把電子報 embed code 接到首頁的訂閱區。
-4. 把方格子文章底部 CTA 全部導向這個網站。
+1. 網站文章與主題頁放在這個 repo。
+2. Beehiiv 發電子報，文末導回網站文章與 LINE。
+3. 社群平台只做分發，不再當主網站架構。
 
-## 下一步要替換
+## 下一步
 
-- LINE 連結：目前先接到 `@371arhqu`。
-- 電子報表單：目前只是前端預留；註冊 beehiiv / Substack / Brevo 後再接正式表單。
-- 閱讀路徑文章：補上方格子正式連結。
-- LINE CTA：補上 LINE 官方帳號或 LIFF 連結。
+- 主網站：`https://deepgill1004-hue.github.io/feifei-yubai-site/`
+- 電子報：`https://sophie-yubai.beehiiv.com/`
+- LINE：目前使用 `@371arhqu`，未來可改成 LIFF 或正式表單。
+- 部署決策：見 `docs/deployment-path-2026-05-03.md`
