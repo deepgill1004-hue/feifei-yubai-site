@@ -40,6 +40,17 @@ https://sophie-yubai.beehiiv.com/
 - 文末是否有官方 LINE 連結
 - 文末是否有蘇菲餘白網站連結
 - 文末是否有電子報連結
+- 文章是否有 Hashtag
 - 首頁或文章列表是否連到新文章
 - 如果有 Beehiiv 草稿，`beehiiv/posts/*.json` 是否新增
 - RSS 是否新增文章 item
+
+## 自動化指令
+
+之後關鍵字觸發文章，可用：
+
+```powershell
+node scripts/sophie-publish.mjs --keyword "主題關鍵字"
+```
+
+它會同步產出網站文章、文章列表連結、RSS、sitemap、Hashtag、LINE 文案、Threads 文案、IG 文案、方格子手貼版與圖片 prompt。

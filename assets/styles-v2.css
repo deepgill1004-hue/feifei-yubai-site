@@ -482,6 +482,12 @@ h3 {
   color: var(--muted-ink);
 }
 
+.hashtag-line {
+  color: var(--rose-dark);
+  font-weight: 700;
+  line-height: 1.9;
+}
+
 .letter-masthead {
   padding: 126px clamp(20px, 5vw, 72px) 58px;
   background:
