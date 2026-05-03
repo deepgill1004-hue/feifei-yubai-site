@@ -72,6 +72,30 @@ C:\Users\user\Desktop\蘇菲每日文檔\YYYY-MM-DD\編號-slug-標題.md
 node scripts/sophie-publish.mjs --keyword "肉毒抗體" --daily-docs-dir "D:\蘇菲每日文檔"
 ```
 
+## 散落素材整理
+
+如果 Sophie Agent、桌面、Claude 產出的舊發文內容又散落，可以重跑整理腳本：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\consolidate-sophie-daily-docs.ps1
+```
+
+整理結果會放在：
+
+```text
+C:\Users\user\Desktop\蘇菲每日文檔
+```
+
+整理規則：
+
+- 原始檔只複製，不刪除。
+- 依檔名或路徑中的日期歸入 `YYYY-MM-DD`。
+- 找不到日期時，使用檔案修改日期。
+- 每日素材放在 `YYYY-MM-DD\素材\`。
+- 每天產生 `_當日索引.md`。
+- 總索引放在 `_index\總索引.md`。
+- 明細 CSV 放在 `_index\inventory.csv`。
+
 ## 可執行指令
 
 只驗證，不寫檔：
