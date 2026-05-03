@@ -11,14 +11,14 @@
 → Codex 套用 Sophie Agent 爆款邏輯與 PSE Gate
 → 生成網站文章
 → 生成主題標籤
-→ 生成 LINE / Threads / IG / 方格子分發包
+→ 生成單一每日 Markdown 文檔：網站主文 / LINE / Threads / IG / 方格子 / 圖片提示詞全部放一起
 → 選用蘇菲形象圖或生成新圖
 → 更新 letters/index.html、feed.xml、sitemap.xml
 → commit / push
 → LINE OA 視需要 broadcast
 ```
 
-主站是內容母體；LINE 官方帳號是主要導流與互動；Beehiiv 先保留備用，不放在主發布路徑。
+主站是內容母體；LINE 官方帳號是主要導流與互動。**2026-05-03 起 Beehiiv 已停用**，所有公開內容只走「自家網站 letters/ + 官方 LINE + Hashtag」三件事，不再放任何電子報或外部訂閱平台連結。
 
 ## 觸發方式
 
@@ -28,7 +28,7 @@
 發文：肉毒抗體
 ```
 
-這會產出網站文章、主題標籤、LINE / Threads / IG / 方格子分發稿、圖片提示詞，並更新文章列表、RSS、sitemap。LINE 只產出文案，不會自動發送。
+這會產出網站文章、主題標籤、單一每日 Markdown 文檔，並更新文章列表、RSS、sitemap。LINE 只產出文案，不會自動發送。
 
 如果要連 LINE 官方帳號一起推播，才使用：
 
@@ -45,7 +45,32 @@ Codex 要做的事：
 3. 醫療、法規、FDA、藥品、醫材、價格、平台規則等會變動內容，先查證。
 4. 生成文章時必須附主題標籤，但網站頁面不顯示突兀的英文標題。
 5. 寫入網站後，更新文章列表、RSS、sitemap。
-6. 產出 `output/sophie-publishing/` 分發包。
+6. 產出網站專案外的每日文檔，不再把分發稿散落在 `output/sophie-publishing/`。
+
+## 每日文檔歸檔
+
+所有平台內容統一輸出到網站資料夾外：
+
+```text
+C:\Users\user\Desktop\蘇菲每日文檔\YYYY-MM-DD\編號-slug-標題.md
+```
+
+單一 Markdown 內會包含：
+
+- 發布資訊與網站文章連結
+- 網站文章主文
+- 方格子手貼版
+- LINE OA 文案
+- Threads 文案
+- Instagram 文案
+- 圖片提示詞
+- 機器紀錄
+
+如果需要改位置，可用：
+
+```powershell
+node scripts/sophie-publish.mjs --keyword "肉毒抗體" --daily-docs-dir "D:\蘇菲每日文檔"
+```
 
 ## 可執行指令
 
@@ -55,7 +80,7 @@ Codex 要做的事：
 node scripts/sophie-publish.mjs --keyword "肉毒抗體" --dry-run
 ```
 
-產出網站文章與分發包：
+產出網站文章與每日文檔：
 
 ```powershell
 node scripts/sophie-publish.mjs --keyword "肉毒抗體" --title "肉毒打久突然沒效？先看抗體、頻率與靜態紋"
@@ -82,7 +107,7 @@ LINE 官方帳號可以自動 PO 文，使用 Messaging API broadcast。
 目前新增：
 
 ```powershell
-node scripts/line-broadcast.mjs --file output/sophie-publishing/某篇/line.txt
+node scripts/line-broadcast.mjs "推播文字"
 ```
 
 這是 dry-run，不會發送。
@@ -90,7 +115,7 @@ node scripts/line-broadcast.mjs --file output/sophie-publishing/某篇/line.txt
 真的要推播才加：
 
 ```powershell
-node scripts/line-broadcast.mjs --file output/sophie-publishing/某篇/line.txt --send
+node scripts/sophie-publish.mjs --keyword "線雕修復" --line-send
 ```
 
 環境變數優先讀：
@@ -122,17 +147,17 @@ LINE 官方說明：https://help2.line.me/official_account_tw/web/pc?contentId=2
 - Sophie Agent 裡已有 `tools/vocus-post.py`，可以用 Playwright 幫你開編輯器、填標題與內文。
 - 最後發布按鈕仍建議人工確認，避免格式、分類、封面、付費設定出錯。
 
-目前網站流水線會產出：
+目前網站流水線會在每日 Markdown 內產出「方格子」段落：
 
 ```text
-output/sophie-publishing/某篇/fanggezi.md
+C:\Users\user\Desktop\蘇菲每日文檔\YYYY-MM-DD\編號-slug-標題.md
 ```
 
-你可以手貼；或先用 Sophie Agent 的半自動工具填入：
+你可以從每日 Markdown 裡複製「方格子」段落手貼。若要用 Sophie Agent 的半自動工具，請先把「方格子」段落另存成暫存檔再填入，避免把 LINE / IG / Threads 段落一起貼進方格子：
 
 ```powershell
 python C:\Users\user\sophie-agent\tools\vocus-post.py --login
-python C:\Users\user\sophie-agent\tools\vocus-post.py --title "文章標題" --file "output\sophie-publishing\某篇\fanggezi.md"
+python C:\Users\user\sophie-agent\tools\vocus-post.py --title "文章標題" --file "C:\Users\user\Desktop\蘇菲每日文檔\YYYY-MM-DD\fanggezi-temp.md"
 ```
 
 ## 每篇文章的固定檢查
@@ -152,6 +177,7 @@ python C:\Users\user\sophie-agent\tools\vocus-post.py --title "文章標題" --f
 - IG 文案
 - 方格子手貼版
 - 圖片 prompt 或生成圖
+- 每日 Markdown 總檔
 
 ## 爆款邏輯
 

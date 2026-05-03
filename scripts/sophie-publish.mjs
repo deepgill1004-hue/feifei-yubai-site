@@ -6,6 +6,9 @@ import { spawnSync } from "node:child_process";
 const SITE_URL = "https://deepgill1004-hue.github.io/feifei-yubai-site/";
 const LINE_URL = "https://line.me/R/ti/p/@371arhqu";
 const root = process.cwd();
+const dailyDocsRoot = process.env.SOPHIE_DAILY_DOCS_DIR
+  ? path.resolve(process.env.SOPHIE_DAILY_DOCS_DIR)
+  : path.resolve(root, "..", "蘇菲每日文檔");
 
 const imagePool = [
   { file: "assets/sophie-portrait-serious.jpg", keywords: ["麻醉", "風險", "線雕", "法規", "糾紛", "栓塞", "安全"] },
@@ -50,6 +53,7 @@ function usage() {
   --description <文字>   SEO 描述
   --generate-image       有 OPENAI_API_KEY 時呼叫既有 imgen 工具生成圖
   --line-send            產出後直接 LINE broadcast，需環境變數與外部網路
+  --daily-docs-dir <路徑> 覆蓋每日文檔輸出根目錄；預設為網站專案外的「蘇菲每日文檔」
   --dry-run              只列出計畫，不寫檔
   --json                 輸出 manifest JSON`;
 }
@@ -64,6 +68,7 @@ function parseArgs(argv) {
     else if (arg === "--source") options.source = argv[++i];
     else if (arg === "--body-file") options.bodyFile = argv[++i];
     else if (arg === "--description") options.description = argv[++i];
+    else if (arg === "--daily-docs-dir") options.dailyDocsDir = argv[++i];
     else if (arg === "--dry-run") options.dryRun = true;
     else if (arg === "--generate-image") options.generateImage = true;
     else if (arg === "--line-send") options.lineSend = true;
@@ -92,6 +97,15 @@ function normalizeSlug(input) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 64);
+}
+
+function safeFileName(input) {
+  return String(input || "")
+    .replace(/[<>:"/\\|?*\u0000-\u001F]/g, "-")
+    .replace(/\s+/g, " ")
+    .replace(/-+/g, "-")
+    .trim()
+    .slice(0, 120);
 }
 
 function inferSlug(keyword) {
@@ -464,6 +478,64 @@ ${hashtagLine}
   };
 }
 
+function buildDailyDocument({ manifest, distribution, bodyMarkdown }) {
+  const publicMarkdown = stripInternalSections(bodyMarkdown);
+  const hashtagLine = manifest.hashtags.join(" ");
+  return `---
+date: ${today()}
+issue: "${manifest.issue}"
+slug: "${manifest.slug}"
+keyword: "${manifest.keyword}"
+title: "${manifest.title.replaceAll('"', '\\"')}"
+url: "${manifest.url}"
+image: "${manifest.image}"
+line_send: ${Boolean(manifest.lineBroadcast)}
+---
+
+# ${manifest.title}
+
+## 發布資訊
+
+- 日期：${today()}
+- 編號：${manifest.issue}
+- 主題：${manifest.keyword}
+- 網站文章：${manifest.url}
+- 主圖：${manifest.image}
+- 主題標籤：${hashtagLine}
+- LINE 推播：${manifest.lineBroadcast ? "已執行或已嘗試" : "未發送；僅產出文案"}
+
+## 網站文章主文
+
+${publicMarkdown.replace(/^# .+\n+/, "")}
+
+## 方格子
+
+${distribution.fanggezi}
+
+## LINE OA
+
+${distribution.line}
+
+## Threads
+
+${distribution.threads}
+
+## Instagram
+
+${distribution.ig}
+
+## 圖片提示詞
+
+${distribution.imagePrompt}
+
+## 機器紀錄
+
+\`\`\`json
+${JSON.stringify(manifest, null, 2)}
+\`\`\`
+`;
+}
+
 function buildImagePrompt(keyword, title) {
   return `蘇菲在明亮乾淨的醫美診所諮詢室，正在整理「${keyword}」的療程判斷筆記。畫面是直式社群封面，主標題留白可放「${title}」，氛圍專業、溫柔、帶一點清醒的提醒感。人物不特寫五官，重點放在姿態、資料夾、平板、診間空間與可收藏的知識感。禁咖啡廳，禁誇大療效，禁前後對比。`;
 }
@@ -494,14 +566,15 @@ function maybeGenerateImage(keyword, slug) {
   return { ok: true, image: `assets/sophie-generated-${slug}.jpeg`, metadata };
 }
 
-function writeDistribution(outDir, distribution, manifest) {
-  fs.mkdirSync(outDir, { recursive: true });
-  fs.writeFileSync(path.join(outDir, "line.txt"), distribution.line, "utf8");
-  fs.writeFileSync(path.join(outDir, "threads.txt"), distribution.threads, "utf8");
-  fs.writeFileSync(path.join(outDir, "ig.txt"), distribution.ig, "utf8");
-  fs.writeFileSync(path.join(outDir, "fanggezi.md"), distribution.fanggezi, "utf8");
-  fs.writeFileSync(path.join(outDir, "image-prompt.txt"), `${distribution.imagePrompt}\n`, "utf8");
-  fs.writeFileSync(path.join(outDir, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+function getDailyDocumentPath({ issue, slug, title }, docsRoot = dailyDocsRoot) {
+  const date = today();
+  const fileName = `${issue}-${slug}-${safeFileName(title)}.md`;
+  return path.join(docsRoot, date, fileName);
+}
+
+function writeDailyDocument(docPath, manifest, distribution, bodyMarkdown) {
+  fs.mkdirSync(path.dirname(docPath), { recursive: true });
+  fs.writeFileSync(docPath, buildDailyDocument({ manifest, distribution, bodyMarkdown }), "utf8");
 }
 
 function runChecks() {
@@ -576,7 +649,8 @@ async function main() {
   const bodyHtml = buildArticleBody({ keyword: options.keyword, title, bodyMarkdown, hashtags });
   const pageHtml = buildHtmlPage({ title, description, keyword: options.keyword, issue, slug, image, bodyHtml, hashtags });
   const pageFile = path.join(root, "letters", `${issue}-${slug}.html`);
-  const outDir = path.join(root, "output", "sophie-publishing", `${today()}-${slug}`);
+  const docsRoot = options.dailyDocsDir ? path.resolve(options.dailyDocsDir) : dailyDocsRoot;
+  const dailyDocumentPath = getDailyDocumentPath({ issue, slug, title }, docsRoot);
   const distribution = buildDistribution({ title, description, keyword: options.keyword, issue, slug, hashtags, bodyMarkdown, imagePrompt });
   const manifest = {
     issue,
@@ -587,14 +661,18 @@ async function main() {
     url: `${SITE_URL}letters/${issue}-${slug}.html`,
     image,
     hashtags,
-    outDir: path.relative(root, outDir),
+    dailyDocument: dailyDocumentPath,
     pageFile: path.relative(root, pageFile),
     source: options.source || options.bodyFile || null,
     imageGeneration
   };
 
   if (options.dryRun) {
-    console.log(JSON.stringify({ mode: "dry-run", manifest, distributionPreview: distribution }, null, 2));
+    console.log(JSON.stringify({
+      mode: "dry-run",
+      manifest,
+      dailyDocumentPreview: buildDailyDocument({ manifest, distribution, bodyMarkdown })
+    }, null, 2));
     return;
   }
 
@@ -602,14 +680,12 @@ async function main() {
   updateLettersIndex({ title, description, keyword: options.keyword, issue, slug });
   updateSitemap({ issue, slug });
   updateFeed({ title, description, issue, slug });
-  writeDistribution(outDir, distribution, manifest);
   runChecks();
 
   if (options.lineSend) {
     const lineResult = spawnSync(process.execPath, [
       "scripts/line-broadcast.mjs",
-      "--file",
-      path.join(outDir, "line.txt"),
+      distribution.line,
       "--send"
     ], { cwd: root, encoding: "utf8" });
     manifest.lineBroadcast = {
@@ -617,14 +693,14 @@ async function main() {
       stdout: lineResult.stdout.trim(),
       stderr: lineResult.stderr.trim()
     };
-    fs.writeFileSync(path.join(outDir, "manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
   }
+  writeDailyDocument(dailyDocumentPath, manifest, distribution, bodyMarkdown);
 
   if (options.json) console.log(JSON.stringify(manifest, null, 2));
   else {
     console.log(`OK: ${manifest.url}`);
     console.log(`文章: ${manifest.pageFile}`);
-    console.log(`分發包: ${manifest.outDir}`);
+    console.log(`每日文檔: ${manifest.dailyDocument}`);
     if (imageGeneration && !imageGeneration.ok) console.log(`圖片生成未完成: ${imageGeneration.error}`);
   }
 }
