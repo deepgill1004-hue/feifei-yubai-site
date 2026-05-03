@@ -5,7 +5,6 @@ import { spawnSync } from "node:child_process";
 
 const SITE_URL = "https://deepgill1004-hue.github.io/feifei-yubai-site/";
 const LINE_URL = "https://line.me/R/ti/p/@371arhqu";
-const NEWSLETTER_URL = "https://sophie-yubai.beehiiv.com/";
 const root = process.cwd();
 
 const imagePool = [
@@ -191,6 +190,29 @@ function markdownToHtml(markdown) {
   return html.join("\n");
 }
 
+function stripInternalSections(markdown) {
+  const internalHeading = /^(#{1,3})\s*(查核來源|參考來源|Sources|References)\s*$/i;
+  const lines = markdown.split(/\r?\n/);
+  const kept = [];
+  let skipping = false;
+  let skipLevel = 0;
+
+  for (const line of lines) {
+    const heading = line.trim().match(/^(#{1,6})\s+/);
+    if (internalHeading.test(line.trim())) {
+      skipping = true;
+      skipLevel = line.trim().match(/^(#{1,6})/)?.[1].length || 2;
+      continue;
+    }
+    if (skipping && heading && heading[1].length <= skipLevel) {
+      skipping = false;
+    }
+    if (!skipping) kept.push(line);
+  }
+
+  return kept.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+}
+
 function formatInline(text) {
   return escapeHtml(text)
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
@@ -236,10 +258,10 @@ ${keyword}最容易被賣成一個簡單答案。但醫美沒有這麼簡單。�
 }
 
 function buildArticleBody({ keyword, title, bodyMarkdown, hashtags }) {
-  const core = markdownToHtml(bodyMarkdown.replace(/^# .+$/m, "").trim());
+  const publicMarkdown = stripInternalSections(bodyMarkdown);
+  const core = markdownToHtml(publicMarkdown.replace(/^# .+$/m, "").trim());
   return `${core}
 
-<h2>Hashtag</h2>
 <p class="hashtag-line">${hashtags.map(escapeHtml).join(" ")}</p>
 
 <section class="letter-cta">
@@ -248,7 +270,6 @@ function buildArticleBody({ keyword, title, bodyMarkdown, hashtags }) {
   <ul class="letter-checks">
     <li>官方 LINE：<a href="${LINE_URL}" rel="noopener">${LINE_URL}</a></li>
     <li>蘇菲餘白網站：<a href="${SITE_URL}" rel="noopener">${SITE_URL}</a></li>
-    <li>電子報備用入口：<a href="${NEWSLETTER_URL}" rel="noopener">${NEWSLETTER_URL}</a></li>
   </ul>
   <div class="panel-actions">
     <a class="button primary" href="../consult.html">整理我的諮詢問題</a>
@@ -312,7 +333,7 @@ function buildHtmlPage({ title, description, keyword, issue, slug, image, bodyHt
             <ol>
               <li>先用真實困擾開場，不從名詞開場。</li>
               <li>把療程話術翻成消費者能問的問題。</li>
-              <li>文末用 Hashtag 與 LINE CTA 承接互動。</li>
+              <li>文末用主題標籤與 LINE CTA 承接互動。</li>
             </ol>
             <div class="panel-actions">
               <a class="button primary" href="../consult.html">整理我的問題</a>
@@ -399,6 +420,7 @@ function updateFeed({ title, description, issue, slug }) {
 function buildDistribution({ title, description, keyword, issue, slug, hashtags, bodyMarkdown, imagePrompt }) {
   const url = `${SITE_URL}letters/${issue}-${slug}.html`;
   const hashtagLine = hashtags.join(" ");
+  const publicMarkdown = stripInternalSections(bodyMarkdown);
   return {
     line: `${title}
 
@@ -429,7 +451,7 @@ ${hashtagLine}`,
 ${url}
 
 ${hashtagLine}`,
-    fanggezi: `${bodyMarkdown}
+    fanggezi: `${publicMarkdown}
 
 ---
 
@@ -437,7 +459,6 @@ ${hashtagLine}
 
 官方 LINE：${LINE_URL}
 蘇菲餘白網站：${SITE_URL}
-電子報備用入口：${NEWSLETTER_URL}
 `,
     imagePrompt
   };

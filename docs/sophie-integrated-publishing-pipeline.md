@@ -10,7 +10,7 @@
 關鍵字 / 主題
 → Codex 套用 Sophie Agent 爆款邏輯與 PSE Gate
 → 生成網站文章
-→ 生成 Hashtag
+→ 生成主題標籤
 → 生成 LINE / Threads / IG / 方格子分發包
 → 選用蘇菲形象圖或生成新圖
 → 更新 letters/index.html、feed.xml、sitemap.xml
@@ -25,21 +25,25 @@
 之後你可以直接說：
 
 ```text
-Go：肉毒抗體
+發文：肉毒抗體
 ```
 
-或：
+這會產出網站文章、主題標籤、LINE / Threads / IG / 方格子分發稿、圖片提示詞，並更新文章列表、RSS、sitemap。LINE 只產出文案，不會自動發送。
+
+如果要連 LINE 官方帳號一起推播，才使用：
 
 ```text
-寫一篇：線雕修復
+發文加 LINE：線雕修復
 ```
+
+這代表文章上站後，會再執行 LINE OA broadcast。這個觸發字要非常明確，避免測試時誤發。
 
 Codex 要做的事：
 
 1. 讀 Sophie Agent 必要規則，不一次掃全部。
 2. 先查是否已有站內文章，避免重複。
 3. 醫療、法規、FDA、藥品、醫材、價格、平台規則等會變動內容，先查證。
-4. 生成文章時必須附 Hashtag。
+4. 生成文章時必須附主題標籤，但網站頁面不顯示突兀的英文標題。
 5. 寫入網站後，更新文章列表、RSS、sitemap。
 6. 產出 `output/sophie-publishing/` 分發包。
 
@@ -142,7 +146,7 @@ python C:\Users\user\sophie-agent\tools\vocus-post.py --title "文章標題" --f
 - canonical URL
 - meta description
 - OG image
-- Hashtag
+- 主題標籤
 - LINE 文案
 - Threads 文案
 - IG 文案
@@ -159,7 +163,7 @@ python C:\Users\user\sophie-agent\tools\vocus-post.py --title "文章標題" --f
 → 蘇菲拆解
 → 消費者可執行問題
 → 風險或紅線
-→ Hashtag
+→ 主題標籤
 → LINE CTA
 ```
 
