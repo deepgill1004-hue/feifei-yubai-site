@@ -484,12 +484,41 @@ function writeDistribution(outDir, distribution, manifest) {
 }
 
 function runChecks() {
-  const xmlCheck = spawnSync("powershell", [
-    "-NoProfile",
-    "-Command",
-    "[xml](Get-Content -Raw -Encoding UTF8 sitemap.xml) | Out-Null; [xml](Get-Content -Raw -Encoding UTF8 feed.xml) | Out-Null"
-  ], { cwd: root, encoding: "utf8" });
-  if (xmlCheck.status !== 0) throw new Error(xmlCheck.stderr || xmlCheck.stdout || "XML 檢查失敗");
+  assertXmlShape(path.join(root, "sitemap.xml"), "urlset");
+  assertXmlShape(path.join(root, "feed.xml"), "rss");
+}
+
+function assertXmlShape(file, rootTag) {
+  const xml = fs.readFileSync(file, "utf8");
+  const label = path.relative(root, file);
+  if (!xml.includes(`<${rootTag}`) || !xml.includes(`</${rootTag}>`)) {
+    throw new Error(`${label} 缺少 ${rootTag} 根節點`);
+  }
+  if (/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/.test(xml)) {
+    throw new Error(`${label} 含有 XML 不允許的控制字元`);
+  }
+
+  const withoutCdata = xml.replace(/<!\[CDATA\[[\s\S]*?\]\]>/g, "");
+  const bareAmp = /&(?!amp;|lt;|gt;|quot;|apos;|#\d+;|#x[0-9a-fA-F]+;)/.exec(withoutCdata);
+  if (bareAmp) {
+    throw new Error(`${label} 含有未跳脫的 & 字元`);
+  }
+
+  const stack = [];
+  const tagPattern = /<([^!?][^>\s/]*)([^>]*)>|<\/([^>\s]+)>/g;
+  let match;
+  while ((match = tagPattern.exec(withoutCdata))) {
+    if (match[3]) {
+      const expected = stack.pop();
+      if (expected !== match[3]) throw new Error(`${label} XML 標籤未正確閉合：${match[3]}`);
+      continue;
+    }
+    const tag = match[1];
+    const rest = match[2] || "";
+    if (rest.trim().endsWith("/")) continue;
+    stack.push(tag);
+  }
+  if (stack.length) throw new Error(`${label} XML 標籤未正確閉合：${stack.at(-1)}`);
 }
 
 async function main() {
