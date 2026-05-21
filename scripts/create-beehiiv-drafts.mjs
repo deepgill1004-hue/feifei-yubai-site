@@ -97,6 +97,22 @@ function buildBodyContent(post) {
 </div>`.trim();
 }
 
+function buildPreviewPage(post, bodyContent) {
+  return `<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>${escapeHtml(post.title)}</title>
+    <meta name="description" content="${escapeHtml(post.subtitle || "")}">
+  </head>
+  <body style="margin:0;background:#fbf7f0;">
+${bodyContent}
+  </body>
+</html>
+`;
+}
+
 function discoverPostFiles(args) {
   if (args.length) return args.map((file) => path.resolve(root, file));
   const postsDir = path.join(root, "beehiiv", "posts");
@@ -141,6 +157,20 @@ async function postExists(slug) {
     method: "GET"
   });
   return Array.isArray(result?.data) && result.data.length > 0;
+}
+
+function writePreview(postFile) {
+  const post = JSON.parse(fs.readFileSync(postFile, "utf8"));
+  const bodyContent = post.body_content || buildBodyContent(post);
+  const slug = post.slug || path.basename(postFile, ".json");
+  const previewPath = path.join(root, "beehiiv", `${slug}.html`);
+  fs.mkdirSync(path.dirname(previewPath), { recursive: true });
+  fs.writeFileSync(previewPath, buildPreviewPage(post, bodyContent), "utf8");
+  console.log(JSON.stringify({
+    post_file: path.relative(root, postFile),
+    preview_file: path.relative(root, previewPath),
+    preview_url: `https://deepgill1004-hue.github.io/feifei-yubai-site/beehiiv/${slug}.html`
+  }, null, 2));
 }
 
 async function createDraft(postFile, dryRun) {
@@ -218,12 +248,17 @@ async function main() {
   loadDotEnv();
   const args = process.argv.slice(2);
   const dryRun = args.includes("--dry-run");
-  const postArgs = args.filter((arg) => arg !== "--dry-run");
+  const writePreviewOnly = args.includes("--write-preview");
+  const postArgs = args.filter((arg) => arg !== "--dry-run" && arg !== "--write-preview");
+  const postFiles = discoverPostFiles(postArgs);
+  if (!postFiles.length) throw new Error("No beehiiv post JSON files found.");
+  if (writePreviewOnly) {
+    for (const postFile of postFiles) writePreview(postFile);
+    return;
+  }
   if (!dryRun && (!process.env.BEEHIIV_API_KEY || !process.env.BEEHIIV_PUBLICATION_ID)) {
     throw new Error("Missing BEEHIIV_API_KEY or BEEHIIV_PUBLICATION_ID.");
   }
-  const postFiles = discoverPostFiles(postArgs);
-  if (!postFiles.length) throw new Error("No beehiiv post JSON files found.");
   for (const postFile of postFiles) {
     await createDraft(postFile, dryRun);
   }
