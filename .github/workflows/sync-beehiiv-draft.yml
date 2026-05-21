@@ -2,6 +2,11 @@ name: Sync beehiiv draft
 
 on:
   workflow_dispatch:
+    inputs:
+      post_file:
+        description: "Path to one beehiiv post JSON file"
+        required: false
+        default: "beehiiv/posts/sophie-yubai-10-article-digest-20260521.json"
 
 jobs:
   create-draft:
@@ -19,7 +24,7 @@ jobs:
           BEEHIIV_PUBLICATION_ID: ${{ secrets.BEEHIIV_PUBLICATION_ID }}
 
       - name: Create beehiiv draft
-        run: node scripts/create-beehiiv-drafts.mjs
+        run: node scripts/create-beehiiv-drafts.mjs "${{ inputs.post_file }}"
         env:
           BEEHIIV_API_KEY: ${{ secrets.BEEHIIV_API_KEY }}
           BEEHIIV_PUBLICATION_ID: ${{ secrets.BEEHIIV_PUBLICATION_ID }}
