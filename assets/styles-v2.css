@@ -702,6 +702,22 @@ ul {
   color: var(--muted-ink);
 }
 
+.compact-link-list {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 24px;
+  padding-left: 20px;
+}
+
+.compact-link-list a {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.compact-link-list a:hover {
+  color: var(--rose-dark);
+}
+
 .panel-actions {
   display: flex;
   flex-wrap: wrap;
