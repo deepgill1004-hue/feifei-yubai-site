@@ -42,6 +42,7 @@ function usage() {
   node scripts/sophie-publish.mjs --keyword "肉毒抗體" --title "肉毒打久突然沒效？先看三件事"
   node scripts/sophie-publish.mjs --keyword "線雕修復" --source "C:\\Users\\user\\sophie-agent\\content\\xxx.md"
   node scripts/sophie-publish.mjs --keyword "玻尿酸材料" --slug filler-material-checklist --generate-image
+  node scripts/sophie-publish.mjs --keyword "鳳凰電波" --image assets/fanggezi/example.png
   node scripts/sophie-publish.mjs --keyword "黑眼圈" --dry-run
 
 選項:
@@ -50,6 +51,7 @@ function usage() {
   --slug <slug>          不填時由關鍵字推導
   --source <md/txt>      從 Sophie Agent 或其他長文檔讀素材
   --body-file <md/txt>   直接使用該檔作為網站文章主體
+  --image <path>         指定網站文章主圖，路徑相對於專案根目錄
   --description <文字>   SEO 描述
   --generate-image       有 OPENAI_API_KEY 時呼叫既有 imgen 工具生成圖
   --line-send            產出後直接 LINE broadcast，需環境變數與外部網路
@@ -67,6 +69,7 @@ function parseArgs(argv) {
     else if (arg === "--slug") options.slug = argv[++i];
     else if (arg === "--source") options.source = argv[++i];
     else if (arg === "--body-file") options.bodyFile = argv[++i];
+    else if (arg === "--image") options.image = argv[++i];
     else if (arg === "--description") options.description = argv[++i];
     else if (arg === "--daily-docs-dir") options.dailyDocsDir = argv[++i];
     else if (arg === "--dry-run") options.dryRun = true;
@@ -599,7 +602,7 @@ function assertXmlShape(file, rootTag) {
   }
 
   const stack = [];
-  const tagPattern = /<([^!?][^>\s/]*)([^>]*)>|<\/([^>\s]+)>/g;
+  const tagPattern = /<(?!\/)([^!?][^>\s/]*)([^>]*)>|<\/([^>\s]+)>/g;
   let match;
   while ((match = tagPattern.exec(withoutCdata))) {
     if (match[3]) {
@@ -635,7 +638,7 @@ async function main() {
   const hashtags = buildHashtags(options.keyword);
   const imagePrompt = buildImagePrompt(options.keyword, title);
 
-  let image = pickImage(options.keyword);
+  let image = options.image ? String(options.image).replaceAll("\\", "/") : pickImage(options.keyword);
   let imageGeneration = null;
   if (options.generateImage && !options.dryRun) {
     imageGeneration = maybeGenerateImage(options.keyword, slug);
