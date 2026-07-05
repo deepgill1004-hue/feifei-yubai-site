@@ -5,6 +5,7 @@ import { spawnSync } from "node:child_process";
 
 const SITE_URL = "https://deepgill1004-hue.github.io/feifei-yubai-site/";
 const LINE_URL = "https://line.me/R/ti/p/@371arhqu";
+const NEWSLETTER_URL = "https://sophie-yubai.beehiiv.com/";
 const root = process.cwd();
 const dailyDocsRoot = process.env.SOPHIE_DAILY_DOCS_DIR
   ? path.resolve(process.env.SOPHIE_DAILY_DOCS_DIR)
@@ -287,6 +288,7 @@ function buildArticleBody({ keyword, title, bodyMarkdown, hashtags }) {
   <ul class="letter-checks">
     <li>官方 LINE：<a href="${LINE_URL}" rel="noopener">${LINE_URL}</a></li>
     <li>蘇菲餘白網站：<a href="${SITE_URL}" rel="noopener">${SITE_URL}</a></li>
+    <li>電子報：<a href="${NEWSLETTER_URL}" rel="noopener">${NEWSLETTER_URL}</a></li>
   </ul>
   <div class="panel-actions">
     <a class="button primary" href="../consult.html">整理我的諮詢問題</a>
@@ -476,6 +478,7 @@ ${hashtagLine}
 
 官方 LINE：${LINE_URL}
 蘇菲餘白網站：${SITE_URL}
+電子報：${NEWSLETTER_URL}
 `,
     imagePrompt
   };
