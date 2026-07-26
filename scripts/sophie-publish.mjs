@@ -330,11 +330,11 @@ function buildHtmlPage({ title, description, keyword, issue, slug, image, bodyHt
       <section class="letter-masthead">
         <div class="section-inner letter-masthead-grid">
           <div>
-            <p class="eyebrow">Sophie Publishing Pipeline</p>
+            <p class="eyebrow">Sophie Yubai Journal</p>
             <h1>${escapeHtml(title)}</h1>
             <p class="letter-dek">${escapeHtml(description)}</p>
             <div class="letter-meta-row">
-              <span>Sophie Agent</span>
+              <span>蘇菲餘白</span>
               <span>${escapeHtml(keyword)}</span>
               <span>${escapeHtml(hashtags.slice(0, 3).join(" / "))}</span>
             </div>
@@ -348,7 +348,7 @@ function buildHtmlPage({ title, description, keyword, issue, slug, image, bodyHt
       <section class="section">
         <div class="section-inner letter-reading-grid">
           <aside class="letter-sidebar">
-            <p class="path-label">爆款拆解</p>
+            <p class="path-label">閱讀重點</p>
             <ol>
               <li>先用真實困擾開場，不從名詞開場。</li>
               <li>把療程話術翻成消費者能問的問題。</li>
