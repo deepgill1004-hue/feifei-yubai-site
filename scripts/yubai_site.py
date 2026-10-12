@@ -25,8 +25,21 @@ SITE_URL = "https://deepgill1004-hue.github.io/feifei-yubai-site"
 LINE_URL = "https://line.me/R/ti/p/@371arhqu"
 NEWS_URL = "https://sophie-yubai.beehiiv.com/"
 BRAND = "蘇菲餘白"
-ASSET_VER = "20261012"
+ASSET_VER = "20261012b"
 FOOTER_NOTE = "內容僅供衛教與消費判斷參考，不取代醫師診療或個別法律意見。"
+# 文章列表的主題篩選鈕：（顯示文字, 關鍵字以 | 分隔，比對標題＋摘要）
+CHIPS = [
+    ("玻尿酸", "玻尿酸|填充|Filler|filler"),
+    ("肉毒", "肉毒|Botox"),
+    ("電波・音波", "電波|音波|鳳凰|海芙|Thermage|Ultherapy|Morpheus"),
+    ("雷射・皮秒", "雷射|皮秒|斑|ILIB"),
+    ("再生・膠原", "再生|PN|PRP|外泌體|膠原|舒顏萃|洢蓮絲|Profhilo|晶亮瓷|微晶瓷"),
+    ("減重・GLP-1", "GLP|減重|瘦瘦針|體重|肥胖"),
+    ("抗老・長壽", "抗老|長壽|老化|更年期|停經|荷爾蒙|骨質|疲勞"),
+    ("手術・整形", "手術|隆乳|隆鼻|鼻|拉皮|整形|埋線|麻醉"),
+    ("法規・消費", "法規|廣告|合約|預付|分期|消保|話術|價格|低價|個資|偷拍|病歷|同意書|規範"),
+]
+
 HOME_CARDS = 6            # 首頁「最新文章」除主打外再列幾篇
 WEBP_MAX = 1600
 
@@ -37,6 +50,12 @@ FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com" />'
 
 esc = lambda s: html.escape(s, quote=True)  # noqa: E731
 
+# 右下角浮動「加入 LINE」：全站每頁都有，跟著捲動（放在 footer 內，重套版型時一起換掉，不會重複）
+LINE_FAB = ('<a class="y-line-fab" href="' + LINE_URL + '" rel="noopener" aria-label="加入蘇菲餘白官方 LINE">'
+            '<svg viewBox="0 0 48 48" aria-hidden="true"><path fill="currentColor" d="M24 5C12.1 5 2.5 12.8 2.5 22.4c0 8.6 7.6 15.8 17.9 17.2.7.2 1.7.5 1.9 1.1.2.6.1 1.4.1 1.9l-.3 1.8c-.1.6-.4 2.2 1.9 1.2 2.3-1 12.3-7.3 16.8-12.4 3.1-3.4 4.6-6.9 4.6-10.8C45.5 12.8 35.9 5 24 5z"/>'
+            '<text x="24" y="26.6" text-anchor="middle" font-size="10" font-weight="700" font-family="Arial, Helvetica, sans-serif" fill="#06C755">LINE</text></svg>'
+            '<span>加入 LINE</span></a>')
+
 
 # ---------------------------------------------------------------- 共用區塊
 
@@ -45,7 +64,10 @@ def head_block(p: str, home: bool = False) -> str:
            f'<link rel="stylesheet" href="{p}assets/yubai-home.css?v={ASSET_VER}" />' if home else
            f'<link rel="stylesheet" href="{p}assets/styles-v2.css?v=20260503-2" />'
            f'<link rel="stylesheet" href="{p}assets/yubai.css?v={ASSET_VER}" />')
-    return f"<!--yubai:head-->\n    {FONTS}\n    {css}\n    <!--/yubai:head-->"
+    icons = (f'<link rel="icon" href="{p}favicon.ico" sizes="any" />'
+             f'<link rel="icon" type="image/png" href="{p}assets/icon-512.png" />'
+             f'<link rel="apple-touch-icon" href="{p}assets/apple-touch-icon.png" />')
+    return f"<!--yubai:head-->\n    {icons}\n    {FONTS}\n    {css}\n    <!--/yubai:head-->"
 
 
 def header_block(p: str) -> str:
@@ -66,6 +88,7 @@ def footer_block(p: str) -> str:
             f'      <p class="footer-links"><a href="{LINE_URL}" rel="noopener">官方 LINE</a>'
             f'<a href="{NEWS_URL}" rel="noopener">電子報</a><a href="{p}feed.xml">RSS</a></p>\n'
             f'      <p class="fine">{BRAND}｜{FOOTER_NOTE}</p>\n'
+            f'      {LINE_FAB}\n'
             f'    </footer>')
 
 
@@ -220,6 +243,8 @@ def render_letters_index(metas: list[dict]) -> str:
             f'              </a>\n'
             f'            </article>')
     n = len(metas)
+    chips = '<button type="button" data-k="" aria-pressed="true">全部</button>' + "".join(
+        f'<button type="button" data-k="{esc(k)}" aria-pressed="false">{label}</button>' for label, k in CHIPS)
     return f"""<!doctype html>
 <html lang="zh-Hant">
   <head>
@@ -257,6 +282,12 @@ def render_letters_index(metas: list[dict]) -> str:
           <div class="letters-heading">
             <h2>已發佈文章</h2>
             <p>共 {n} 篇，由新到舊排列。慢慢讀，<span class="nowrap">把醫美選擇從焦慮裡拿回來。</span></p>
+          </div>
+          <div class="y-toolbar">
+            <label class="y-search"><span class="sr-only">搜尋文章</span><input type="search" placeholder="搜尋：玻尿酸、電波、價格…" autocomplete="off" /></label>
+            <div class="y-chips" role="group" aria-label="主題篩選">{chips}</div>
+            <div class="y-view" role="group" aria-label="版面"><button type="button" data-view="list" aria-pressed="false">小圖</button><button type="button" data-view="grid" aria-pressed="false">大圖</button></div>
+            <p class="y-count" aria-live="polite"></p>
           </div>
           <div class="letter-list y-cards">
 {chr(10).join(cards)}
@@ -450,7 +481,7 @@ def render_home(metas: list[dict]) -> str:
       <h2>每篇文章，只拆一個醫美判斷題。</h2>
     </div>
     {feature}
-    <div class="card-grid">
+    <div class="card-grid journal-rail">
       {cards}
     </div>
     <div class="center reveal"><a class="btn ghost" href="letters/index.html">看全部 {n} 篇文章</a></div>
@@ -481,7 +512,15 @@ def render_home(metas: list[dict]) -> str:
 def build_indexes(repo: Path, extra: dict[str, str] | None = None) -> dict[str, str]:
     """回傳 {"letters/index.html": ..., "index.html": ...}；extra＝尚未寫檔的新文章 {檔名: html}。"""
     metas = collect(repo, extra)
-    return {"letters/index.html": render_letters_index(metas), "index.html": render_home(metas)}
+    return {"letters/index.html": render_letters_index(metas), "index.html": render_home(metas),
+            "letters/articles.json": render_articles_json(metas)}
+
+
+def render_articles_json(metas: list[dict]) -> str:
+    """文章頁底部「繼續看」由 yubai.js 讀這份清單產生；新文章上架只更新這一檔，舊文章頁不用動。"""
+    import json
+    rows = [{"f": a["file"], "n": a["issue"], "t": a["title"], "d": a["date"], "i": a["img"] or ""} for a in metas]
+    return json.dumps(rows, ensure_ascii=False, separators=(",", ":")) + "\n"
 
 
 # ---------------------------------------------------------------- 全站重套
