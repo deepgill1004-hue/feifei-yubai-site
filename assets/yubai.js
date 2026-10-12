@@ -138,7 +138,7 @@
 
   // 文章頁底部「繼續看」：上一篇／下一篇＋最新文章左右滑
   const me = document.currentScript || document.querySelector('script[src*="assets/yubai.js"]');
-  if (body && me && /\/letters\/[^/]+\.html$/.test(location.pathname)) {
+  if (me && /\/letters\/(?!index\.html$)[^/]+\.html$/.test(location.pathname)) {
     const root = new URL("../", me.src);
     const here = decodeURIComponent(location.pathname.split("/").pop());
     const esc = (s) => s.replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
