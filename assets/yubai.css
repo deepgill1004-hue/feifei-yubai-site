@@ -252,5 +252,20 @@ h1 { color: var(--y-ink); font-weight: 900; letter-spacing: 0.02em; }
   .y-rail a { flex-basis: 62%; }
 }
 
+/* 文章底部「這篇相關的好物」＋ picks.html 私藏清單卡片（蝦皮分潤，affiliate_sync.py 產資料） */
+.y-picks { padding: 48px 24px 8px; background: #ece3d6; }
+.y-pk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+.y-pk { display: flex; flex-direction: column; gap: 6px; padding: 18px; background: var(--y-bg); border-radius: 2px; text-decoration: none; color: var(--y-ink); transition: box-shadow 0.35s; }
+.y-pk:hover { box-shadow: 0 16px 30px -18px rgba(60, 40, 25, 0.45); }
+.y-pk small { font-size: 12.5px; color: var(--y-wine); letter-spacing: 0.06em; }
+.y-pk b { font-size: 15.5px; line-height: 1.5; }
+.y-pk span { font-size: 14px; line-height: 1.7; color: #5a4d50; flex: 1; }
+.y-pk em { font-style: normal; font-size: 14px; color: var(--y-wine); font-weight: 700; margin-top: 4px; }
+.y-pk-note { font-size: 12.5px; color: #6e6064; margin: 16px 0 0; line-height: 1.7; }
+.y-picks-page .y-pk-cat { margin: 40px 0 14px; font-size: clamp(20px, 2.2vw, 26px); }
+.y-picks-page .y-pk { background: #fffaf3; border: 1px solid #e6dccd; }
+.y-pk-disclosure { padding: 14px 16px; background: #fffaf3; border-left: 3px solid var(--y-wine); font-size: 14px; line-height: 1.75; }
+@media (max-width: 640px) { .y-picks { padding: 36px 16px 4px; } }
+
 .y-rail { scroll-padding-inline: 16px; }
 @media (min-width: 641px) { .y-rail { scroll-padding-inline: 0; } }

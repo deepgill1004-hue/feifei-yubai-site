@@ -160,5 +160,24 @@
       const main = document.querySelector("main");
       (main || document.body).appendChild(sec);
     }).catch(() => { /* 抓不到清單就不顯示，不影響閱讀 */ });
+
+    // 文章頁底部「這篇相關的好物」：只在文章內容跟商品標籤對得上時才出現（資料＝picks.json，由 affiliate_sync.py 產）
+    fetch(new URL("picks.json", root)).then((r) => r.ok ? r.json() : null).then((pk) => {
+      if (!pk || !pk.products || !pk.products.length) return;
+      const body = document.querySelector(".letter-body") || document.querySelector("main");
+      const text = ((document.querySelector("h1") || {}).textContent || "") + " " + (body ? body.textContent.slice(0, 4000) : "");
+      const scored = pk.products.map((p) => ({ p, s: p.tags.filter((t) => text.includes(t)).length })).filter((x) => x.s >= 2)
+        .sort((a, b) => b.s - a.s).slice(0, 3);
+      if (!scored.length) return;
+      const page = encodeURIComponent(here.slice(0, 80));
+      const card = ({ p }) => `<a class="y-pk" href="${p.go}?c=art&p=${page}" rel="sponsored noopener" target="_blank"><small>${esc(p.category)}・${esc(p.price)}</small><b>${esc(p.name)}</b><span>${esc(p.why)}</span><em>到蝦皮看 →</em></a>`;
+      const sec = document.createElement("section");
+      sec.className = "y-picks";
+      sec.setAttribute("aria-label", "這篇相關的好物");
+      sec.innerHTML = `<div class="y-more-inner"><div class="y-more-head"><h2>這篇相關的好物</h2><a href="${new URL("picks.html", root).href}">蘇菲私藏清單 →</a></div>`
+        + `<div class="y-pk-grid">${scored.map(card).join("")}</div><p class="y-pk-note">${esc(pk.disclosure)}</p></div>`;
+      const main = document.querySelector("main") || document.body;
+      main.insertBefore(sec, main.querySelector(".y-more"));
+    }).catch(() => { /* 抓不到清單就不顯示 */ });
   }
 })();

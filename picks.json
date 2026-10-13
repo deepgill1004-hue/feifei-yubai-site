@@ -1,0 +1,73 @@
+{
+ "disclosure": "以下是蝦皮分潤連結：透過連結購買，蘇菲會拿到分潤，你的價格不變。商品是化妝品或一般用品，不是醫療器材，術後怎麼用請先問你的醫師。",
+ "updated": "2026-10-13",
+ "products": [
+  {
+   "id": "obge-stick",
+   "name": "OBgE Pore-ZERO 控油清爽防曬棒 18g",
+   "category": "防曬",
+   "price": "NT$688",
+   "why": "隔著妝直接滾一圈就能補，中午補擦最省事。",
+   "tags": [
+    "防曬",
+    "雷射",
+    "皮秒",
+    "補擦",
+    "上妝",
+    "術後",
+    "斑",
+    "美白",
+    "夏天"
+   ],
+   "go": "https://sophie-go.deepgill1004.workers.dev/go/obge-stick"
+  },
+  {
+   "id": "drreju-pd4",
+   "name": "Dr.Reju-All PD4 高效 PDRN 舒緩防曬精華 50ml",
+   "category": "防曬",
+   "price": "NT$680",
+   "why": "精華質地的防曬，給怕悶、怕厚重的人多一個選項。",
+   "tags": [
+    "防曬",
+    "敏感",
+    "雷射",
+    "術後",
+    "PDRN",
+    "保養"
+   ],
+   "go": "https://sophie-go.deepgill1004.workers.dev/go/drreju-pd4"
+  },
+  {
+   "id": "drmay-sun",
+   "name": "Dr. May 美博士 防曬乳（清爽／高效／潤色／紫潤白）",
+   "category": "防曬",
+   "price": "2 件 NT$1,380",
+   "why": "台灣品牌，四種質地可以挑，適合整瓶天天擦的人。",
+   "tags": [
+    "防曬",
+    "日常",
+    "台灣",
+    "保養",
+    "斑"
+   ],
+   "go": "https://sophie-go.deepgill1004.workers.dev/go/drmay-sun"
+  },
+  {
+   "id": "medicube-ager",
+   "name": "medicube AGE-R Booster Cleanser 智能潔面儀",
+   "category": "美容家電",
+   "price": "NT$4,599",
+   "why": "想用洗臉機的人可以參考；術後脫皮期先停，等醫師說可以再從最輕檔開始。",
+   "tags": [
+    "洗臉",
+    "清潔",
+    "毛孔",
+    "換膚",
+    "果酸",
+    "居家",
+    "美容儀"
+   ],
+   "go": "https://sophie-go.deepgill1004.workers.dev/go/medicube-ager"
+  }
+ ]
+}
