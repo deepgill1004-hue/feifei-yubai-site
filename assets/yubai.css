@@ -269,3 +269,8 @@ h1 { color: var(--y-ink); font-weight: 900; letter-spacing: 0.02em; }
 
 .y-rail { scroll-padding-inline: 16px; }
 @media (min-width: 641px) { .y-rail { scroll-padding-inline: 0; } }
+.y-pk-qa { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.y-pk-qa a { display: block; padding: 14px 16px; background: #fffaf3; border: 1px solid #e6dccd; color: var(--y-ink); text-decoration: none; font-size: 15.5px; line-height: 1.6; }
+.y-pk-qa a::after { content: " →"; color: var(--y-wine); }
+.y-picks-page .letter-body .y-pk-grid { margin: 14px 0 8px; }
+.y-picks-page .eyebrow a { color: inherit; text-decoration: none; }
