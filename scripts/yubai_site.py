@@ -6,16 +6,20 @@ yubai_site.py -- 蘇菲餘白網站版型的唯一來源（C 版：雜誌底＋�
   * 每一頁的 <head> 樣式、頁首、頁尾、動態腳本（theme_page）
   * 首頁 index.html 與文章列表 letters/index.html：每次從 letters/*.html 文章頁重新產生（build_indexes）
   * 文章主視覺自動轉 WebP（ensure_webp）
+  * 機器可讀層：JSON-LD（文章 BlogPosting／首頁 WebSite+Organization／關於頁 AboutPage+Person，包在
+    <!--yubai:ld--> 區塊內，theme_page 每次重產）與 llms.txt（render_llms_txt）
 
 被誰呼叫：
   * weekly-linkedin-vocus\scripts\site_publish.py（每篇新文章上架）
-  * 手動：python scripts\yubai_site.py apply-theme [--repo <站台 clone>]   # 全站重套版型（可重複執行）
+  * 手動：python scripts\yubai_site.py apply-theme [--repo <站台 clone>]   # 全站重套版型＋JSON-LD＋llms.txt（可重複執行）
+  * 手動：python scripts\yubai_site.py llms [--repo <站台 clone>]          # 只重產 llms.txt
 
 改版型只改這支＋assets/yubai.css／yubai-home.css／yubai.js，不要回頭改各頁 HTML。
 """
 from __future__ import annotations
 
 import html
+import json
 import re
 import sys
 import urllib.parse
@@ -96,6 +100,117 @@ def script_block(p: str) -> str:
     return f'<script src="{p}assets/yubai.js?v={ASSET_VER}" defer></script>'
 
 
+# ---------------------------------------------------------------- 機器可讀層：JSON-LD
+
+LD_RE = re.compile(r"\s*<!--yubai:ld-->.*?<!--/yubai:ld-->", re.S)
+LOGO_URL = SITE_URL + "/assets/icon-512.png"
+ABOUT_URL = SITE_URL + "/about.html"
+AUTHOR_NAME = "蘇菲"
+PERSON_ID = ABOUT_URL + "#sophie"
+# 只能用 about.html 已經寫出來的事實；不加頭銜、年資、學歷、真名
+ABOUT_PERSON_DESC = ("蘇菲的內容來自醫療、護理、醫療器材銷售與醫美營運現場的長期觀察，"
+                     "把醫美療程原理、諮詢流程、常見話術、風險與預算拆開，讓消費者知道下一步該問什麼。")
+SITE_DESC = "醫美判斷力與療程諮詢筆記：整理醫美療程、抗老選擇、診所諮詢與消費判斷。"
+
+
+def _org() -> dict:
+    return {"@type": "Organization", "name": BRAND, "url": SITE_URL + "/", "logo": LOGO_URL}
+
+
+def _person_ref() -> dict:
+    return {"@type": "Person", "@id": PERSON_ID, "name": AUTHOR_NAME, "url": ABOUT_URL}
+
+
+def ld_block(objs: list[dict]) -> str:
+    """把 JSON-LD 物件包進 <!--yubai:ld--> 標記區塊（小於符號一律轉 unicode 跳脫，不可能提早結束 script 標籤）。"""
+    scripts = []
+    for o in objs:
+        js = json.dumps({"@context": "https://schema.org", **o}, ensure_ascii=False, separators=(",", ":"))
+        scripts.append(f'<script type="application/ld+json">{js.replace("<", chr(92) + "u003c")}</script>')
+    return "<!--yubai:ld-->\n    " + "\n    ".join(scripts) + "\n    <!--/yubai:ld-->"
+
+
+def home_ld() -> str:
+    return ld_block([
+        {"@type": "WebSite", "name": BRAND, "url": SITE_URL + "/", "inLanguage": "zh-Hant",
+         "description": SITE_DESC, "publisher": _org()},
+        {**_org(), "sameAs": [NEWS_URL, LINE_URL]},
+    ])
+
+
+def _meta_content(text: str, attr: str, name: str) -> str:
+    m = re.search(r'<meta\s+' + attr + r'="' + re.escape(name) + r'"\s+content="([^"]*)"', text)
+    return html.unescape(m.group(1)).strip() if m else ""
+
+
+_SITEMAP_CACHE: dict = {}
+
+
+def _sitemap_lastmod(site_root: Path, url: str) -> str:
+    sm = site_root / "sitemap.xml"
+    if not sm.exists():
+        return ""
+    key = (str(sm), sm.stat().st_mtime_ns)
+    if key not in _SITEMAP_CACHE:
+        t = sm.read_text(encoding="utf-8")
+        _SITEMAP_CACHE.clear()
+        _SITEMAP_CACHE[key] = dict(re.findall(r"<loc>([^<]*)</loc>\s*<lastmod>([^<]*)</lastmod>", t))
+    return _SITEMAP_CACHE[key].get(url, "")
+
+
+def article_ld(text: str, page_path: Path, site_root: Path) -> list[dict]:
+    meta = article_meta(page_path.name, text, site_root)
+    if not meta:
+        return []
+    url = f"{SITE_URL}/letters/{page_path.name}"
+    headline = meta["title"] or re.sub(r"[｜|]\s*" + BRAND + r"\s*$", "", _meta_content(text, "property", "og:title"))
+    obj = {"@type": "BlogPosting", "headline": headline}
+    desc = _meta_content(text, "name", "description")
+    if desc:
+        obj["description"] = desc
+    # 日期只用頁面自己已有的（article:published_time／檔名日期／頁面顯示日期＝article_meta 同一套）；
+    # 都沒有就不放 datePublished，dateModified 退而用 sitemap.xml 的 lastmod，再沒有就整個不放，不編
+    pub = meta["date"]
+    if pub:
+        obj["datePublished"] = pub
+        obj["dateModified"] = pub
+    else:
+        lm = _sitemap_lastmod(site_root, url)
+        if lm:
+            obj["dateModified"] = lm
+    img = _meta_content(text, "property", "og:image")
+    if img:
+        obj["image"] = img if img.startswith("http") else f"{SITE_URL}/{img.lstrip('./')}"
+    obj.update({"inLanguage": "zh-Hant", "mainEntityOfPage": {"@type": "WebPage", "@id": url}, "url": url,
+                "author": _person_ref(), "publisher": _org()})
+    return [obj]
+
+
+def about_ld(text: str) -> list[dict]:
+    desc = _meta_content(text, "name", "description")
+    page = {"@type": "AboutPage", "name": "關於蘇菲", "url": ABOUT_URL, "inLanguage": "zh-Hant",
+            "isPartOf": {"@type": "WebSite", "name": BRAND, "url": SITE_URL + "/"},
+            "mainEntity": {"@id": PERSON_ID}}
+    if desc:
+        page["description"] = desc
+    person = {"@type": "Person", "@id": PERSON_ID, "name": AUTHOR_NAME, "url": ABOUT_URL,
+              "description": ABOUT_PERSON_DESC}
+    return [page, person]
+
+
+def ld_for_page(text: str, page_path: Path) -> str:
+    """回傳該頁該有的 <!--yubai:ld--> 區塊；不需要的頁（列表、主題、轉址…）回空字串。"""
+    parent = page_path.parent
+    in_sub = parent.name in ("letters", "topics")
+    root = parent.parent if in_sub else parent
+    if not in_sub and page_path.name == "about.html":
+        return ld_block(about_ld(text))
+    if parent.name == "letters" and re.match(r"\d{3}", page_path.name):
+        objs = article_ld(text, page_path, root)
+        return ld_block(objs) if objs else ""
+    return ""
+
+
 # ---------------------------------------------------------------- 圖片
 
 def ensure_webp(src: Path) -> Path | None:
@@ -164,6 +279,11 @@ def theme_page(text: str, p: str, page_path: Path | None = None, make_webp: bool
     if page_path is not None:
         text = swap_webp(text, page_path.parent, make_webp)
         text = absolute_og(text, page_path)
+        # 機器可讀層：先拿掉上次的區塊再放新的（og:image 已是絕對網址之後才產，才抓得到正確圖址）
+        text = LD_RE.sub("", text)
+        block = ld_for_page(text, page_path)
+        if block:
+            text = text.replace("</head>", f"    {block}\n  </head>", 1)
     return text
 
 
@@ -398,6 +518,7 @@ def render_home(metas: list[dict]) -> str:
 <link rel="canonical" href="{SITE_URL}/" />
 <link rel="alternate" type="application/rss+xml" title="{BRAND}" href="feed.xml" />
 {head_block("", home=True)}
+{home_ld()}
 </head>
 <body class="home y-dark-top">
 {header_block("")}
@@ -523,11 +644,73 @@ def render_articles_json(metas: list[dict]) -> str:
     return json.dumps(rows, ensure_ascii=False, separators=(",", ":")) + "\n"
 
 
+# ---------------------------------------------------------------- llms.txt
+
+LLMS_SUMMARY = ("蘇菲餘白是一個醫美判斷力網站：蘇菲以醫療、護理、醫療器材銷售與醫美營運現場的長期觀察為底，"
+                "把醫美療程原理、診所諮詢流程、常見話術、風險與預算拆開，讓消費者知道下一步該問什麼。"
+                "這裡不做診斷，也不取代醫師；內容僅供衛教與消費判斷參考。")
+LLMS_NOTE = "網站語言為繁體中文（台灣）。每篇文章只拆一個醫美判斷題；引用請以各頁標示的日期與參考資料為準。"
+
+
+def _clip(s: str, n: int = 100) -> str:
+    s = " ".join(s.split())
+    if len(s) <= n:
+        return s
+    cut = max((s.rfind(c, 0, n) for c in "。！？"), default=-1)
+    return s[: cut + 1] if cut >= 30 else s[: n - 2].rstrip("，、；：") + "…"
+
+
+def _md_text(s: str) -> str:
+    return " ".join(s.split()).replace("[", "［").replace("]", "］")
+
+
+def _page_info(f: Path) -> tuple[str, str]:
+    t = f.read_text(encoding="utf-8")
+    m = re.search(r"<title>(.*?)</title>", t, re.S)
+    title = html.unescape(m.group(1)).strip() if m else f.stem
+    title = re.sub(r"\s*[｜|]\s*" + BRAND + r"\s*$", "", title)
+    return title, _meta_content(t, "name", "description")
+
+
+def _llms_line(rel: str, title: str, desc: str) -> str:
+    d = _clip(desc)
+    return f"- [{_md_text(title)}]({SITE_URL}/{rel})" + (f": {d}" if d else "")
+
+
+def render_llms_txt(repo: Path, extra: dict[str, str] | None = None) -> str:
+    """依 llmstxt.org 格式產 llms.txt。文章清單與 letters/articles.json 同一來源（collect）；extra＝尚未寫檔的新文章。"""
+    out = [f"# {BRAND}", "", f"> {LLMS_SUMMARY}", "", LLMS_NOTE, "", "## 文章", ""]
+    for a in collect(repo, extra):
+        out.append(_llms_line(f"letters/{a['file']}", a["title"], a["desc"]))
+
+    def section(head: str, files: list[Path]) -> None:
+        rows = [(f.relative_to(repo).as_posix(), *_page_info(f)) for f in files if f.exists()]
+        if rows:
+            out.extend(["", f"## {head}", ""] + [_llms_line(*r) for r in rows])
+
+    section("療程主題", [repo / "treatments.html"] + sorted((repo / "topics").glob("*.html")))
+    section("好物清單", [repo / "picks.html"] + sorted((repo / "picks").glob("*.html")))
+    section("關於", [repo / "about.html", repo / "faq.html", repo / "consult.html", repo / "letters" / "index.html"])
+    out += [f"- [RSS 訂閱]({SITE_URL}/feed.xml): 文章更新的 RSS feed",
+            f"- [Sitemap]({SITE_URL}/sitemap.xml): 全站網址清單", ""]
+    return "\n".join(out)
+
+
+def write_llms(repo: Path, extra: dict[str, str] | None = None) -> bool:
+    f = repo / "llms.txt"
+    text = render_llms_txt(repo, extra)
+    if f.exists() and f.read_text(encoding="utf-8") == text:
+        return False
+    f.write_text(text, encoding="utf-8", newline="\n")
+    return True
+
+
 # ---------------------------------------------------------------- 全站重套
 
 def apply_theme(repo: Path) -> list[str]:
     touched = []
-    targets = [(f, "") for f in repo.glob("*.html") if f.name not in ("index.html", "404.html")]
+    # picks.html 由 affiliate_sync.py 自己產（已用同一組 head/header/footer 函式），不在這裡重套，免得兩邊互相改空白造成每次都有 diff
+    targets = [(f, "") for f in repo.glob("*.html") if f.name not in ("index.html", "404.html", "picks.html")]
     targets += [(f, "../") for f in (repo / "letters").glob("*.html") if f.name != "index.html"]
     targets += [(f, "../") for f in (repo / "topics").glob("*.html")]
     for f, p in targets:
@@ -543,6 +726,8 @@ def apply_theme(repo: Path) -> list[str]:
         if not f.exists() or f.read_text(encoding="utf-8") != text:
             f.write_text(text, encoding="utf-8", newline="\n")
             touched.append(rel)
+    if write_llms(repo):
+        touched.append("llms.txt")
     return touched
 
 
@@ -550,12 +735,14 @@ if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     import argparse
     ap = argparse.ArgumentParser(description="蘇菲餘白：全站套用版型／重建首頁與文章列表")
-    ap.add_argument("cmd", choices=["apply-theme", "indexes"])
+    ap.add_argument("cmd", choices=["apply-theme", "indexes", "llms"])
     ap.add_argument("--repo", default=str(Path(__file__).resolve().parent.parent))
     args = ap.parse_args()
     repo = Path(args.repo).resolve()
     if args.cmd == "apply-theme":
         changed = apply_theme(repo)
+    elif args.cmd == "llms":
+        changed = ["llms.txt"] if write_llms(repo) else []
     else:
         changed = []
         for rel, text in build_indexes(repo).items():

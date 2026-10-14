@@ -1,0 +1,124 @@
+# 蘇菲餘白
+
+> 蘇菲餘白是一個醫美判斷力網站：蘇菲以醫療、護理、醫療器材銷售與醫美營運現場的長期觀察為底，把醫美療程原理、診所諮詢流程、常見話術、風險與預算拆開，讓消費者知道下一步該問什麼。這裡不做診斷，也不取代醫師；內容僅供衛教與消費判斷參考。
+
+網站語言為繁體中文（台灣）。每篇文章只拆一個醫美判斷題；引用請以各頁標示的日期與參考資料為準。
+
+## 文章
+
+- [65 歲以上女性 17.4% 有骨質疏鬆：停經後的荷爾蒙治療時間窗，你問過醫師嗎？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/090-osteoporosis-post-menopause-hormone-therapy-20261018.html): 10 月初，FB 上一個親子生活粉專貼了一個問題：「更年期初期全身都在痛嗎？像發燒時骨頭肌肉不舒服」
+- [打瘦瘦針為什麼容易被酸，停針胖回來又被檢討？80% 說肥胖是病，只有 21.7% 做過專業評估](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/089-glp1-weight-loss-obesity-medication-20261017.html): 這個禮拜，Threads 上有人寫了一篇停用後的後悔文。發文的人說停用後食量變大，體重胖回約 5 公斤，還開始掉髮。結尾那句是：「現在好後悔，早知道不要亂跟風」。
+- [100 天臉部運動，法令紋會變淺嗎？查完 3 篇系統性回顧，證據很薄](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/088-facial-exercise-nasolabial-folds-systematic-review-20261016.html): 「100 天法令紋運動，沒效果就上醫美。」這是 Threads 上一則貼文的標題。發文的人每天記錄進度，我看到的那一則，寫著第 38 天。
+- [隆乳心得文讚 615、收藏 822：存起來之前，先看懂這 3 個訊號](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/087-breast-augmentation-reviews-recovery-20261015.html): 很多人在決定做隆乳之前，會花一兩個月爬心得文。然後傳訊息來問我一句：「蘇菲，我收藏了好幾篇，每一篇都說很自然、很滿意。我到底該信哪一篇？」
+- [藝人直播自嘲臉饅化了，什麼是饅化？玻尿酸補了又補，怎麼知道打過頭、能不能溶](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/086-puffy-filler-hyaluronic-acid-allergy-20261014.html): 九月底，一位網友在 Threads 上寫：「最近一直看到『饅化』覺得天啊也太可怕，為什麼會饅化？真的只是玻尿酸打太多嗎？」
+- [打完玻尿酸、動完刀，護照上的臉要換發嗎？外交部 9 月 28 日怎麼說](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/085-hyaluronic-acid-passport-mofa-20261013.html): 診間常聽到一種問法。「我下個月要出國，上週剛做完療程，臉有點不一樣了。護照上那張照片還能用嗎？會不會在機場被擋？」
+- [新北診所營養針累計 22 人確診 C 肝：打針前，先問診所這 3 件事](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/084-nutrient-injection-hepatitis-c-clinic-20261012.html): 9 月 2 日下午兩點，疾管署署長在臨時記者會上說了一句話：「此為國內時隔九年再爆出診所 C 肝群聚事件。」
+- [有人說我太掃興：為什麼我還是先講風險](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/083-why-sophie-talks-about-aesthetic-risk-20260830.html): 蘇菲從醫學中心護理與心臟醫材跟刀經驗出發，解釋為什麼醫美文章總把風險、限制與不適合的人放在效果前面。
+- [2026 醫美新制上路，動刀前查 3 件事](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/082-aesthetic-surgery-rules-checklist-20260829.html): 2026 起，美容醫學服務的核准、登記與備查資訊更透明；動刀前查機構項目、醫師資格與急救後送，不要把自願認證誤當唯一門檻。
+- [出事前先留 3 樣：病歷、明細、術前術後照片](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/081-medical-records-consent-evidence-20260828.html): 醫美糾紛發生前，先留病歷與同意書、逐項收費明細、同角度術前術後照片；資料越完整，後續溝通與調解越有依據。
+- [第一次做醫美，藥物與保健品要先說清楚](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/080-pre-aesthetic-medication-disclosure-20260827.html): 術前別只回答有沒有慢性病；處方藥、成藥、保健食品、過敏史與近期治療都要完整告知，是否停用與停多久交給醫師判斷。
+- [醫療廣告出現「唯一、保證、永不復發」，先停](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/079-medical-advertising-red-flags-20260826.html): 唯一、首創、最專業、保證、完全根治與永不復發，都是醫療廣告常見紅旗；平台有藍勾勾，也不代表內容合法或有證據。
+- [診所用「無息分期」招攬病人，可能踩法規紅線](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/078-interest-free-installment-medical-solicitation-20260825.html): 醫療機構若以無息貸款、分期付款或低自備款作為招攬病人的宣傳手段，可能違反醫療法；諮詢時先把總價與療程必要性拉回來。
+- [美容療程預付超過 5 萬，簽約前先問這 3 件事](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/077-beauty-prepaid-contract-protection-20260824.html): 預付美容療程超過 5 萬元，先確認契約適用範圍、履約保障、退費期限與每次消費紀錄；若涉及醫療行為，還要另外查醫療法規。
+- [怎麼辨識誇大的醫療宣稱？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/076-medical-claims-red-flags-20260809.html): 遇到永久、保證、一次見效與排毒等宣稱，先查核合法資格、核准用途、研究設計、風險與替代方案。
+- [為什麼你需要健康管理顧問？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/075-health-management-advisor-role-20260808.html): 好的健康管理協助你整理目標、紀錄與追蹤，但不越界診斷、開藥或取代醫師；先看角色邊界再決定是否需要。
+- [為什麼男性活力突然衰退？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/074-male-vitality-health-assessment-20260807.html): 性功能或活力下降可能牽涉心血管、代謝、荷爾蒙、藥物與心理因素；別把複雜問題交給單一自費療程。
+- [怎麼讓醫美效果維持更久？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/073-aesthetic-results-recovery-management-20260806.html): 療程效果受技術、劑量、個人體質與術後照護共同影響；真正有效的做法，是照醫囑、防曬、睡眠與按時追蹤。
+- [打點滴真的比吃維他命好？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/072-iv-vitamin-therapy-evidence-20260805.html): 靜脈注射能快速提高血中濃度，但高濃度不等於一般保健、美白或抗老效果更好；適應症與風險才是重點。
+- [為什麼你的疲勞揮之不去？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/071-persistent-fatigue-systemic-health-20260804.html): 持續疲勞不是單靠醫美或一種療程就能解決；先排除睡眠、貧血、甲狀腺、藥物與身心因素，再談介入。
+- [數據科學，怎麼改變醫美？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/070-data-science-aesthetic-medicine-20260803.html): AI 膚質分析讓療程更可追蹤，也帶來資料隱私、模型誤差與資訊安全的新問題。
+- [全球抗老，有什麼新突破？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/069-global-longevity-research-20260802.html): 抗老研究正走向健康壽命、代謝與再生醫學；但實驗結果不等於成熟療程，商業宣稱仍要看人體證據。
+- [術後保障，為什麼差這麼多？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/068-post-treatment-protection-20260801.html): 術後追蹤、緊急聯絡與不良反應處理，都是療程品質的一部分，也應在付款前問清楚。
+- [2026新制，怎麼選診所？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/067-aesthetic-clinic-regulation-2026-20260731.html): 2026 醫美規範調整後，選診所要查醫師資格、合法療程與器材，並確認知情同意及術後處理機制。
+- [輕醫美，真的零風險嗎？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/066-light-aesthetic-treatment-risk-20260730.html): 輕醫美恢復期較短，不代表零風險；雷射、微針與注射仍需要醫師評估、合格操作與術後照護。
+- [直美醫師，怎麼會是風險？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/065-direct-aesthetic-doctor-risk-20260729.html): 判斷醫美醫師不能只看執照或科別標籤，還要看法定資格、相關訓練與該項療程的實際經驗。
+- [為什麼低價醫美藏陷阱？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/064-low-price-aesthetic-traps-20260728.html): 低價醫美不一定省錢；真正要查的是耗材、設備、醫師資格、療程內容與術後處理機制。
+- [從「塑膠臉」到「自然美」：為什麼現在的高級感，是讓人看不出你做了醫美？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/063-aesthetic-sociology-20260727.html): 審美不是個人選擇那麼簡單，它也被平台、階級、關係與醫美產業共同塑形；真正的自由，是知道自己為什麼想變。
+- [躺上手術台前的五個致命問題：保護你自己的權益清單](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/062-aesthetic-risk-rights-protection-20260726.html): 做醫美前，消費者該保護的不只是一張臉，還有知情同意、耗材來源、醫師資格與術後責任。
+- [保養型醫美的真相：為什麼「定期維護」比「一次性手術」更值得投資](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/061-maintenance-aesthetic-medicine-20260725.html): 保養型醫美不是追求一次大改造，而是把老化速度、膚質與修復能力納入長期管理。
+- [音波 vs 電波 vs 微針：三種療程的真實對比，別再被行銷話術迷惑](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/060-three-treatment-comparison-20260724.html): 不同療程解決的是不同層次問題；先分清骨相、軟組織、膚質與動態，才不會把所有問題都交給同一種療程。
+- [醫美診所的隱形成本：為什麼你的療程比別人貴，但效果卻一樣？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/059-aesthetic-hidden-costs-20260723.html): 醫美最貴的常常不是報價，而是修復、時間、恢復期與資訊不對稱；便宜方案背後可能藏著更大的成本。
+- [Profhilo 生物重塑劑：為什麼它被稱為「玻尿酸的進化版」](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/058-profhilo-biorejuvenation-20260722.html): Profhilo 不是傳統填充物，而是把醫美從補洞思維推向生物重塑；它追求的是皮膚品質，而不是臉變大。
+- [骨膜層的秘密：為什麼你的玻尿酸打不出效果，真相藏在 2mm 深度](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/057-periosteum-layer-filler-support-20260721.html): 玻尿酸打不出效果，常常不是材料不夠，而是支撐層次錯了；真正該問的是骨膜層與底層結構。
+- [診所廣告說回春，是真的？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/056-clinic-rejuvenation-claims-20260720.html): 看到「一次年輕十歲」「幹細胞回春」先不要心動；真正該問的是證據、合法性、來源與風險。
+- [男生醫美，比女生更瘋](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/055-men-aesthetic-medicine-20260719.html): 男性醫美不是小眾市場，而是更理性、更數據化，也更容易一次做太多的高成長需求。
+- [口服瘦瘦針來了，臉還是會垮](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/054-oral-glp1-face-aging-20260718.html): 口服瘦瘦針讓減重更方便，但臉部脂肪、肌肉與膠原流失不會因為換成口服就消失。
+- [打了十次皮秒，斑還在那裡](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/053-picosecond-laser-spots-20260717.html): 打了十次皮秒斑還在，問題不一定是機器，而是你一開始就沒有分清楚那塊斑到底是什麼。
+- [停經後漏尿，不是老了正常](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/052-menopause-leakage-gsm-20260716.html): 漏尿、乾癢、性交疼痛不是只能忍；停經後的身體變化需要被說出來，也需要被正確處理。
+- [全球都在溶掉臉上的填充物](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/051-dissolving-facial-fillers-20260715.html): 全球醫美正在從過度填充退回自然感；真正高級的臉，不是看起來被填滿，而是看不出做過。
+- [女人的第二張臉，沒人敢說](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/050-second-face-gsm-20260714.html): 停經後的乾、痛、漏尿不是「老了正常」，而是有名字、有解法的 GSM；沉默不是必要代價。
+- [做醫美前，你有沒有問過這個最重要的問題？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/049-most-important-aesthetic-question-20260705.html): 做醫美前最重要的不是問哪台機器最新，而是先確認自己真正要改善什麼，以及眼前方案如何對應你的結構與長期規劃。
+- [音波拉提 vs 電波拉提，醫師不會主動告訴你的選擇邏輯](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/048-ultrasound-vs-radiofrequency-lifting-20260705.html): 音波偏向深層支撐與輪廓，電波偏向真皮緊實與膚質；先判斷下垂、鬆弛與脂肪分布，才能避免選錯機器。
+- [單極電波 vs 雙極電波，差在哪？你的臉適合哪一種，沒人告訴你的選擇邏輯](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/047-monopolar-vs-bipolar-rf-20260705.html): 單極與雙極電波的能量路徑、作用深度和適用問題不同；不要只看療程名稱與價格，要看你的問題位在哪一層。
+- [玻尿酸打了 5 年，為什麼臉越來越奇怪？殘酷的「饅化臉」真相](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/046-hyaluronic-acid-filler-buildup-20260705.html): 玻尿酸長期疊加可能讓臉部比例與動態逐漸失真；比繼續補量更重要的，是先停、評估殘留與重新規劃結構。
+- [電波 vs 微針電波，你以為是同一件事？Morpheus8 墨菲斯到底適合誰](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/045-morpheus8-vs-monopolar-rf-20260705.html): 傳統電波與微針電波不是升級關係，而是作用深度、治療目標與恢復期不同；先分清鬆弛、脂肪與膚質問題再選療程。
+- [瘦了 20 公斤，卻老了 20 歲——沒人告訴你的 GLP Face 真相](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/044-glp-face-weight-loss-aging-20260705.html): 快速減重可能同時流失脂肪與瘦組織，讓臉部凹陷、鬆弛更明顯；減重期間應同步管理營養、肌肉與臉部變化。
+- [玻尿酸百百種，你打的到底是哪一種？新型態玻尿酸的選擇邏輯，沒人告訴你的真相](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/043-hyaluronic-acid-particle-selection-20260705.html): 玻尿酸不能只比品牌、價格與維持期；顆粒特性、安全資料、注射層次與醫師判斷，才是選擇材料時真正要問的事。
+- [我在家用了三個月的「醫美級」保養儀，說實話](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/042-home-beauty-device-truth-20260627.html): 居家美容儀可以維護，不能取代診所治療；購買前要看能量參數、研究證據與自己的真實使用目標。
+- [她花了六萬打玻尿酸，三個月後死在診療椅上](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/041-unlicensed-filler-injection-death-20260627.html): 侵入性醫美不是熟人推薦就能放心；查診所、查醫師執照、看耗材批號，是進行注射前最低限度的自保。
+- [一顆還沒上市的減重藥，一個 79 歲的老人，和一個讓我很不舒服的問題](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/040-retatrutide-compassionate-use-20260627.html): Retatrutide 的高減重潛力引發期待，也提醒我們：試驗性療法、資源公平與未知風險不能被搶先體驗掩蓋。
+- [有錢人已經在打一種你沒聽過的針，科學家說它可能讓你多活二十年](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/039-klotho-longevity-treatment-reality-20260627.html): Klotho 讓長壽醫學看見主動修復的可能，但人體證據與長期安全性仍待確認，現在更重要的是管理健康壽命。
+- [去泰國整了鼻子，回台灣沒有一個醫師願意幫她修](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/038-thailand-crossborder-rhinoplasty-risk-20260627.html): 海外整鼻看似便宜，真正昂貴的是缺乏病歷、耗材不明與回台後無人願意承接的修復風險。
+- [診所被罰停業半年，卻還在偷偷接客？我在裡面待了兩小時才知道發生了什麼事](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/037-clinic-hidden-camera-privacy-20260627.html): 從診間偷拍與停業爭議談醫美隱私：進療程室前，消費者必須查人、看空間並保留完整紀錄。
+- [台灣醫師站上世界舞台，但你在診所裡遇到的，真的是那種等級嗎？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/036-imcas-doctor-training-reality-20260627.html): 台灣有世界級醫師，不代表每家診所都有同樣水準；真正該查的是醫師背景、持續進修與風險說明。
+- [告別單一療法：EECP × ILIB 終極協同，高階經理人必備的雙重防禦健康策略](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/035-eecp-ilib-circulation-longevity-20260620.html): EECP 與 ILIB 的協同概念，代表未來循環抗衰老不再靠單一療法，而是整合式健康資產管理。
+- [2026 年度最佳醫美設備出爐：為什麼你的診所還在用十年前的舊機器？（終結盲打時代）](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/034-lumenis-silarious-device-safety-20260620.html): 從 Lumenis 與 SILARIOUS 談醫美設備代差：消費者不只要問價格，也要問影像導航與安全標準。
+- [63歲關之琳「蘋果肌僵硬像蠟像」：為什麼頂級美女也逃不過玻尿酸過度填充的詛咒？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/033-guan-zhilin-filler-overload-20260620.html): 關之琳僵臉話題提醒我們：飽滿不等於年輕，過度填充可能讓臉失去動態與高級感。
+- [50歲黃曉明被逼問「弄了多少項目」慌了：名人年齡管理背後的真實性危機](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/032-huang-xiaoming-age-management-authenticity-20260620.html): 從黃曉明被追問醫美談名人年齡管理：比做不做更重要的，是真實性與不過度的長期策略。
+- [把光打進血管裡？從中風復健到抗衰老奇蹟，ILIB 靜脈雷射到底是不是智商稅？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/031-ilib-laser-photobiomodulation-20260620.html): ILIB 靜脈雷射用光生物調節討論細胞能量、循環與慢性發炎，重點是理解它不是一次返老還童的神話。
+- [為什麼你的抗衰老總是無效？（揭開高階經理人都在做的 EECP 隱形保養真相）](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/030-eecp-cardiovascular-anti-aging-20260620.html): EECP 體外反搏不是按摩，而是從心血管循環切入的抗衰老管理，適合先理解機制與適用邊界。
+- [45歲孫淑媚「醫生終於現身」：拔掉7顆牙換來的少女感，揭開女星隱性醫美的殘酷真相](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/029-sun-shu-mei-dental-anti-aging-20260620.html): 從孫淑媚拔牙矯正談隱性醫美：真正耐老的關鍵，不只是打針修補，而是長期結構性投資。
+- [活到 100 歲還能看起來像 40 歲？這不是科幻，是正在發生的現實](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/028-longevity-medicine-cell-aging-reversal.html): 長壽醫學把抗老從表面修補推向細胞管理，未來醫美會更靠近預防醫學與健康壽命。
+- [說實話，是什麼讓妳對醫美望而卻步？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/027-aesthetic-safety-fears-open-discussion.html): 怕失敗、怕痛、怕被偷拍、怕被推銷，先把恐懼說出來，才有機會做出清醒選擇。
+- [妳的累，全寫在臉上：職場壓力如何悄悄摧毀妳的膠原蛋白？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/026-work-stress-aging-cortisol.html): 長期高壓會透過皮質醇影響膠原蛋白、屏障與循環，讓疲憊直接寫在臉上。
+- [創辦人遭聲押、全台 18 家分店淪陷！愛爾麗偷拍風暴後續，妳還敢隨便躺上手術台嗎？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/025-clinic-privacy-hidden-camera-safety.html): 醫美診所隱私危機提醒我們，療程前要檢查空間、看清同意書，並保護自己的私密界線。
+- [花 50 萬來台找「鼻王」，結果鼻骨歪斜求助無門？揭開名醫光環下的殘酷真相](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/024-nose-surgery-failure-doctor-myth.html): 迷信名醫光環前，先看醫師如何溝通風險、處理併發症，以及術後是否願意負責。
+- [怕打針的女孩終於有救了！諾和諾德口服 Wegovy 上市熱銷，減重 17% 的真相是什麼？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/023-oral-glp1-weight-loss-truth.html): 口服 Wegovy 與新一代減重藥讓減重更方便，但肌肉流失、臉凹與反彈風險仍然不能忽略。
+- [45 歲孫淑媚開球被讚「台版 Jennie」！她說「沒有醫生」，妳信嗎？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/022-sun-shu-mei-aging-daily-care.html): 孫淑媚開球被讚凍齡，真正值得學的不是神秘醫生，而是防曬、睡眠、運動與日常自律。
+- [變美不是一次消費，是一份長期管理計畫](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/021-aesthetic-plan-as-long-term-asset.html): 醫美規劃應該像資產管理一樣，有紀錄、節奏、預算、風險與停損點，而不是每次被活動推著買。
+- [醫美諮詢不要先問多少錢，先問這五件事](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/020-consultation-questions-before-price.html): 價格很重要，但醫美諮詢若只問價格，容易忽略適應症、風險、材料、恢復期與修正方案。
+- [自然感不是風格，是比例、動態與邊界都合理](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/019-natural-look-not-natural-style.html): 自然感醫美不是少做而已，而是比例、表情、皮膚質地與臉部邊界都能一起成立。
+- [該打針還是該手術？先看問題在哪一層](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/018-surgery-vs-injection-decision.html): 打針、能量療程與手術各自處理不同層次。先看皮膚、脂肪、筋膜、骨架與期待值，再談方案。
+- [再生療程越紅，越要查來源、核准與紀錄](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/017-legal-regenerative-product-check.html): 再生醫美與外泌體等話題越熱門，消費者越需要確認產品來源、合法性、施作紀錄與風險說明。
+- [PN 不是萬靈丹，它比較像肌底整理](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/016-pn-skinbase-before-regeneration.html): PN、多核苷酸與肌底修復常被包裝成神奇療程，真正要看的是皮膚狀態、目的與搭配順序。
+- [越打越腫不是錯覺，可能是臉部超載](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/015-face-overload-after-filler.html): 臉部超載常見於長期填充、反覆補量與忽略結構支撐。先停下來盤點，不一定要繼續加。
+- [打針前先拍照，不是為了行銷，是為了判斷](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/014-digital-imaging-before-injection.html): 數位影像紀錄能幫助醫美諮詢從感覺回到證據，避免只靠話術與鏡子焦慮做決定。
+- [法令紋打不平？問題可能不在那條線](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/013-nasolabial-fold-structure-trap.html): 法令紋不一定是缺肉，常常是中臉支撐、韌帶與脂肪墊位移造成的結構問題。
+- [2026 再生醫美不是填更多，而是把結構找回來](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/012-regenerative-medicine-structure-reset.html): 從今天整理的醫美趨勢矩陣出發，拆解再生醫美、細胞修復與結構歸位的判斷順序。
+- [整形外科 vs 醫美診所：你以為差在招牌，其實差在出事時誰救你](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/011-plastic-surgery-vs-aesthetic-clinic-20260503.html): 整形外科和醫美診所不是同一個分類。本文用手術風險、醫師資格、麻醉與修復能力，整理消費者進診所前該問的五句話。
+- [醫美新規怎麼看？消費者自保四步驟](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/010-aesthetic-regulation-checklist.html)
+- [玻尿酸也有代差：你不一定要追新品，但要問得出是哪一支](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/009-filler-generation-update.html)
+- [RADIESSE 打胸口皺紋前，先問影像檢查問題](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/008-radiesse-decollete-imaging.html)
+- [膠原蛋白吃了沒感覺？先看你是不是少了搭配邏輯](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/007-collagen-supplement-pairing.html)
+- [肉毒打久突然沒效？先看抗體、頻率與靜態紋](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/006-botox-antibody.html)
+- [醫美「舒眠麻醉」前，先確認三件事](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/005-aesthetic-anesthesia-risk.html)
+- [線雕拉提前，先問三個問題：你買的是拉提，還是修復風險？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/004-thread-lift-complications.html)
+- [50 歲後做醫美的三條紅線：送媽媽療程前先看這篇](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/003-50-plus-aesthetic-red-lines.html)
+- [黑眼圈分三型，七成的人把錢花在錯的型上](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/002-dark-circles-three-types.html)
+- [真正高級的變美，不是做很多，而是判斷更準](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/001.html)
+
+## 療程主題
+
+- [療程主題](https://deepgill1004-hue.github.io/feifei-yubai-site/treatments.html): 整理鳳凰電波、音波拉提、玻尿酸、肉毒、水光等醫美療程的判斷重點、常見誤解與諮詢前問題。
+- [肉毒不是除皺針：它是在讓過度用力的肌肉安靜](https://deepgill1004-hue.github.io/feifei-yubai-site/topics/botox.html): 肉毒不只是除皺，它能放鬆過度用力的肌肉。本文用皺眉、咬肌、下巴梅干紋，拆解肉毒前該看的動態表情。
+- [玻尿酸不是補土：哪裡凹補哪裡為什麼會變腫](https://deepgill1004-hue.github.io/feifei-yubai-site/topics/hyaluronic-acid.html): 玻尿酸填充不是哪裡凹就補哪裡。凹陷可能來自支撐、陰影、組織位移或容量不足。本文整理填充前必問問題。
+- [水光不是補水：真正差別在於妳打進去的是什麼](https://deepgill1004-hue.github.io/feifei-yubai-site/topics/skinbooster.html): 水光不是單純補水，不同成分與來源會影響效果和風險。本文整理水光常見成分、適合族群與諮詢前必問清單。
+- [鳳凰電波不是拉皮：妳真正買到的是緊實感](https://deepgill1004-hue.github.io/feifei-yubai-site/topics/thermage.html): 鳳凰電波不是拉皮，它主要改善的是皮膚緊實感與質地疲態。本文用皮鬆、組織位移、期待值三個角度，幫你判斷是否適合。
+- [音波不是小臉神器：打錯人為什麼會更凹更老](https://deepgill1004-hue.github.io/feifei-yubai-site/topics/ultherapy.html): 音波不等於小臉神器。臉部脂肪少、支撐不足或已經凹陷的人，如果只追求變小，可能更顯老。本文整理音波前判斷重點。
+
+## 好物清單
+
+- [蘇菲私藏清單](https://deepgill1004-hue.github.io/feifei-yubai-site/picks.html): 蘇菲自己會用、也常被問的保養與防曬好物清單。每樣都寫清楚為什麼選它、什麼時候先別用。
+- [做完果酸、換膚，洗臉機什麼時候可以用？](https://deepgill1004-hue.github.io/feifei-yubai-site/picks/cleansing-device-after-peel.html): 果酸、換膚等療程後使用洗臉機的時間點判斷：沒有固定天數，看三個狀況，再從最輕檔開始。
+- [雷射、皮秒做完，防曬怎麼挑？](https://deepgill1004-hue.github.io/feifei-yubai-site/picks/laser-sunscreen.html): 雷射、皮秒術後的防曬怎麼選：質地、補擦方便度、刺激性三件事，加上什麼時候先別擦。
+- [敏感肌防曬怎麼選？先看這三件事](https://deepgill1004-hue.github.io/feifei-yubai-site/picks/sensitive-skin-sunscreen.html): 敏感肌挑防曬的三個判斷：先局部試、選擇不悶的質地、出門搭配物理遮蔽。
+- [上了妝怎麼補防曬？不用卸妝的補法](https://deepgill1004-hue.github.io/feifei-yubai-site/picks/sunscreen-touch-up-over-makeup.html): 上妝後補防曬的實際做法：防曬棒隔妝補擦、補擦時間點，以及常見的補不到位原因。
+
+## 關於
+
+- [關於蘇菲](https://deepgill1004-hue.github.io/feifei-yubai-site/about.html): 關於蘇菲餘白：用醫療、醫材銷售與醫美營運經驗，整理療程判斷、診所諮詢與醫美消費問題。
+- [FAQ](https://deepgill1004-hue.github.io/feifei-yubai-site/faq.html): 蘇菲餘白常見問題：是否提供醫療診斷、如何使用網站內容、諮詢前該準備什麼、療程資訊如何判斷。
+- [諮詢整理](https://deepgill1004-hue.github.io/feifei-yubai-site/consult.html): 蘇菲餘白協助整理醫美諮詢前的問題、療程期待、風險與預算判斷，讓你帶著清楚問題進診間。
+- [《蘇菲餘白》文章｜醫美判斷力筆記](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/index.html): 蘇菲餘白文章庫：每篇只拆一個醫美判斷題，從療程、預算、風險到診所話術，幫你把問題問對。
+- [RSS 訂閱](https://deepgill1004-hue.github.io/feifei-yubai-site/feed.xml): 文章更新的 RSS feed
+- [Sitemap](https://deepgill1004-hue.github.io/feifei-yubai-site/sitemap.xml): 全站網址清單
