@@ -274,3 +274,4 @@ h1 { color: var(--y-ink); font-weight: 900; letter-spacing: 0.02em; }
 .y-pk-qa a::after { content: " →"; color: var(--y-wine); }
 .y-picks-page .letter-body .y-pk-grid { margin: 14px 0 8px; }
 .y-picks-page .eyebrow a { color: inherit; text-decoration: none; }
+.y-picks-page .y-pk-entry { margin-top: 32px; border: 1px dashed #b98a8f; background: #fbf3ec; }
