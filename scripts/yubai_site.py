@@ -919,10 +919,19 @@ def ensure_cta_links(text: str) -> str:
         return text
     sec = m.group(0)
     need = [("官方 LINE", LINE_URL), ("蘇菲餘白網站", SITE_URL + "/"), ("電子報", NEWS_URL)]
-    add = "".join(f'<li>{lab}：<a href="{u}" rel="noopener">{u}</a></li>' for lab, u in need if u.rstrip("/") not in sec)
-    if not add or "</ul>" not in sec:
+    add = "".join(f'<li>{lab}：<a href="{u}" rel="noopener">{u}</a></li>' for lab, u in need if f">{u}</a>" not in sec)
+    if not add:
         return text
-    sec2 = sec.replace("</ul>", add + "</ul>", 1)
+    if "</ul>" in sec:
+        sec2 = sec.replace("</ul>", add + "</ul>", 1)
+    else:
+        # 舊版型（「蘇菲的話」只有一段話加按鈕、沒有連結清單）：正文不動，在按鈕列前插入跟新文章一致的承接句加三連結清單
+        lead = '' if "我會在 LINE" in sec else '<p>我會在 LINE 裡用更白話的方式拆，也會把完整文章與延伸整理留在網站和電子報。</p>\n              '
+        block = (lead + '<ul class="letter-checks">' + add + '</ul>\n              ')
+        if '<div class="panel-actions">' in sec:
+            sec2 = sec.replace('<div class="panel-actions">', block + '<div class="panel-actions">', 1)
+        else:
+            sec2 = sec.replace("</section>", block + "</section>", 1)
     return text[:m.start()] + sec2 + text[m.end():]
 
 
