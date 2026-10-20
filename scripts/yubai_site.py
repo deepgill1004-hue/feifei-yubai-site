@@ -29,7 +29,10 @@ SITE_URL = "https://deepgill1004-hue.github.io/feifei-yubai-site"
 LINE_URL = "https://line.me/R/ti/p/@371arhqu"
 NEWS_URL = "https://sophie-yubai.beehiiv.com/"
 BRAND = "蘇菲餘白"
-ASSET_VER = "20261012b"
+# 對外定位句：首頁、關於頁、llms.txt 三處用字完全一致（2026-10-20 協調員指定）；FB／YouTube 簡介第一句請貼同一句
+POSITIONING = ("蘇菲餘白專注大健康與自費醫美，由護理師、心臟醫材、醫美營運出身的蘇菲，"
+               "把複雜的健康與療程資訊翻成一般人看得懂的判斷。")
+ASSET_VER = "20261020"
 FOOTER_NOTE = "內容僅供衛教與消費判斷參考，不取代醫師診療或個別法律意見。"
 # 文章列表的主題篩選鈕：（顯示文字, 關鍵字以 | 分隔，比對標題＋摘要）
 CHIPS = [
@@ -118,7 +121,7 @@ def _org() -> dict:
 
 
 def _person_ref() -> dict:
-    return {"@type": "Person", "@id": PERSON_ID, "name": AUTHOR_NAME, "url": ABOUT_URL}
+    return {"@type": "Person", "@id": PERSON_ID, "name": AUTHOR_NAME, "alternateName": BRAND, "url": ABOUT_URL}
 
 
 def ld_block(objs: list[dict]) -> str:
@@ -134,7 +137,7 @@ def home_ld() -> str:
     return ld_block([
         {"@type": "WebSite", "name": BRAND, "url": SITE_URL + "/", "inLanguage": "zh-Hant",
          "description": SITE_DESC, "publisher": _org()},
-        {**_org(), "sameAs": [NEWS_URL, LINE_URL]},
+        {**_org(), "description": POSITIONING, "sameAs": [NEWS_URL, LINE_URL]},
     ])
 
 
@@ -193,7 +196,7 @@ def about_ld(text: str) -> list[dict]:
             "mainEntity": {"@id": PERSON_ID}}
     if desc:
         page["description"] = desc
-    person = {"@type": "Person", "@id": PERSON_ID, "name": AUTHOR_NAME, "url": ABOUT_URL,
+    person = {"@type": "Person", "@id": PERSON_ID, "name": AUTHOR_NAME, "alternateName": BRAND, "url": ABOUT_URL,
               "description": ABOUT_PERSON_DESC}
     return [page, person]
 
@@ -252,7 +255,8 @@ def swap_webp(text: str, page_dir: Path, make: bool) -> str:
 
 # ---------------------------------------------------------------- 套版型
 
-def theme_page(text: str, p: str, page_path: Path | None = None, make_webp: bool = False) -> str:
+def theme_page(text: str, p: str, page_path: Path | None = None, make_webp: bool = False,
+               metas: list[dict] | None = None) -> str:
     """把任一頁換成新版型（可重複執行，結果不變）。沒有 site-header 的頁（轉址頁）原樣返回。"""
     if '<header class="site-header"' not in text:
         return text
@@ -279,6 +283,7 @@ def theme_page(text: str, p: str, page_path: Path | None = None, make_webp: bool
     if page_path is not None:
         text = swap_webp(text, page_path.parent, make_webp)
         text = absolute_og(text, page_path)
+        text = enhance_page(text, page_path, metas)
         # 機器可讀層：先拿掉上次的區塊再放新的（og:image 已是絕對網址之後才產，才抓得到正確圖址）
         text = LD_RE.sub("", text)
         block = ld_for_page(text, page_path)
@@ -310,7 +315,7 @@ def article_meta(name: str, text: str, repo: Path) -> dict | None:
     h1 = re.search(r"<h1>(.*?)</h1>", text, re.S)
     if not m or not h1 or name == "index.html":
         return None
-    desc = re.search(r'<meta name="description" content="([^"]*)"', text)
+    desc = DESC_RE.search(text)
     date = re.search(r'<meta property="article:published_time" content="(\d{4}-\d{2}-\d{2})', text)
     if not date:
         d2 = re.search(r"(20\d{2})(\d{2})(\d{2})\.html$", name) or re.search(
@@ -330,19 +335,33 @@ def article_meta(name: str, text: str, repo: Path) -> dict | None:
             img_rel = urllib.parse.quote(use.relative_to(repo.resolve()).as_posix())
         except ValueError:
             img_rel = None
+    title = _strip(h1.group(1))
+    body = _strip(_body_region(text))
+    cats = _score_cats(title, body)
     return {
-        "file": name, "issue": m.group(1), "title": _strip(h1.group(1)),
+        "file": name, "issue": m.group(1), "title": title,
         "desc": html.unescape(desc.group(1)) if desc else "", "date": date_s, "img": img_rel,
+        "tags": _tags_of(text), "cats": cats, "col": _column_of(title, body),
     }
 
 
+_META_CACHE: dict = {}
+
+
 def collect(repo: Path, extra: dict[str, str] | None = None) -> list[dict]:
-    pages = {}
+    metas = []
     for f in (repo / "letters").glob("*.html"):
-        pages[f.name] = f.read_text(encoding="utf-8")
+        if extra and f.name in extra:
+            continue
+        st = f.stat()
+        key = (str(f), st.st_mtime_ns, st.st_size)
+        if key not in _META_CACHE:
+            _META_CACHE[key] = article_meta(f.name, f.read_text(encoding="utf-8"), repo)
+        if _META_CACHE[key]:
+            metas.append(_META_CACHE[key])
     for k, v in (extra or {}).items():
-        pages[k] = v
-    metas = [a for n, t in pages.items() if (a := article_meta(n, t, repo))]
+        if a := article_meta(k, v, repo):
+            metas.append(a)
     metas.sort(key=lambda a: (a["issue"], a["date"], a["file"]), reverse=True)
     return metas
 
@@ -517,6 +536,7 @@ def render_home(metas: list[dict]) -> str:
 <meta property="og:image" content="{SITE_URL}/assets/sophie-portrait-clinic.jpg" />
 <link rel="canonical" href="{SITE_URL}/" />
 <link rel="alternate" type="application/rss+xml" title="{BRAND}" href="feed.xml" />
+<link rel="sitemap" type="application/xml" href="sitemap.xml" />
 {head_block("", home=True)}
 {home_ld()}
 </head>
@@ -550,6 +570,7 @@ def render_home(metas: list[dict]) -> str:
     <div class="manifesto-text reveal">
       <p class="eyebrow">Why</p>
       <h2>醫美最貴的成本，<br />不一定是價格，<br />而是期待值錯置。</h2>
+      <p class="y-position">{POSITIONING}</p>
       <p>這裡不診斷、不替你決定。只把療程邏輯、風險、預算和恢復期拆開，讓你進診間前就知道該問什麼。</p>
     </div>
   </section>
@@ -646,7 +667,7 @@ def render_articles_json(metas: list[dict]) -> str:
 
 # ---------------------------------------------------------------- llms.txt
 
-LLMS_SUMMARY = ("蘇菲餘白是一個醫美判斷力網站：蘇菲以醫療、護理、醫療器材銷售與醫美營運現場的長期觀察為底，"
+LLMS_SUMMARY = (POSITIONING + "網站以醫美判斷力為核心：蘇菲以醫療、護理、醫療器材銷售與醫美營運現場的長期觀察為底，"
                 "把醫美療程原理、診所諮詢流程、常見話術、風險與預算拆開，讓消費者知道下一步該問什麼。"
                 "這裡不做診斷，也不取代醫師；內容僅供衛教與消費判斷參考。")
 LLMS_NOTE = "網站語言為繁體中文（台灣）。每篇文章只拆一個醫美判斷題；引用請以各頁標示的日期與參考資料為準。"
@@ -703,6 +724,301 @@ def write_llms(repo: Path, extra: dict[str, str] | None = None) -> bool:
         return False
     f.write_text(text, encoding="utf-8", newline="\n")
     return True
+
+
+# ---------------------------------------------------------------- 2026-10-20：AEO／內部連結／欄目／補洞
+# 全部放在 theme_page 裡自動套用：每篇新文章（site_publish 呼叫 theme_page）與全站重套（apply-theme）都會帶，不是單頁手改。
+
+DESC_RE = re.compile(r'<meta\s+name="description"\s+content="([^"]*)"')
+CANON_RE = re.compile(r'<link\s+rel="canonical"')
+AEO_RE = re.compile(r"\s*<!--yubai:aeo-->.*?<!--/yubai:aeo-->", re.S)
+POS_RE = re.compile(r"\s*<!--yubai:pos-->.*?<!--/yubai:pos-->", re.S)
+
+AUTHOR_BIO = "專注大健康與自費醫美，護理師、心臟醫材、醫美營運出身。內容僅供衛教與消費判斷參考，不取代醫師診療。"
+
+# 沒有 meta description 的固定頁（主題頁優先用自己的 og:description）
+PAGE_DESC = {
+    "about.html": "蘇菲餘白不是診所官網，也不是療程銷售頁，而是醫美判斷力網站：把療程原理、諮詢流程、常見話術、風險與預算拆開，讓你知道下一步該問什麼。",
+    "treatments.html": "鳳凰電波、音波拉提、玻尿酸、肉毒、水光五個療程主題：每個都從常見誤解開始拆，先問它改善什麼、誰容易失望、諮詢時該問什麼。",
+    "faq.html": "蘇菲餘白常見問題：網站定位、諮詢界線、諮詢前要準備什麼，以及療程資訊很多時怎麼不被話術帶走。真正的治療仍需合格醫師面診評估。",
+    "consult.html": "諮詢前先整理四件事：真正困擾、療程期待、風險與限制、診間問句，另附傳訊息前可以先準備的照片與資料清單。",
+}
+
+# 五個療程主題頁（網址不動）：（顯示名, 檔案, 關鍵字）
+TOPIC_PAGES = [
+    ("鳳凰電波", "topics/thermage.html", "電波|Thermage|鳳凰"),
+    ("音波拉提", "topics/ultherapy.html", "音波|Ultherapy|Ulthera"),
+    ("玻尿酸", "topics/hyaluronic-acid.html", "玻尿酸|填充|Filler"),
+    ("肉毒", "topics/botox.html", "肉毒|Botox"),
+    ("水光", "topics/skinbooster.html", "水光|PN|PDRN|Skinbooster|skin booster"),
+]
+
+# 三個欄目（2026-10-20 凱菲拍板；來源 sophie-agent\topics\columns.json）。
+# 歸屬規則：優先讀 sophie-agent\topics\column_keywords.json（另一位 agent 維護；尚未建立時用下面這組標題／內文關鍵字）。
+COLUMNS = [
+    ("A", "自費醫美怎麼選、術後怎麼顧", "醫美|療程|診所|玻尿酸|肉毒|電波|音波|雷射|皮秒|術後|防曬|填充|拉提|水光|隆乳|隆鼻|整形|預付|合約|廣告|同意書|消保|價格"),
+    ("B", "瘦瘦針與身形臉部變化", "GLP|瘦瘦針|減重|減肥|體重|猛健樂|司美|週纜|肥胖|停藥|臉垮|臉凹"),
+    ("C", "預防醫學與日常健康數字", "血壓|血糖|代謝|抗衰|抗老|骨質|更年期|荷爾蒙|預防|健檢|膽固醇|心血管|睡眠|長壽|失智|疫苗|NAD|健康數字"),
+]
+
+
+def _load_columns() -> list[tuple[str, str, re.Pattern]]:
+    names = {c[0]: c[1] for c in COLUMNS}
+    kws = {c[0]: c[2] for c in COLUMNS}
+    topics_dir = Path(__file__).resolve().parent.parent.parent.parent / "topics"
+    try:
+        cj = json.loads((topics_dir / "columns.json").read_text(encoding="utf-8"))
+        for c in cj.get("columns", []):
+            if c.get("id") in names and c.get("name"):
+                names[c["id"]] = c["name"]
+    except (OSError, ValueError):
+        pass
+    try:
+        kj = json.loads((topics_dir / "column_keywords.json").read_text(encoding="utf-8"))
+        kj = kj.get("columns", kj) if isinstance(kj, dict) else {}
+        for cid, v in kj.items():
+            words = v.get("keywords", []) if isinstance(v, dict) else v
+            if cid in kws and isinstance(words, list) and words:
+                kws[cid] = "|".join(re.escape(w) for w in words if isinstance(w, str) and w)
+    except (OSError, ValueError, AttributeError):
+        pass
+    return [(cid, names[cid], re.compile(kws[cid], re.I)) for cid, *_ in COLUMNS]
+
+
+_COLS = _load_columns()
+_CAT_RX = [(label, re.compile(kw, re.I)) for label, kw in CHIPS] + [(l, re.compile(k, re.I)) for l, _, k in TOPIC_PAGES]
+GENERIC_TAGS = {"蘇菲餘白", "醫美", "醫美判斷力", "知情選擇"}
+
+
+def _body_region(text: str) -> str:
+    """文章正文（不含我們自己加的延伸閱讀／署名／結尾 CTA），評分與摘要都只看這一段。"""
+    i = text.find('<article class="letter-body">')
+    if i < 0:
+        return ""
+    ends = [x for x in (text.find(m, i) for m in ('<!--yubai:aeo-->', '<p class="hashtag-line">',
+                                                   '<section class="letter-cta">', "</article>")) if x >= 0]
+    return text[i:min(ends)]
+
+
+def _tags_of(text: str) -> list[str]:
+    m = re.search(r'<p class="hashtag-line">(.*?)</p>', text, re.S)
+    return [t for t in re.findall(r"#([^\s#<]+)", m.group(1)) if t not in GENERIC_TAGS] if m else []
+
+
+def _score_cats(title: str, body: str) -> dict:
+    out = {}
+    for label, rx in _CAT_RX:
+        s = 4 * len(rx.findall(title)) + min(len(rx.findall(body)), 6)
+        if s >= 3:
+            out[label] = max(out.get(label, 0), s)
+    return out
+
+
+def _column_of(title: str, body: str) -> str:
+    best, best_s = "A", 0
+    for cid, _, rx in _COLS:
+        s = 4 * len(rx.findall(title)) + min(len(rx.findall(body)), 8)
+        if s > best_s:
+            best, best_s = cid, s
+    return best
+
+
+def col_name(cid: str) -> str:
+    return next((n for c, n, _ in _COLS if c == cid), "")
+
+
+def _bigrams(s: str) -> set:
+    s = re.sub(r"[^一-鿿A-Za-z0-9]", "", s)
+    return {s[i:i + 2] for i in range(len(s) - 1)}
+
+
+def related_for(me: dict, metas: list[dict], n: int = 3) -> list[dict]:
+    """延伸閱讀：同欄目優先；欄目內依（共同標籤、共同主題分類、標題用字重疊）排序，不夠 n 篇再從其他欄目補。"""
+    tb = _bigrams(me["title"])
+    scored = []
+    for o in metas:
+        if o["file"] == me["file"]:
+            continue
+        ob = _bigrams(o["title"])
+        jac = len(tb & ob) / max(1, len(tb | ob))
+        s = 4 * len(set(me["tags"]) & set(o["tags"])) + 3 * len(set(me["cats"]) & set(o["cats"])) + 6 * jac
+        scored.append((o["col"] != me["col"], -round(s, 4), abs(int(o["issue"]) - int(me["issue"])), o["issue"], o))
+    scored.sort(key=lambda x: x[:4])
+    return [x[4] for x in scored[:n]]
+
+
+def _site_root(page_path: Path) -> Path:
+    return page_path.parent.parent if page_path.parent.name in ("letters", "topics") else page_path.parent
+
+
+def make_desc(paras: list[str]) -> str:
+    buf = ""
+    for p in paras:
+        buf += p
+        if len(buf) >= 45:
+            break
+    buf = " ".join(buf.split())
+    if len(buf) <= 100:
+        return buf
+    cut = max((buf.rfind(c, 0, 100) for c in "。！？"), default=-1)
+    return buf[: cut + 1] if cut >= 30 else buf[:98].rstrip("，、；：") + "…"
+
+
+def _body_paras(text: str) -> list[str]:
+    out = []
+    for m in re.finditer(r"<p>(.*?)</p>", _body_region(text), re.S):
+        s = _strip(m.group(1))
+        s = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", s).replace("**", "")
+        if len(s) >= 6 and not s.startswith("["):
+            out.append(s)
+    return out
+
+
+def ensure_seo_head(text: str, page_path: Path, root: Path) -> str:
+    """補 canonical 與 meta description（缺才補；已有的不動）。"""
+    rel = page_path.resolve().relative_to(root.resolve()).as_posix()
+    add = []
+    if not CANON_RE.search(text):
+        add.append(f'<link rel="canonical" href="{SITE_URL}/{rel}" />')
+    if not DESC_RE.search(text):
+        desc = PAGE_DESC.get(rel) or _meta_content(text, "property", "og:description")
+        if not desc and page_path.parent.name == "letters":
+            desc = make_desc(_body_paras(text))
+        if desc:
+            add.append(f'<meta name="description" content="{esc(desc)}" />')
+    if not add:
+        return text
+    return re.sub(r"(</title>)", lambda m: m.group(1) + "".join("\n    " + a for a in add), text, count=1)
+
+
+def fix_md_leftovers(text: str) -> str:
+    """正文裡漏出的 markdown：[文字](網址) 轉成可點連結、**粗體** 轉 <strong>、落單的 ** 刪掉。"""
+    i = text.find('<article class="letter-body">')
+    if i < 0:
+        return text
+    ends = [x for x in (text.find(m, i) for m in ('<!--yubai:aeo-->', '<section class="letter-cta">', "</article>")) if x >= 0]
+    j = min(ends)
+    seg = text[i:j]
+    seg = re.sub(r'\[([^\[\]<>]+)\]\((https?://[^\s)<>"]+)\)', r'<a href="\2" rel="noopener">\1</a>', seg)
+    seg = re.sub(r"\*\*((?:(?!\*\*|</?p>).)+?)\*\*", r"<strong>\1</strong>", seg, flags=re.S)
+    seg = seg.replace("**", "")
+    return text[:i] + seg + text[j:]
+
+
+def cta_section() -> str:
+    return ('<section class="letter-cta"><h2>延伸整理</h2><p>我會在 LINE 裡用更白話的方式拆，也會把完整文章與延伸整理留在網站和電子報。</p>\n'
+            f'            <ul class="letter-checks"><li>官方 LINE：<a href="{LINE_URL}" rel="noopener">{LINE_URL}</a></li>'
+            f'<li>蘇菲餘白網站：<a href="{SITE_URL}/" rel="noopener">{SITE_URL}/</a></li>'
+            f'<li>電子報：<a href="{NEWS_URL}" rel="noopener">{NEWS_URL}</a></li></ul>\n          </section>')
+
+
+def ensure_cta_links(text: str) -> str:
+    """文末 CTA 區塊必須有三個明文連結（LINE／網站／電子報）；缺的補在清單最後。"""
+    m = re.search(r'<section class="letter-cta">.*?</section>', text, re.S)
+    if not m:
+        return text
+    sec = m.group(0)
+    need = [("官方 LINE", LINE_URL), ("蘇菲餘白網站", SITE_URL + "/"), ("電子報", NEWS_URL)]
+    add = "".join(f'<li>{lab}：<a href="{u}" rel="noopener">{u}</a></li>' for lab, u in need if u.rstrip("/") not in sec)
+    if not add or "</ul>" not in sec:
+        return text
+    sec2 = sec.replace("</ul>", add + "</ul>", 1)
+    return text[:m.start()] + sec2 + text[m.end():]
+
+
+def _li(href: str, title: str, tail: str = "") -> str:
+    return f'<li><a href="{href}">{html.escape(title, quote=False)}</a>{tail}</li>'
+
+
+def article_aeo_block(me: dict, metas: list[dict], with_cta: bool) -> str:
+    order = sorted(metas, key=lambda a: a["issue"])
+    idx = next((k for k, a in enumerate(order) if a["file"] == me["file"]), -1)
+    prev_a = order[idx - 1] if idx > 0 else None
+    next_a = order[idx + 1] if 0 <= idx < len(order) - 1 else None
+    skip = {a["file"] for a in (prev_a, next_a) if a}
+    rel = related_for(me, [a for a in metas if a["file"] not in skip], 3)   # 上下篇另外有位置，延伸閱讀不重複
+    topics = [(l, f) for l, f, _ in TOPIC_PAGES if l in me["cats"]]
+    topics.sort(key=lambda x: -me["cats"][x[0]])
+    topic_line = "".join(f'<a href="../{f}">{l}</a>' for l, f in topics[:2])
+    meta_line = (f'<p class="y-col">所屬欄目：<b>{html.escape(col_name(me["col"]), quote=False)}</b>'
+                 + (f'<span>相關療程主題：{topic_line}</span>' if topic_line else "") + "</p>")
+    pn = ""
+    if prev_a or next_a:
+        pn = ('<nav class="y-pn-static" aria-label="上一篇與下一篇">'
+              + (f'<a class="prev" href="./{prev_a["file"]}"><small>← 上一篇</small><b>{html.escape(prev_a["title"], quote=False)}</b></a>' if prev_a else "<span></span>")
+              + (f'<a class="next" href="./{next_a["file"]}"><small>下一篇 →</small><b>{html.escape(next_a["title"], quote=False)}</b></a>' if next_a else "<span></span>")
+              + "</nav>")
+    out = ('<!--yubai:aeo-->\n          '
+           f'<aside class="y-author" aria-label="作者"><p class="y-author-name"><span>作者</span><a rel="author" href="../about.html">{BRAND}</a></p>'
+           f'<p>{AUTHOR_BIO}</p></aside>\n          '
+           '<nav class="y-related" aria-label="延伸閱讀"><p class="y-h">延伸閱讀</p><ul>'
+           + "".join(_li(f"./{a['file']}", a["title"], f"<small>No.{a['issue']}</small>") for a in rel)
+           + f'</ul>{meta_line}</nav>\n          {pn}')
+    if with_cta:
+        out += "\n          " + cta_section()
+    return out + "\n          <!--/yubai:aeo-->"
+
+
+def _cols_html(metas: list[dict], prefix: str) -> str:
+    cols = []
+    for cid, name, _ in _COLS:
+        latest = [a for a in metas if a["col"] == cid][:2]
+        cols.append(f'<div><h3>{cid}｜{html.escape(name, quote=False)}</h3><ul>'
+                    + "".join(_li(f"{prefix}letters/{a['file']}", a["title"]) for a in latest) + "</ul></div>")
+    return '<p class="y-h">欄目導覽</p><div class="y-cols">' + "".join(cols) + "</div>"
+
+
+def topic_aeo_block(label: str, metas: list[dict]) -> str:
+    mine = sorted((a for a in metas if label in a["cats"]), key=lambda a: (-a["cats"][label], -int(a["issue"])))[:4]
+    rel = ""
+    if mine:
+        rel = ('<p class="y-h">這個主題的延伸文章</p><ul class="y-list">'
+               + "".join(_li(f"../letters/{a['file']}", a["title"], f"<small>No.{a['issue']}</small>") for a in mine) + "</ul>")
+    return ('<!--yubai:aeo-->\n      <section class="section y-topic-more"><div class="section-inner">' + rel
+            + _cols_html(metas, "../") + '<p class="y-all"><a href="../letters/index.html">看全部文章 →</a></p></div></section>\n      <!--/yubai:aeo-->')
+
+
+def columns_nav_block(metas: list[dict]) -> str:
+    return ('<!--yubai:aeo-->\n      <section class="section y-topic-more"><div class="section-inner">' + _cols_html(metas, "")
+            + '<p class="y-all"><a href="letters/index.html">看全部文章 →</a></p></div></section>\n      <!--/yubai:aeo-->')
+
+
+def enhance_page(text: str, page_path: Path, metas: list[dict] | None) -> str:
+    root = _site_root(page_path)
+    name = page_path.name
+    in_letters = page_path.parent.name == "letters" and re.match(r"\d{3}", name)
+    text = AEO_RE.sub("", text)
+    if in_letters:
+        text = fix_md_leftovers(text)
+    text = ensure_seo_head(text, page_path, root)
+    if not (in_letters or page_path.parent.name == "topics" or name in ("about.html", "treatments.html")):
+        return text
+    if metas is None:
+        metas = collect(root, {name: text} if in_letters else None)
+    if in_letters:
+        me = next((a for a in metas if a["file"] == name), None)
+        if not me:
+            return text
+        if '<section class="letter-cta">' in text:
+            text = re.sub(r'\s*<section class="letter-cta">',
+                          lambda _: "\n          " + article_aeo_block(me, metas, False) + '\n          <section class="letter-cta">',
+                          text, count=1)
+            text = ensure_cta_links(text)
+        elif "</article>" in text:
+            text = re.sub(r"\s*</article>", lambda _: "\n        " + article_aeo_block(me, metas, True) + "\n      </article>",
+                          text, count=1)
+    elif page_path.parent.name == "topics":
+        label = next((l for l, f, _ in TOPIC_PAGES if f == f"topics/{name}"), None)
+        if label and "</main>" in text:
+            text = re.sub(r"\s*</main>", lambda _: "\n      " + topic_aeo_block(label, metas) + "\n    </main>", text, count=1)
+    elif name == "treatments.html" and "</main>" in text:
+        text = re.sub(r"\s*</main>", lambda _: "\n      " + columns_nav_block(metas) + "\n    </main>", text, count=1)
+    elif name == "about.html":
+        text = POS_RE.sub("", text)
+        text = re.sub(r'(<p class="letter-dek">.*?</p>)',
+                      lambda m: m.group(1) + f'\n            <!--yubai:pos--><p class="y-position">{POSITIONING}</p><!--/yubai:pos-->',
+                      text, count=1, flags=re.S)
+    return text
 
 
 # ---------------------------------------------------------------- 全站重套

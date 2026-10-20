@@ -275,3 +275,57 @@ h1 { color: var(--y-ink); font-weight: 900; letter-spacing: 0.02em; }
 .y-picks-page .letter-body .y-pk-grid { margin: 14px 0 8px; }
 .y-picks-page .eyebrow a { color: inherit; text-decoration: none; }
 .y-picks-page .y-pk-entry { margin-top: 32px; border: 1px dashed #b98a8f; background: #fbf3ec; }
+
+/* 2026-10-20：文章署名、延伸閱讀、上下篇、欄目導覽、定位句；AEO 新文章的結論框與對比表 */
+.y-position { margin: 0 0 14px; font-size: clamp(16px, 1.4vw, 18px); line-height: 1.9; color: var(--y-ink); font-weight: 500; }
+.manifesto-text .y-position { color: var(--y-ink); max-width: 560px; }
+.page-hero .y-position { margin-top: 16px; max-width: 640px; }
+.y-author { margin: 40px 0 8px; padding: 18px 22px; border-left: 3px solid var(--y-gold); background: var(--y-paper); font-size: 15px; line-height: 1.85; color: var(--y-muted); }
+.y-author p { margin: 0; }
+.y-author-name { margin-bottom: 4px !important; color: var(--y-ink); }
+.y-author-name span { margin-right: 10px; font-size: 12.5px; letter-spacing: 0.12em; color: var(--y-wine); }
+.y-author-name a { font-weight: 700; font-size: 17px; color: var(--y-ink); text-decoration: none; border-bottom: 1px solid var(--y-gold); }
+.y-related { margin: 36px 0 0; }
+.y-h { margin: 0 0 12px; font-family: var(--y-serif); font-size: clamp(20px, 2vw, 26px); font-weight: 700; color: var(--y-ink); }
+.y-related ul, .y-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.y-related li, .y-list li, .y-cols li { padding: 12px 16px; background: var(--y-paper); border-left: 3px solid var(--y-wine); line-height: 1.6; font-size: 16px; }
+.y-related li a, .y-list li a, .y-cols li a { color: var(--y-ink); text-decoration: none; }
+.y-related li a:hover, .y-list li a:hover, .y-cols li a:hover { color: var(--y-wine); }
+.y-related small, .y-list small { margin-left: 10px; font-family: var(--y-latin); font-size: 14px; color: var(--y-wine); white-space: nowrap; }
+.y-col { margin: 14px 0 0; font-size: 14.5px; color: var(--y-muted); line-height: 1.9; }
+.y-col b { color: var(--y-ink); }
+.y-col span { margin-left: 14px; }
+.y-col span a { margin-left: 8px; color: var(--y-wine); text-decoration: underline; text-underline-offset: 3px; }
+.y-pn-static { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 26px 0 36px; }
+.y-pn-static a { display: block; padding: 14px 16px; background: var(--y-paper); border: 1px solid var(--y-line); text-decoration: none; color: var(--y-ink); }
+.y-pn-static a:hover { border-color: var(--y-wine); }
+.y-pn-static small { display: block; font-size: 12.5px; letter-spacing: 0.08em; color: var(--y-wine); margin-bottom: 4px; }
+.y-pn-static b { display: block; font-size: 15px; line-height: 1.55; font-weight: 700; }
+.y-pn-static .next { text-align: right; }
+.y-topic-more { background: var(--y-sand); }
+.y-topic-more .y-h { margin-top: 28px; }
+.y-topic-more .y-h:first-child { margin-top: 0; }
+.y-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+.y-cols h3 { margin: 0 0 10px; font-size: 17px; line-height: 1.5; color: var(--y-wine); }
+.y-cols ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.y-cols li { font-size: 15px; }
+.y-all { margin: 22px 0 0; }
+.y-all a { color: var(--y-wine); }
+@media (max-width: 640px) {
+  .y-pn-static { grid-template-columns: 1fr; }
+  .y-pn-static .next { text-align: left; }
+  .y-col span { display: block; margin: 4px 0 0; }
+  .y-col span a:first-child { margin-left: 0; }
+}
+
+/* AEO 新文章模板：結論框、表格、FAQ 小標、對應影片 */
+.letter-body .y-answer { margin: 0 0 32px; padding: 20px 24px; border-left: 4px solid var(--y-wine); background: var(--y-paper); }
+.letter-body .y-answer .y-answer-label { margin: 0 0 6px; font-size: 13px; letter-spacing: 0.14em; color: var(--y-wine); font-weight: 700; }
+.letter-body .y-answer p:last-child { margin: 0; font-size: 1.08em; color: var(--y-ink); font-weight: 700; line-height: 1.85; }
+.letter-body .y-table { margin: 22px 0 28px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.letter-body table { width: 100%; border-collapse: collapse; font-size: 15.5px; line-height: 1.7; background: var(--y-paper); }
+.letter-body th, .letter-body td { padding: 10px 14px; border: 1px solid var(--y-line); text-align: left; vertical-align: top; }
+.letter-body th { background: var(--y-sand); color: var(--y-ink); font-weight: 700; white-space: nowrap; }
+.letter-body h3 { margin: 34px 0 6px; font-size: clamp(19px, 1.9vw, 23px); color: var(--y-ink); }
+.letter-body .y-video { margin: 24px 0; padding: 14px 18px; border: 1px dashed var(--y-gold); }
+.letter-body .y-video a { color: var(--y-wine); }

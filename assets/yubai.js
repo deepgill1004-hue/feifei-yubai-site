@@ -155,7 +155,7 @@
       sec.className = "y-more";
       sec.setAttribute("aria-label", "繼續看");
       sec.innerHTML = `<div class="y-more-inner"><div class="y-more-head"><h2>繼續看</h2><a href="${new URL("letters/index.html", root).href}">看全部 ${all.length} 篇 →</a></div>`
-        + (newer || older ? `<div class="y-pn">${pn(older, "prev", "← 上一篇")}${pn(newer, "next", "下一篇 →")}</div>` : "")
+        + ((newer || older) && !document.querySelector(".y-pn-static") ? `<div class="y-pn">${pn(older, "prev", "← 上一篇")}${pn(newer, "next", "下一篇 →")}</div>` : "")
         + `<div class="y-rail">${pick.map(card).join("")}</div></div>`;
       const main = document.querySelector("main");
       (main || document.body).appendChild(sec);

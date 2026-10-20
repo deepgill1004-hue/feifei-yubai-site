@@ -1,6 +1,6 @@
 # 蘇菲餘白
 
-> 蘇菲餘白是一個醫美判斷力網站：蘇菲以醫療、護理、醫療器材銷售與醫美營運現場的長期觀察為底，把醫美療程原理、診所諮詢流程、常見話術、風險與預算拆開，讓消費者知道下一步該問什麼。這裡不做診斷，也不取代醫師；內容僅供衛教與消費判斷參考。
+> 蘇菲餘白專注大健康與自費醫美，由護理師、心臟醫材、醫美營運出身的蘇菲，把複雜的健康與療程資訊翻成一般人看得懂的判斷。網站以醫美判斷力為核心：蘇菲以醫療、護理、醫療器材銷售與醫美營運現場的長期觀察為底，把醫美療程原理、診所諮詢流程、常見話術、風險與預算拆開，讓消費者知道下一步該問什麼。這裡不做診斷，也不取代醫師；內容僅供衛教與消費判斷參考。
 
 網站語言為繁體中文（台灣）。每篇文章只拆一個醫美判斷題；引用請以各頁標示的日期與參考資料為準。
 
@@ -88,16 +88,16 @@
 - [法令紋打不平？問題可能不在那條線](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/013-nasolabial-fold-structure-trap.html): 法令紋不一定是缺肉，常常是中臉支撐、韌帶與脂肪墊位移造成的結構問題。
 - [2026 再生醫美不是填更多，而是把結構找回來](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/012-regenerative-medicine-structure-reset.html): 從今天整理的醫美趨勢矩陣出發，拆解再生醫美、細胞修復與結構歸位的判斷順序。
 - [整形外科 vs 醫美診所：你以為差在招牌，其實差在出事時誰救你](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/011-plastic-surgery-vs-aesthetic-clinic-20260503.html): 整形外科和醫美診所不是同一個分類。本文用手術風險、醫師資格、麻醉與修復能力，整理消費者進診所前該問的五句話。
-- [醫美新規怎麼看？消費者自保四步驟](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/010-aesthetic-regulation-checklist.html)
-- [玻尿酸也有代差：你不一定要追新品，但要問得出是哪一支](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/009-filler-generation-update.html)
-- [RADIESSE 打胸口皺紋前，先問影像檢查問題](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/008-radiesse-decollete-imaging.html)
-- [膠原蛋白吃了沒感覺？先看你是不是少了搭配邏輯](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/007-collagen-supplement-pairing.html)
-- [肉毒打久突然沒效？先看抗體、頻率與靜態紋](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/006-botox-antibody.html)
-- [醫美「舒眠麻醉」前，先確認三件事](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/005-aesthetic-anesthesia-risk.html)
-- [線雕拉提前，先問三個問題：你買的是拉提，還是修復風險？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/004-thread-lift-complications.html)
-- [50 歲後做醫美的三條紅線：送媽媽療程前先看這篇](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/003-50-plus-aesthetic-red-lines.html)
-- [黑眼圈分三型，七成的人把錢花在錯的型上](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/002-dark-circles-three-types.html)
-- [真正高級的變美，不是做很多，而是判斷更準](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/001.html)
+- [醫美新規怎麼看？消費者自保四步驟](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/010-aesthetic-regulation-checklist.html): 台灣美容醫學處置與手術規範持續更新。消費者做注射、光電、手術或麻醉前，先查醫師資格、診所登記、產品來源與急救流程。
+- [玻尿酸也有代差：你不一定要追新品，但要問得出是哪一支](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/009-filler-generation-update.html): 新一代玻尿酸材料持續推出，但台灣消費者更該問品牌型號、材料特性、台灣核准狀態與醫師選材邏輯。
+- [RADIESSE 打胸口皺紋前，先問影像檢查問題](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/008-radiesse-decollete-imaging.html): RADIESSE 取得美國 FDA 胸口皺紋適應症後，消費者更該問 CaHA、影像檢查、注射紀錄與台灣核准狀態。
+- [膠原蛋白吃了沒感覺？先看你是不是少了搭配邏輯](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/007-collagen-supplement-pairing.html): 口服膠原蛋白不是只看品牌。先看維生素 C、蛋白質、屏障需求、術後修復與持續時間，避免把保養品吃成焦慮。
+- [肉毒打久突然沒效？先看抗體、頻率與靜態紋](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/006-botox-antibody.html): 肉毒效果變差不一定是假貨。可能和肌肉變化、靜態紋、施打間隔、劑量、品牌切換與中和性抗體有關。
+- [醫美「舒眠麻醉」前，先確認三件事](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/005-aesthetic-anesthesia-risk.html): 舒眠麻醉不是睡一下而已。做任何需要靜脈鎮靜或麻醉的醫美療程前，先確認誰執行、用什麼藥、現場有沒有監測與急救設備。
+- [線雕拉提前，先問三個問題：你買的是拉提，還是修復風險？](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/004-thread-lift-complications.html): 線雕不是貴就有效。本文整理線材、深度、固定點、併發症處理與進診所前必問三句話。
+- [50 歲後做醫美的三條紅線：送媽媽療程前先看這篇](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/003-50-plus-aesthetic-red-lines.html): 50 歲後的醫美不能套用 35 歲的打法。從填充劑量、能量療程、停經狀態與諮詢問句，整理送媽媽做醫美前的三條紅線。
+- [黑眼圈分三型，七成的人把錢花在錯的型上](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/002-dark-circles-three-types.html): 跟刀十年的醫美營運觀察：黑眼圈不是一種，是色素、血管、結構三型。打錯型三萬塊全白花。本文教妳 90 秒在家自檢、進診所第一句話該問什麼，以及 PRF EzGel、血管雷射、化學換膚怎麼對症。
+- [真正高級的變美，不是做很多，而是判斷更準](https://deepgill1004-hue.github.io/feifei-yubai-site/letters/001.html): 《蘇菲餘白》第一篇文章：真正高級的變美，不是做很多，而是判斷更準。
 
 ## 療程主題
 
