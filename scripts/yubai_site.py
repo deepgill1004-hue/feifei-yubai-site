@@ -27,7 +27,6 @@ from pathlib import Path
 
 SITE_URL = "https://deepgill1004-hue.github.io/feifei-yubai-site"
 LINE_URL = "https://line.me/R/ti/p/@371arhqu"
-NEWS_URL = "https://sophie-yubai.beehiiv.com/"
 BRAND = "蘇菲餘白"
 # 對外定位句：首頁、關於頁、llms.txt 三處用字完全一致（2026-10-20 協調員指定）；FB／YouTube 簡介第一句請貼同一句
 POSITIONING = ("蘇菲餘白專注大健康與自費醫美，由護理師、心臟醫材、醫美營運出身的蘇菲，"
@@ -93,7 +92,7 @@ def footer_block(p: str) -> str:
             f'      <nav class="footer-nav" aria-label="網站導覽"><a href="{p}about.html">關於</a><a href="{p}treatments.html">療程主題</a>'
             f'<a href="{p}letters/index.html">文章</a><a href="{p}faq.html">FAQ</a><a href="{p}consult.html">諮詢</a></nav>\n'
             f'      <p class="footer-links"><a href="{LINE_URL}" rel="noopener">官方 LINE</a>'
-            f'<a href="{NEWS_URL}" rel="noopener">電子報</a><a href="{p}feed.xml">RSS</a></p>\n'
+            f'<a href="{p}feed.xml">RSS</a></p>\n'
             f'      <p class="fine">{BRAND}｜{FOOTER_NOTE}</p>\n'
             f'      {LINE_FAB}\n'
             f'    </footer>')
@@ -137,7 +136,7 @@ def home_ld() -> str:
     return ld_block([
         {"@type": "WebSite", "name": BRAND, "url": SITE_URL + "/", "inLanguage": "zh-Hant",
          "description": SITE_DESC, "publisher": _org()},
-        {**_org(), "description": POSITIONING, "sameAs": [NEWS_URL, LINE_URL]},
+        {**_org(), "description": POSITIONING, "sameAs": [LINE_URL]},
     ])
 
 
@@ -906,27 +905,26 @@ def fix_md_leftovers(text: str) -> str:
 
 
 def cta_section() -> str:
-    return ('<section class="letter-cta"><h2>延伸整理</h2><p>我會在 LINE 裡用更白話的方式拆，也會把完整文章與延伸整理留在網站和電子報。</p>\n'
+    return ('<section class="letter-cta"><h2>延伸整理</h2><p>我會在 LINE 裡用更白話的方式拆，完整文章與延伸整理留在蘇菲餘白網站。</p>\n'
             f'            <ul class="letter-checks"><li>官方 LINE：<a href="{LINE_URL}" rel="noopener">{LINE_URL}</a></li>'
-            f'<li>蘇菲餘白網站：<a href="{SITE_URL}/" rel="noopener">{SITE_URL}/</a></li>'
-            f'<li>電子報：<a href="{NEWS_URL}" rel="noopener">{NEWS_URL}</a></li></ul>\n          </section>')
+            f'<li>蘇菲餘白網站：<a href="{SITE_URL}/" rel="noopener">{SITE_URL}/</a></li></ul>\n          </section>')
 
 
 def ensure_cta_links(text: str) -> str:
-    """文末 CTA 區塊必須有三個明文連結（LINE／網站／電子報）；缺的補在清單最後。"""
+    """文末 CTA 區塊必須有兩個明文連結（LINE／網站）；2026-10-21 起不放電子報；缺的補在清單最後。"""
     m = re.search(r'<section class="letter-cta">.*?</section>', text, re.S)
     if not m:
         return text
     sec = m.group(0)
-    need = [("官方 LINE", LINE_URL), ("蘇菲餘白網站", SITE_URL + "/"), ("電子報", NEWS_URL)]
+    need = [("官方 LINE", LINE_URL), ("蘇菲餘白網站", SITE_URL + "/")]
     add = "".join(f'<li>{lab}：<a href="{u}" rel="noopener">{u}</a></li>' for lab, u in need if f">{u}</a>" not in sec)
     if not add:
         return text
     if "</ul>" in sec:
         sec2 = sec.replace("</ul>", add + "</ul>", 1)
     else:
-        # 舊版型（「蘇菲的話」只有一段話加按鈕、沒有連結清單）：正文不動，在按鈕列前插入跟新文章一致的承接句加三連結清單
-        lead = '' if "我會在 LINE" in sec else '<p>我會在 LINE 裡用更白話的方式拆，也會把完整文章與延伸整理留在網站和電子報。</p>\n              '
+        # 舊版型（「蘇菲的話」只有一段話加按鈕、沒有連結清單）：正文不動，在按鈕列前插入跟新文章一致的承接句加兩連結清單
+        lead = '' if "我會在 LINE" in sec else '<p>我會在 LINE 裡用更白話的方式拆，完整文章與延伸整理留在蘇菲餘白網站。</p>\n              '
         block = (lead + '<ul class="letter-checks">' + add + '</ul>\n              ')
         if '<div class="panel-actions">' in sec:
             sec2 = sec.replace('<div class="panel-actions">', block + '<div class="panel-actions">', 1)
