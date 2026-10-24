@@ -1155,11 +1155,19 @@ def video_ld(v: dict) -> dict:
     return o
 
 
+# Shorts 是直式影片：hqdefault（480×360 橫圖）裡真正有畫面的只剩中間約 200px 寬，放大成直式卡片會糊。
+# 依序試：原比例直式縮圖 oardefault → 高解析橫圖 maxresdefault → hqdefault；前一張抓不到才換下一張，不會破圖。
+YT_THUMB_CHAIN = ("oardefault", "maxresdefault", "hqdefault")
+
+
 def yt_player(v: dict) -> str:
     """沒有 JS 時就是一個連到 YouTube 的縮圖連結；有 JS 時點了才在原地載入播放器。"""
     vid = v["id"]
+    urls = [f"https://i.ytimg.com/vi/{vid}/{k}.jpg" for k in YT_THUMB_CHAIN]
+    fallback = ("var n=(this.dataset.next||'').split(' ').filter(Boolean);"
+                "if(n.length){this.src=n.shift();this.dataset.next=n.join(' ')}else{this.onerror=null}")
     return (f'<a class="y-yt" href="{yt_watch(vid)}" data-yt="{vid}" rel="noopener" aria-label="播放影片：{esc(v["title"])}">'
-            f'<img loading="lazy" decoding="async" src="{yt_thumb(vid)}" alt="" width="480" height="360" />'
+            f'<img loading="lazy" decoding="async" src="{urls[0]}" data-next="{" ".join(urls[1:])}" onerror="{fallback}" alt="" width="1080" height="1920" />'
             f'<span class="y-yt-play" aria-hidden="true"></span></a>')
 
 
