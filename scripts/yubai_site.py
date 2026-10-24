@@ -8,6 +8,8 @@ yubai_site.py -- 蘇菲餘白網站版型的唯一來源（C 版：雜誌底＋�
   * 文章主視覺自動轉 WebP（ensure_webp）
   * 機器可讀層：JSON-LD（文章 BlogPosting／首頁 WebSite+Organization／關於頁 AboutPage+Person，包在
     <!--yubai:ld--> 區塊內，theme_page 每次重產）與 llms.txt（render_llms_txt）
+  * YouTube 短影片（2026-10-24 起）：資料只讀 data/videos.json；有對應文章的頁面嵌入影片＋VideoObject，
+    另產影片總覽 videos.html 並確保它在 sitemap.xml 裡。改了 videos.json 要再跑一次 apply-theme
 
 被誰呼叫：
   * weekly-linkedin-vocus\scripts\site_publish.py（每篇新文章上架）
@@ -23,15 +25,17 @@ import json
 import re
 import sys
 import urllib.parse
+from datetime import date
 from pathlib import Path
 
 SITE_URL = "https://deepgill1004-hue.github.io/feifei-yubai-site"
 LINE_URL = "https://line.me/R/ti/p/@371arhqu"
+YT_CHANNEL = "https://www.youtube.com/channel/UCq-gFBlAjGaeJ6UAzMXzuyw"
 BRAND = "蘇菲餘白"
 # 對外定位句：首頁、關於頁、llms.txt 三處用字完全一致（2026-10-20 協調員指定）；FB／YouTube 簡介第一句請貼同一句
 POSITIONING = ("蘇菲餘白專注大健康與自費醫美，由護理師、心臟醫材、醫美營運出身的蘇菲，"
                "把複雜的健康與療程資訊翻成一般人看得懂的判斷。")
-ASSET_VER = "20261020"
+ASSET_VER = "20261024"
 FOOTER_NOTE = "內容僅供衛教與消費判斷參考，不取代醫師診療或個別法律意見。"
 # 文章列表的主題篩選鈕：（顯示文字, 關鍵字以 | 分隔，比對標題＋摘要）
 CHIPS = [
@@ -80,7 +84,8 @@ def header_block(p: str) -> str:
     return (f'<header class="site-header" aria-label="主要導覽">\n'
             f'      <a class="brand" href="{p}index.html" aria-label="回到首頁">{BRAND}</a>\n'
             f'      <nav><a class="m-hide" href="{p}about.html">關於</a><a href="{p}treatments.html">療程主題</a>'
-            f'<a href="{p}letters/index.html">文章</a><a class="m-hide" href="{p}faq.html">FAQ</a>'
+            f'<a href="{p}letters/index.html">文章</a><a class="m-hide" href="{p}videos.html">影片</a>'
+            f'<a class="m-hide" href="{p}faq.html">FAQ</a>'
             f'<a class="m-hide" href="{p}consult.html">諮詢</a>'
             f'<a class="nav-cta" href="{LINE_URL}" rel="noopener">加入 LINE</a></nav>\n'
             f'    </header>')
@@ -90,8 +95,10 @@ def footer_block(p: str) -> str:
     return (f'<footer class="site-footer y-footer">\n'
             f'      <p class="footer-brand">{BRAND}</p>\n'
             f'      <nav class="footer-nav" aria-label="網站導覽"><a href="{p}about.html">關於</a><a href="{p}treatments.html">療程主題</a>'
-            f'<a href="{p}letters/index.html">文章</a><a href="{p}faq.html">FAQ</a><a href="{p}consult.html">諮詢</a></nav>\n'
+            f'<a href="{p}letters/index.html">文章</a><a href="{p}videos.html">影片</a><a href="{p}faq.html">FAQ</a>'
+            f'<a href="{p}consult.html">諮詢</a></nav>\n'
             f'      <p class="footer-links"><a href="{LINE_URL}" rel="noopener">官方 LINE</a>'
+            f'<a href="{YT_CHANNEL}" rel="noopener">YouTube</a>'
             f'<a href="{p}feed.xml">RSS</a></p>\n'
             f'      <p class="fine">{BRAND}｜{FOOTER_NOTE}</p>\n'
             f'      {LINE_FAB}\n'
@@ -136,7 +143,7 @@ def home_ld() -> str:
     return ld_block([
         {"@type": "WebSite", "name": BRAND, "url": SITE_URL + "/", "inLanguage": "zh-Hant",
          "description": SITE_DESC, "publisher": _org()},
-        {**_org(), "description": POSITIONING, "sameAs": [LINE_URL]},
+        {**_org(), "description": POSITIONING, "sameAs": [LINE_URL, YT_CHANNEL]},
     ])
 
 
@@ -209,6 +216,8 @@ def ld_for_page(text: str, page_path: Path) -> str:
         return ld_block(about_ld(text))
     if parent.name == "letters" and re.match(r"\d{3}", page_path.name):
         objs = article_ld(text, page_path, root)
+        if objs:
+            objs += [video_ld(v) for v in videos_for(root, f"letters/{page_path.name}")]
         return ld_block(objs) if objs else ""
     return ""
 
@@ -592,6 +601,7 @@ def render_home(metas: list[dict]) -> str:
     <div class="video-rail">
       {videos}
     </div>
+    <div class="center reveal"><a class="btn ghost" href="videos.html">看全部 YouTube 短影片</a></div>
   </section>
 
   <section class="section paths" aria-label="閱讀路徑">
@@ -654,7 +664,8 @@ def build_indexes(repo: Path, extra: dict[str, str] | None = None) -> dict[str, 
     """回傳 {"letters/index.html": ..., "index.html": ...}；extra＝尚未寫檔的新文章 {檔名: html}。"""
     metas = collect(repo, extra)
     return {"letters/index.html": render_letters_index(metas), "index.html": render_home(metas),
-            "letters/articles.json": render_articles_json(metas)}
+            "letters/articles.json": render_articles_json(metas),
+            "videos.html": render_videos_page(load_videos(repo), metas)}
 
 
 def render_articles_json(metas: list[dict]) -> str:
@@ -709,6 +720,8 @@ def render_llms_txt(repo: Path, extra: dict[str, str] | None = None) -> str:
             out.extend(["", f"## {head}", ""] + [_llms_line(*r) for r in rows])
 
     section("療程主題", [repo / "treatments.html"] + sorted((repo / "topics").glob("*.html")))
+    section("影片", [repo / "videos.html"])
+    out.append(f"- [YouTube 頻道]({YT_CHANNEL}): {BRAND}短影片，每支只講一個判斷題")
     section("好物清單", [repo / "picks.html"] + sorted((repo / "picks").glob("*.html")))
     section("關於", [repo / "about.html", repo / "faq.html", repo / "consult.html", repo / "letters" / "index.html"])
     out += [f"- [RSS 訂閱]({SITE_URL}/feed.xml): 文章更新的 RSS feed",
@@ -796,7 +809,7 @@ def _body_region(text: str) -> str:
         return ""
     ends = [x for x in (text.find(m, i) for m in ('<!--yubai:aeo-->', '<p class="hashtag-line">',
                                                    '<section class="letter-cta">', "</article>")) if x >= 0]
-    return text[i:min(ends)]
+    return VIDEO_RE.sub("", text[i:min(ends)])
 
 
 def _tags_of(text: str) -> list[str]:
@@ -995,8 +1008,12 @@ def enhance_page(text: str, page_path: Path, metas: list[dict] | None) -> str:
     name = page_path.name
     in_letters = page_path.parent.name == "letters" and re.match(r"\d{3}", name)
     text = AEO_RE.sub("", text)
+    text = VIDEO_RE.sub("", text)
     if in_letters:
         text = fix_md_leftovers(text)
+        vids = videos_for(root, f"letters/{name}")
+        if vids:
+            text = insert_article_video(text, article_video_block(vids))
     text = ensure_seo_head(text, page_path, root)
     if not (in_letters or page_path.parent.name == "topics" or name in ("about.html", "treatments.html")):
         return text
@@ -1028,12 +1045,203 @@ def enhance_page(text: str, page_path: Path, metas: list[dict] | None) -> str:
     return text
 
 
+# ---------------------------------------------------------------- 2026-10-24：YouTube 短影片（網站 ↔ 頻道互相導流）
+# 資料唯一來源＝data/videos.json（本機上架產線往後追加；欄位說明見 data/README.md）。
+# 播放器一律「先放縮圖、點了才換成 youtube-nocookie iframe」（yubai.js），不拖慢首屏、不先載入 YouTube 的追蹤碼。
+
+VIDEO_RE = re.compile(r"[ \t]*<!--yubai:video-->.*?<!--/yubai:video-->\n", re.S)   # 整行插入、整行拿掉，重套結果不變
+YT_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
+_VIDEOS_CACHE: dict = {}
+
+
+def load_videos(root: Path) -> list[dict]:
+    """讀 data/videos.json；格式不對的筆數跳過並在 stderr 提醒，不讓整站重套失敗。"""
+    f = root / "data" / "videos.json"
+    if not f.exists():
+        return []
+    key = (str(f), f.stat().st_mtime_ns)
+    if key not in _VIDEOS_CACHE:
+        try:
+            rows = json.loads(f.read_text(encoding="utf-8"))
+        except ValueError as e:
+            print(f"[videos] data/videos.json 不是合法 JSON，先略過影片：{e}", file=sys.stderr)
+            rows = []
+        out = []
+        for v in rows if isinstance(rows, list) else []:
+            if not (isinstance(v, dict) and YT_ID_RE.match(str(v.get("id", ""))) and str(v.get("title", "")).strip()):
+                print(f"[videos] 略過格式不對的一筆：{v!r}", file=sys.stderr)
+                continue
+            art = v.get("article") or None
+            if art and not (root / art).exists():
+                print(f"[videos] {v['id']} 的 article 找不到檔案（{art}），先當作沒有對應文章", file=sys.stderr)
+                art = None
+            out.append({**v, "title": v["title"].strip(), "article": art,
+                        "description": (v.get("description") or "").strip() or v["title"].strip()})
+        _VIDEOS_CACHE.clear()
+        _VIDEOS_CACHE[key] = out
+    return _VIDEOS_CACHE[key]
+
+
+def videos_for(root: Path, article_rel: str) -> list[dict]:
+    return [v for v in load_videos(root) if v["article"] == article_rel]
+
+
+def yt_watch(vid: str) -> str:
+    return f"https://www.youtube.com/shorts/{vid}"
+
+
+def yt_thumb(vid: str) -> str:
+    return f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg"
+
+
+def video_ld(v: dict) -> dict:
+    """VideoObject；uploadDate 只用 videos.json 的 publishedDate，沒填就不放（不編日期）。"""
+    vid = v["id"]
+    o = {"@type": "VideoObject", "name": v["title"], "description": v["description"], "thumbnailUrl": yt_thumb(vid)}
+    if v.get("publishedDate"):
+        o["uploadDate"] = v["publishedDate"]
+    o.update({"embedUrl": f"https://www.youtube.com/embed/{vid}", "contentUrl": yt_watch(vid),
+              "inLanguage": "zh-Hant", "publisher": _org()})
+    return o
+
+
+def yt_player(v: dict) -> str:
+    """沒有 JS 時就是一個連到 YouTube 的縮圖連結；有 JS 時點了才在原地載入播放器。"""
+    vid = v["id"]
+    return (f'<a class="y-yt" href="{yt_watch(vid)}" data-yt="{vid}" rel="noopener" aria-label="播放影片：{esc(v["title"])}">'
+            f'<img loading="lazy" decoding="async" src="{yt_thumb(vid)}" alt="" width="480" height="360" />'
+            f'<span class="y-yt-play" aria-hidden="true"></span></a>')
+
+
+def article_video_block(vids: list[dict]) -> str:
+    cards = "".join(
+        f'<aside class="y-yt-card" aria-label="這篇的短影片">{yt_player(v)}<div class="y-yt-text">'
+        f'<p class="y-yt-label">這篇有短影片版</p><p class="y-yt-title">{html.escape(v["title"], quote=False)}</p>'
+        f'<p>先花一點時間看影片，再往下讀完整整理。</p>'
+        f'<p class="y-yt-links"><a href="../videos.html">看全部短影片</a><a href="{YT_CHANNEL}" rel="noopener">到 YouTube 頻道</a></p>'
+        f'</div></aside>' for v in vids)
+    return f"<!--yubai:video-->{cards}<!--/yubai:video-->\n"
+
+
+def insert_article_video(text: str, block: str) -> str:
+    """放在正文第一個小標題（h2／h3）前：開場幾段讀完、正式進入重點之前；正文沒有小標題就放在正文最後。"""
+    i = text.find('<article class="letter-body">')
+    if i < 0:
+        return text
+    ends = [x for x in (text.find(m, i) for m in ('<!--yubai:aeo-->', '<p class="hashtag-line">',
+                                                   '<section class="letter-cta">', "</article>")) if x >= 0]
+    j = min(ends) if ends else len(text)
+    hs = [x for x in (text.find(h, i, j) for h in ("<h2", "<h3")) if x >= 0]
+    pos = min(hs) if hs else j
+    ls = text.rfind("\n", 0, pos) + 1
+    if text[ls:pos].strip():
+        ls = pos            # 目標不在行首：直接貼在它前面
+    return text[:ls] + text[ls:pos] + block + text[ls:]
+
+
+def _topic_for(topic: str) -> tuple[str, str] | None:
+    return next(((l, f) for l, f, kw in TOPIC_PAGES if topic and re.search(kw, topic, re.I)), None)
+
+
+def _videos_sorted(videos: list[dict]) -> list[dict]:
+    # 有上架日期的新到舊；日期相同或都沒填時維持 videos.json 的順序
+    return sorted(videos, key=lambda v: v.get("publishedDate") or "", reverse=True)
+
+
+def render_videos_page(videos: list[dict], metas: list[dict]) -> str:
+    titles = {f"letters/{a['file']}": a["title"] for a in metas}
+    page_url = f"{SITE_URL}/videos.html"
+    cards = []
+    for v in _videos_sorted(videos):
+        links = []
+        if v["article"] and v["article"] in titles:
+            links.append(f'<a href="{esc(v["article"])}">完整文章：{html.escape(titles[v["article"]], quote=False)}</a>')
+        elif tp := _topic_for(v.get("topic", "")):
+            links.append(f'<a href="{tp[1]}">相關療程主題：{tp[0]}</a>')
+        links.append(f'<a href="{yt_watch(v["id"])}" rel="noopener">在 YouTube 看</a>')
+        cards.append(f'            <article class="y-vid">\n              {yt_player(v)}\n'
+                     f'              <h2>{html.escape(v["title"], quote=False)}</h2>\n'
+                     f'              <p>{html.escape(v["description"], quote=False)}</p>\n'
+                     f'              <p class="y-yt-links">{"".join(links)}</p>\n            </article>')
+    desc = "蘇菲餘白的 YouTube 短影片總覽：一支影片只講一個醫美或健康判斷題，有寫成文章的，影片下面直接附上完整文章。"
+    ld = ld_block([{
+        "@type": "CollectionPage", "name": f"{BRAND}短影片", "url": page_url, "inLanguage": "zh-Hant", "description": desc,
+        "isPartOf": {"@type": "WebSite", "name": BRAND, "url": SITE_URL + "/"},
+        "mainEntity": {"@type": "ItemList", "itemListElement": [
+            {"@type": "ListItem", "position": k + 1, "item": video_ld(v)} for k, v in enumerate(_videos_sorted(videos))]},
+    }]) if videos else ""
+    return f"""<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>短影片｜{BRAND}</title>
+    <meta name="description" content="{esc(desc)}" />
+    <meta property="og:title" content="短影片｜{BRAND}" />
+    <meta property="og:description" content="{esc(desc)}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="{SITE_URL}/assets/sophie-portrait-clinic.jpg" />
+    <link rel="canonical" href="{page_url}" />
+    {head_block("")}
+    {ld}
+  </head>
+  <body>
+    {header_block("")}
+    <main>
+      <section class="page-hero">
+        <div class="section-inner page-hero-narrow">
+          <p class="eyebrow">Video Notes</p>
+          <h1>短影片</h1>
+          <p class="letter-dek">一支短片只講一個問題。想看來龍去脈，影片下面有完整文章可以接著讀；新影片會先上 YouTube 頻道。</p>
+          <div class="hero-actions">
+            <a class="button primary" href="{YT_CHANNEL}" rel="noopener">到 YouTube 頻道</a>
+            <a class="button secondary" href="letters/index.html">看全部文章</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-inner">
+          <div class="y-vids">
+{chr(10).join(cards)}
+          </div>
+        </div>
+      </section>
+    </main>
+    {footer_block("")}
+    {script_block("")}
+  </body>
+</html>
+"""
+
+
+def ensure_sitemap_entry(repo: Path, rel: str, lastmod: str, bump: bool) -> bool:
+    """sitemap.xml 沒有這一頁就補上；bump＝這次內容有變，lastmod 換成今天。回傳有沒有改檔。"""
+    sm = repo / "sitemap.xml"
+    if not sm.exists():
+        return False
+    t = sm.read_text(encoding="utf-8")
+    loc = f"{SITE_URL}/{rel}"
+    m = re.search(r"<loc>" + re.escape(loc) + r"</loc>(\s*<lastmod>)([^<]*)(</lastmod>)", t)
+    if m:
+        if not bump or m.group(2) == lastmod:
+            return False
+        t = t[:m.start(2)] + lastmod + t[m.end(2):]
+    elif "</urlset>" in t:
+        t = t.replace("</urlset>", f"  <url><loc>{loc}</loc><lastmod>{lastmod}</lastmod></url>\n</urlset>", 1)
+    else:
+        return False
+    sm.write_text(t, encoding="utf-8", newline="\n")
+    return True
+
+
 # ---------------------------------------------------------------- 全站重套
 
 def apply_theme(repo: Path) -> list[str]:
     touched = []
     # picks.html 由 affiliate_sync.py 自己產（已用同一組 head/header/footer 函式），不在這裡重套，免得兩邊互相改空白造成每次都有 diff
-    targets = [(f, "") for f in repo.glob("*.html") if f.name not in ("index.html", "404.html", "picks.html")]
+    # videos.html 由 build_indexes 整頁產生，也不重套
+    targets = [(f, "") for f in repo.glob("*.html") if f.name not in ("index.html", "404.html", "picks.html", "videos.html")]
     targets += [(f, "../") for f in (repo / "letters").glob("*.html") if f.name != "index.html"]
     targets += [(f, "../") for f in (repo / "topics").glob("*.html")]
     for f, p in targets:
@@ -1049,8 +1257,14 @@ def apply_theme(repo: Path) -> list[str]:
         if not f.exists() or f.read_text(encoding="utf-8") != text:
             f.write_text(text, encoding="utf-8", newline="\n")
             touched.append(rel)
+    if ensure_sitemap_entry(repo, "videos.html", date.today().isoformat(), "videos.html" in touched):
+        touched.append("sitemap.xml")
     if write_llms(repo):
         touched.append("llms.txt")
+    missing = [v["id"] for v in load_videos(repo) if not v.get("publishedDate")]
+    if missing:
+        print(f"[videos] {len(missing)} 支影片還沒填 publishedDate（VideoObject 會缺 uploadDate）：{', '.join(missing)}",
+              file=sys.stderr)
     return touched
 
 

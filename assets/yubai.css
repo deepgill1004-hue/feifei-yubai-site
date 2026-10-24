@@ -329,3 +329,27 @@ h1 { color: var(--y-ink); font-weight: 900; letter-spacing: 0.02em; }
 .letter-body h3 { margin: 34px 0 6px; font-size: clamp(19px, 1.9vw, 23px); color: var(--y-ink); }
 .letter-body .y-video { margin: 24px 0; padding: 14px 18px; border: 1px dashed var(--y-gold); }
 .letter-body .y-video a { color: var(--y-wine); }
+
+/* 2026-10-24：YouTube 短影片（先放縮圖、點了才載入 youtube-nocookie 播放器）、文章內影片卡、影片總覽頁 */
+.y-yt { position: relative; display: block; width: 100%; aspect-ratio: 9 / 16; overflow: hidden; background: var(--y-dark); border-radius: 2px; }
+.y-yt img { display: block; width: 100%; height: 100%; object-fit: cover; filter: var(--y-grade); transition: transform 0.5s var(--y-ease); }
+a.y-yt:hover img { transform: scale(1.03); }
+.y-yt iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.y-yt-play { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; background: rgba(15, 14, 13, 0.62); border: 1px solid rgba(239, 232, 222, 0.7); transition: background 0.3s; }
+.y-yt-play::after { content: ""; position: absolute; left: 26px; top: 20px; border-style: solid; border-width: 12px 0 12px 19px; border-color: transparent transparent transparent var(--y-light); }
+a.y-yt:hover .y-yt-play, a.y-yt:focus-visible .y-yt-play { background: var(--y-wine); }
+.y-yt-card { display: grid; grid-template-columns: 190px 1fr; gap: 22px; align-items: center; margin: 30px 0 34px; padding: 18px; background: var(--y-paper); border: 1px solid var(--y-line); }
+.letter-body .y-yt-card p { margin: 0 0 10px; font-size: 15.5px; line-height: 1.8; color: var(--y-muted); }
+.letter-body .y-yt-card .y-yt-label { margin-bottom: 6px; font-size: 12.5px; letter-spacing: 0.14em; color: var(--y-wine); font-weight: 700; }
+.letter-body .y-yt-card .y-yt-title { font-family: var(--y-serif); font-size: clamp(18px, 1.8vw, 21px); line-height: 1.5; font-weight: 700; color: var(--y-ink); }
+.y-yt-links { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0; }
+.y-yt-links a { color: var(--y-wine); text-decoration: underline; text-underline-offset: 3px; font-size: 15px; line-height: 1.7; }
+.y-vids { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 36px 24px; }
+.y-vid h2 { margin: 16px 0 8px; font-size: clamp(18px, 1.7vw, 21px); line-height: 1.5; }
+.y-vid p { margin: 0 0 10px; font-size: 15.5px; line-height: 1.8; color: var(--y-muted); }
+.y-vid .y-yt { max-width: 320px; }
+@media (max-width: 640px) {
+  .y-yt-card { grid-template-columns: 1fr; gap: 16px; }
+  .y-yt-card .y-yt { max-width: 240px; margin: 0 auto; }
+  .y-vid .y-yt { max-width: 280px; margin: 0 auto; }
+}
