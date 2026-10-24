@@ -1156,7 +1156,8 @@ def video_ld(v: dict) -> dict:
 
 
 # Shorts 是直式影片：hqdefault（480×360 橫圖）裡真正有畫面的只剩中間約 200px 寬，放大成直式卡片會糊。
-# 依序試：原比例直式縮圖 oardefault → 高解析橫圖 maxresdefault → hqdefault；前一張抓不到才換下一張，不會破圖。
+# 依序試：原比例直式縮圖 oardefault → 高解析橫圖 maxresdefault → hqdefault。
+# 注意：縮圖不存在時 YouTube 不一定回錯誤，常回一張 120×90 的灰色佔位圖，所以載入後也要檢查寬度，≤120 就換下一張。
 YT_THUMB_CHAIN = ("oardefault", "maxresdefault", "hqdefault")
 
 
@@ -1165,9 +1166,10 @@ def yt_player(v: dict) -> str:
     vid = v["id"]
     urls = [f"https://i.ytimg.com/vi/{vid}/{k}.jpg" for k in YT_THUMB_CHAIN]
     fallback = ("var n=(this.dataset.next||'').split(' ').filter(Boolean);"
-                "if(n.length){this.src=n.shift();this.dataset.next=n.join(' ')}else{this.onerror=null}")
+                "if(n.length){this.src=n.shift();this.dataset.next=n.join(' ')}else{this.onerror=this.onload=null}")
+    check = f"if(this.naturalWidth&&this.naturalWidth<=120){{{fallback}}}"
     return (f'<a class="y-yt" href="{yt_watch(vid)}" data-yt="{vid}" rel="noopener" aria-label="播放影片：{esc(v["title"])}">'
-            f'<img loading="lazy" decoding="async" src="{urls[0]}" data-next="{" ".join(urls[1:])}" onerror="{fallback}" alt="" width="1080" height="1920" />'
+            f'<img loading="lazy" decoding="async" src="{urls[0]}" data-next="{" ".join(urls[1:])}" onerror="{fallback}" onload="{check}" alt="" width="1080" height="1920" />'
             f'<span class="y-yt-play" aria-hidden="true"></span></a>')
 
 
