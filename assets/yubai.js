@@ -94,6 +94,25 @@
     });
   });
 
+  // YouTube 短影片：頁面上只有縮圖，點了才換成 youtube-nocookie 播放器（不拖慢首屏）；沒有 JS 時就是連到 YouTube 的連結
+  document.querySelectorAll("a.y-yt[data-yt]").forEach((a) => {
+    const id = a.dataset.yt;
+    if (!/^[\w-]{11}$/.test(id)) return;
+    a.addEventListener("click", (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey) return;
+      e.preventDefault();
+      const box = document.createElement("div");
+      box.className = "y-yt";
+      const f = document.createElement("iframe");
+      f.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&playsinline=1&rel=0`;
+      f.title = a.getAttribute("aria-label") || "YouTube 影片";
+      f.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+      f.allowFullscreen = true;
+      box.appendChild(f);
+      a.replaceWith(box);
+    });
+  });
+
   // 文章列表：搜尋＋主題篩選＋大圖/小圖（記住讀者上次選的版面）
   const toolbar = document.querySelector(".y-toolbar");
   const list = document.querySelector(".letter-list.y-cards");
