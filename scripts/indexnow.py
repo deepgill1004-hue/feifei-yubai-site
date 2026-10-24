@@ -2,8 +2,8 @@
 r"""
 indexnow.py -- 把網址通知 IndexNow（Bing／ChatGPT 搜尋／Copilot 等收錄管道）
 
-key 檔放在站台根目錄 <KEY>.txt（內容＝KEY）。網站在子路徑 /feifei-yubai-site/，
-所以 keyLocation 明確指到該子路徑下，且送出的網址都必須在同一前綴底下。
+key 檔放在站台根目錄 <KEY>.txt（內容＝KEY）。2026-10-24 起網站改用自有網域 sophieyubai.com（根目錄），
+keyLocation 指到 https://sophieyubai.com/<KEY>.txt，送出的網址都必須在這個網域底下。
 
 被誰呼叫（失敗只記 log、絕不讓上架失敗）：
   * weekly-linkedin-vocus\scripts\site_publish.py   新文章 push 成功後送「該篇＋文章列表＋首頁」
@@ -24,8 +24,8 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-SITE_URL = "https://deepgill1004-hue.github.io/feifei-yubai-site"
-HOST = "deepgill1004-hue.github.io"
+SITE_URL = "https://sophieyubai.com"
+HOST = "sophieyubai.com"
 KEY = "b41da6231eadc9ff7e23d34b01a687d1"
 KEY_LOCATION = f"{SITE_URL}/{KEY}.txt"
 ENDPOINT = "https://api.indexnow.org/indexnow"

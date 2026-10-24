@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 
-const SITE_URL = "https://deepgill1004-hue.github.io/feifei-yubai-site/";
+const SITE_URL = "https://sophieyubai.com/";
 const LINE_URL = "https://line.me/R/ti/p/@371arhqu";
 const root = process.cwd();
 const dailyDocsRoot = process.env.SOPHIE_DAILY_DOCS_DIR
