@@ -31,6 +31,7 @@ from pathlib import Path
 SITE_URL = "https://deepgill1004-hue.github.io/feifei-yubai-site"
 LINE_URL = "https://line.me/R/ti/p/@371arhqu"
 YT_CHANNEL = "https://www.youtube.com/channel/UCq-gFBlAjGaeJ6UAzMXzuyw"
+FB_PAGE = "https://www.facebook.com/profile.php?id=100080504551842"
 BRAND = "蘇菲餘白"
 # 對外定位句：首頁、關於頁、llms.txt 三處用字完全一致（2026-10-20 協調員指定）；FB／YouTube 簡介第一句請貼同一句
 POSITIONING = ("蘇菲餘白專注大健康與自費醫美，由護理師、心臟醫材、醫美營運出身的蘇菲，"
@@ -98,7 +99,7 @@ def footer_block(p: str) -> str:
             f'<a href="{p}letters/index.html">文章</a><a href="{p}videos.html">影片</a><a href="{p}faq.html">FAQ</a>'
             f'<a href="{p}consult.html">諮詢</a></nav>\n'
             f'      <p class="footer-links"><a href="{LINE_URL}" rel="noopener">官方 LINE</a>'
-            f'<a href="{YT_CHANNEL}" rel="noopener">YouTube</a>'
+            f'<a href="{YT_CHANNEL}" rel="noopener">YouTube</a><a href="{FB_PAGE}" rel="noopener">Facebook</a>'
             f'<a href="{p}feed.xml">RSS</a></p>\n'
             f'      <p class="fine">{BRAND}｜{FOOTER_NOTE}</p>\n'
             f'      {LINE_FAB}\n'
@@ -143,7 +144,7 @@ def home_ld() -> str:
     return ld_block([
         {"@type": "WebSite", "name": BRAND, "url": SITE_URL + "/", "inLanguage": "zh-Hant",
          "description": SITE_DESC, "publisher": _org()},
-        {**_org(), "description": POSITIONING, "sameAs": [LINE_URL, YT_CHANNEL]},
+        {**_org(), "description": POSITIONING, "sameAs": [LINE_URL, YT_CHANNEL, FB_PAGE]},
     ])
 
 
