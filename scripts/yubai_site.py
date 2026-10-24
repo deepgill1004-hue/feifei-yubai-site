@@ -1275,6 +1275,10 @@ def render_checklist_page() -> str:
     <title>醫美消費前必問的 7 個問題｜{BRAND}</title>
     <meta name="robots" content="noindex" />
     <meta name="description" content="進診間前，把這 7 題問清楚：想改善什麼、療程處理哪一層、不如預期怎麼辦、恢復期能不能配合、預算怎麼抓、哪些話要先停、出事誰負責。" />
+    <meta property="og:title" content="醫美消費前必問的 7 個問題｜{BRAND}" />
+    <meta property="og:description" content="進診間前先問清楚，截圖存著，諮詢時一題一題對。" />
+    <meta property="og:type" content="article" />
+    <meta property="og:image" content="{SITE_URL}/assets/line/checklist-card.jpg" />
     <link rel="canonical" href="{SITE_URL}/checklist.html" />
     {head_block("")}
   </head>
