@@ -951,8 +951,8 @@ def ensure_cta_links(text: str) -> str:
 
 
 CTA_LINE_RE = re.compile(r"<!--yubai:ctaline-->.*?<!--/yubai:ctaline-->", re.S)
-# 官方 LINE「加入好友的歡迎訊息」放上 checklist.html 連結之後，才改回「加入 LINE，領諮詢前必問清單」
-CTA_LINE_TEXT = "加入官方 LINE"
+# 官方 LINE「加入好友的歡迎訊息」已放 checklist.html 圖文訊息（2026-10-24 蘇菲確認）；歡迎訊息若拿掉清單，這行要改回「加入官方 LINE」
+CTA_LINE_TEXT = "加入 LINE，領諮詢前必問清單"
 
 
 def ensure_cta_line_button(text: str) -> str:
