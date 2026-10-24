@@ -349,10 +349,19 @@ def article_meta(name: str, text: str, repo: Path) -> dict | None:
     title = _strip(h1.group(1))
     body = _strip(_body_region(text))
     cats = _score_cats(title, body)
+    col = _column_of(title, body)
+    if img_rel is None:
+        og = _meta_content(text, "property", "og:image")
+        cand = og[len(SITE_URL) + 1:] if og.startswith(SITE_URL + "/") else ""
+        if not (cand and (repo / urllib.parse.unquote(cand)).exists()):
+            cand = f"assets/{fallback_img(m.group(1))}.jpg"
+        target = repo / urllib.parse.unquote(cand)
+        webp = target.with_suffix(".webp")
+        img_rel = urllib.parse.quote((webp if webp.exists() else target).relative_to(repo).as_posix())
     return {
         "file": name, "issue": m.group(1), "title": title,
         "desc": html.unescape(desc.group(1)) if desc else "", "date": date_s, "img": img_rel,
-        "tags": _tags_of(text), "cats": cats, "col": _column_of(title, body),
+        "tags": _tags_of(text), "cats": cats, "col": col,
     }
 
 
@@ -778,6 +787,17 @@ COLUMNS = [
 ]
 
 
+# 文章自己沒有任何圖片（例如 AEO 模板新文章）時，卡片、og:image、JSON-LD 用的預設圖：同一位蘇菲，依期數輪替
+# （圖庫有限，沒圖的文章一多還是會撞圖；根本解法是上架時每篇自帶主視覺）
+FALLBACK_IMGS = ["home/hero-clinic", "sophie-lib/consult-listen-beige", "sophie-lib/consult-reading", "sophie-lib/formal-seated",
+                 "sophie-lib/consult-listen-cup", "sophie-lib/filler-vials", "sophie-lib/consent-signing"]
+
+
+def fallback_img(issue: str) -> str:
+    """回傳 assets/ 底下的路徑（不含副檔名）。從 093 起算，第一篇沒圖的文章用 hero-clinic（目前沒有其他文章用）。"""
+    return FALLBACK_IMGS[(int(issue) - 93) % len(FALLBACK_IMGS)]
+
+
 def _load_columns() -> list[tuple[str, str, re.Pattern]]:
     names = {c[0]: c[1] for c in COLUMNS}
     kws = {c[0]: c[2] for c in COLUMNS}
@@ -1049,6 +1069,9 @@ def enhance_page(text: str, page_path: Path, metas: list[dict] | None) -> str:
         me = next((a for a in metas if a["file"] == name), None)
         if not me:
             return text
+        if not re.search(r'<meta property="og:image"', text):
+            og = f'<meta property="og:image" content="{SITE_URL}/assets/{fallback_img(me["issue"])}.jpg" />'
+            text = re.sub(r"(</title>)", lambda m: m.group(1) + "\n    " + og, text, count=1)
         if '<section class="letter-cta">' in text:
             text = re.sub(r'\s*<section class="letter-cta">',
                           lambda _: "\n          " + article_aeo_block(me, metas, False) + '\n          <section class="letter-cta">',
