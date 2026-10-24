@@ -28,7 +28,7 @@ import urllib.parse
 from datetime import date
 from pathlib import Path
 
-SITE_URL = "https://deepgill1004-hue.github.io/feifei-yubai-site"
+SITE_URL = "https://sophieyubai.com"
 LINE_URL = "https://line.me/R/ti/p/@371arhqu"
 YT_CHANNEL = "https://www.youtube.com/channel/UCq-gFBlAjGaeJ6UAzMXzuyw"
 FB_PAGE = "https://www.facebook.com/profile.php?id=100080504551842"

@@ -12,7 +12,7 @@ from xml.sax.saxutils import escape
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_DIR = ROOT / "outputs" / "sophie-fb-2026-05-26-to-2026-06-01"
-SITE_URL = "https://deepgill1004-hue.github.io/feifei-yubai-site"
+SITE_URL = "https://sophieyubai.com"
 ASSET_VERSION = "20260531-1"
 
 
@@ -320,10 +320,10 @@ def update_sitemap(items: str) -> None:
         "\n",
         text,
     )
-    text = text.replace("  <url>\n    <loc>https://deepgill1004-hue.github.io/feifei-yubai-site/letters/</loc>\n    <lastmod>2026-05-21</lastmod>\n  </url>",
-                        "  <url>\n    <loc>https://deepgill1004-hue.github.io/feifei-yubai-site/letters/</loc>\n    <lastmod>2026-06-01</lastmod>\n  </url>",
+    text = text.replace("  <url>\n    <loc>https://sophieyubai.com/letters/</loc>\n    <lastmod>2026-05-21</lastmod>\n  </url>",
+                        "  <url>\n    <loc>https://sophieyubai.com/letters/</loc>\n    <lastmod>2026-06-01</lastmod>\n  </url>",
                         1)
-    marker = "  <url>\n    <loc>https://deepgill1004-hue.github.io/feifei-yubai-site/letters/012-regenerative-medicine-structure-reset.html</loc>"
+    marker = "  <url>\n    <loc>https://sophieyubai.com/letters/012-regenerative-medicine-structure-reset.html</loc>"
     text = text.replace(marker, items + marker, 1)
     text = re.sub(r"\n{3,}", "\n\n", text)
     path.write_text(text, encoding="utf-8", newline="\n")
