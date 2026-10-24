@@ -36,7 +36,7 @@ BRAND = "蘇菲餘白"
 # 對外定位句：首頁、關於頁、llms.txt 三處用字完全一致（2026-10-20 協調員指定）；FB／YouTube 簡介第一句請貼同一句
 POSITIONING = ("蘇菲餘白專注大健康與自費醫美，由護理師、心臟醫材、醫美營運出身的蘇菲，"
                "把複雜的健康與療程資訊翻成一般人看得懂的判斷。")
-ASSET_VER = "20261024"
+ASSET_VER = "20261024b"
 FOOTER_NOTE = "內容僅供衛教與消費判斷參考，不取代醫師診療或個別法律意見。"
 # 文章列表的主題篩選鈕：（顯示文字, 關鍵字以 | 分隔，比對標題＋摘要）
 CHIPS = [
@@ -82,13 +82,15 @@ def head_block(p: str, home: bool = False) -> str:
 
 
 def header_block(p: str) -> str:
+    # 手機版（≤900px、有 JS）：連結收進「選單」，LINE 鈕留在頁首；沒有 JS 時維持原本只露療程主題／文章的樣子
     return (f'<header class="site-header" aria-label="主要導覽">\n'
             f'      <a class="brand" href="{p}index.html" aria-label="回到首頁">{BRAND}</a>\n'
-            f'      <nav><a class="m-hide" href="{p}about.html">關於</a><a href="{p}treatments.html">療程主題</a>'
+            f'      <div class="y-head-r"><nav id="y-nav"><a class="m-hide" href="{p}about.html">關於</a><a href="{p}treatments.html">療程主題</a>'
             f'<a href="{p}letters/index.html">文章</a><a class="m-hide" href="{p}videos.html">影片</a>'
             f'<a class="m-hide" href="{p}faq.html">FAQ</a>'
-            f'<a class="m-hide" href="{p}consult.html">諮詢</a>'
-            f'<a class="nav-cta" href="{LINE_URL}" rel="noopener">加入 LINE</a></nav>\n'
+            f'<a class="m-hide" href="{p}consult.html">諮詢</a></nav>'
+            f'<button class="y-menu-btn" type="button" aria-expanded="false" aria-controls="y-nav">選單</button>'
+            f'<a class="nav-cta" href="{LINE_URL}" rel="noopener">加入 LINE</a></div>\n'
             f'    </header>')
 
 
@@ -421,7 +423,7 @@ def render_letters_index(metas: list[dict]) -> str:
               <a class="button secondary" href="#letters">看全部 {n} 篇</a>
             </div>
           </div>
-          <figure class="letter-portrait"><img src="../assets/sophie-portrait-laugh.webp" alt="蘇菲在診所場景中整理醫美文章" /></figure>
+          <figure class="letter-portrait y-hide-m"><img src="../assets/sophie-portrait-laugh.webp" alt="蘇菲在診所場景中整理醫美文章" /></figure>
         </div>
       </section>
 
@@ -947,6 +949,27 @@ def ensure_cta_links(text: str) -> str:
     return text[:m.start()] + sec2 + text[m.end():]
 
 
+CTA_LINE_RE = re.compile(r"<!--yubai:ctaline-->.*?<!--/yubai:ctaline-->", re.S)
+CTA_LINE_TEXT = "加入 LINE，領諮詢前必問清單"
+
+
+def ensure_cta_line_button(text: str) -> str:
+    """文末 CTA 是讀完全文、最想行動的位置：沒有 LINE 按鈕就補一顆放在按鈕列最前面（明文連結清單照舊保留）。"""
+    text = CTA_LINE_RE.sub("", text)
+    m = re.search(r'<section class="letter-cta">.*?</section>', text, re.S)
+    if not m:
+        return text
+    sec = m.group(0)
+    if re.search(r'<a class="button[^"]*" href="' + re.escape(LINE_URL), sec):
+        return text
+    btn = f'<a class="button y-cta-line" href="{LINE_URL}" rel="noopener">{CTA_LINE_TEXT}</a>'
+    if '<div class="panel-actions">' in sec:
+        sec2 = sec.replace('<div class="panel-actions">', '<div class="panel-actions"><!--yubai:ctaline-->' + btn + "<!--/yubai:ctaline-->", 1)
+    else:
+        sec2 = sec[:-len("</section>")] + '<!--yubai:ctaline--><div class="panel-actions">' + btn + "</div><!--/yubai:ctaline--></section>"
+    return text[:m.start()] + sec2 + text[m.end():]
+
+
 def _li(href: str, title: str, tail: str = "") -> str:
     return f'<li><a href="{href}">{html.escape(title, quote=False)}</a>{tail}</li>'
 
@@ -1032,6 +1055,7 @@ def enhance_page(text: str, page_path: Path, metas: list[dict] | None) -> str:
         elif "</article>" in text:
             text = re.sub(r"\s*</article>", lambda _: "\n        " + article_aeo_block(me, metas, True) + "\n      </article>",
                           text, count=1)
+        text = ensure_cta_line_button(text)
     elif page_path.parent.name == "topics":
         label = next((l for l, f, _ in TOPIC_PAGES if f == f"topics/{name}"), None)
         if label and "</main>" in text:

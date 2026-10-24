@@ -267,3 +267,6 @@ h1, h2, h3 { text-wrap: balance; }
 }
 
 @media (max-width: 900px) { .journal-rail, .topic-rail, .video-rail { scroll-padding-inline: var(--pad); } }
+
+/* 2026-10-24b：手機首屏數據列往上讓，不被右下角 LINE 按鈕壓到 */
+@media (max-width: 900px) { .hero-foot { margin-bottom: 64px; } }

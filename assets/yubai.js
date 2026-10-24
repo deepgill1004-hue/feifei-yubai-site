@@ -9,9 +9,22 @@
   // 頁首：離開首屏後變實底
   const header = document.querySelector(".site-header");
   if (header) {
-    const onScroll = () => header.classList.toggle("scrolled", window.scrollY > 40);
+    const onScroll = () => header.classList.toggle("scrolled", window.scrollY > 40 || header.classList.contains("menu-open"));
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
+    // 手機版「選單」：展開時頁首改實底，點選單外、按 Esc 都會收起
+    const btn = header.querySelector(".y-menu-btn");
+    if (btn) {
+      const setOpen = (open) => {
+        header.classList.toggle("menu-open", open);
+        btn.setAttribute("aria-expanded", String(open));
+        btn.textContent = open ? "關閉" : "選單";
+        onScroll();
+      };
+      btn.addEventListener("click", () => setOpen(!header.classList.contains("menu-open")));
+      document.addEventListener("click", (e) => { if (!header.contains(e.target)) setOpen(false); });
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape") setOpen(false); });
+    }
   }
 
   // 首頁 Hero 輪播

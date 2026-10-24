@@ -353,3 +353,28 @@ a.y-yt:hover .y-yt-play, a.y-yt:focus-visible .y-yt-play { background: var(--y-w
   .y-yt-card .y-yt { max-width: 240px; margin: 0 auto; }
   .y-vid .y-yt { max-width: 280px; margin: 0 auto; }
 }
+
+/* 2026-10-24b：手機轉換優化——頁首選單、文末 LINE 主按鈕、手機文章頁首圖縮短、文章列表手機不放大頭照 */
+.y-head-r { display: flex; align-items: center; gap: 24px; font-size: 14px; }
+.y-menu-btn { display: none; }
+.letter-cta .y-cta-line, .letter-cta .button[href^="https://line.me"] { background: #06c755; border-color: #06c755; color: #fff; font-weight: 700; }
+.letter-cta .y-cta-line:hover, .letter-cta .button[href^="https://line.me"]:hover { background: #05b14b; border-color: #05b14b; color: #fff; }
+.letter-cta .letter-checks li { font-size: 13.5px; line-height: 1.7; color: rgba(239, 232, 222, 0.6); }
+@media (max-width: 900px) {
+  .y-head-r { gap: 10px; font-size: 13px; }
+  .y-js .y-menu-btn { display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border: 1px solid currentColor; border-radius: 99px; background: transparent; color: inherit; font: inherit; font-size: 13px; letter-spacing: 0.08em; cursor: pointer; opacity: 0.88; }
+  .y-js .site-header .y-head-r nav { display: none; }
+  .y-js .site-header.menu-open .y-head-r nav { display: flex; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; align-items: stretch; gap: 0; padding: 4px 16px 14px; background: var(--y-paper); color: var(--y-ink); border-bottom: 1px solid var(--y-line); box-shadow: 0 24px 40px -24px rgba(40, 28, 18, 0.45); font-size: 16px; }
+  .y-js .site-header.menu-open .y-head-r nav a { display: block; padding: 14px 4px; border-bottom: 1px solid var(--y-line); color: var(--y-ink); }
+  .y-js .site-header.menu-open .y-head-r nav a:last-child { border-bottom: 0; }
+  .letter-cta .panel-actions .button { flex: 1 1 100%; justify-content: center; text-align: center; }
+  .y-hide-m { display: none !important; }
+  .letter-masthead-grid { gap: 28px; }
+}
+@media (max-width: 520px) {
+  .letter-masthead { padding-bottom: 40px; }
+  .letter-masthead .letter-dek { font-size: 16px; line-height: 1.8; }
+  .letter-meta-row { gap: 6px; margin-top: 18px; }
+  .letter-meta-row span { padding: 3px 10px; font-size: 12.5px; }
+  .letter-masthead .letter-portrait img { aspect-ratio: 16 / 10; object-position: 50% 28%; }
+}
