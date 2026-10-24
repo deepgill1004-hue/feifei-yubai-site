@@ -1,2 +1,4 @@
 _shot-*.png
 .edge-profile/
+__pycache__/
+*.pyc
