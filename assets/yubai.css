@@ -378,3 +378,16 @@ a.y-yt:hover .y-yt-play, a.y-yt:focus-visible .y-yt-play { background: var(--y-w
   .letter-meta-row span { padding: 3px 10px; font-size: 12.5px; }
   .letter-masthead .letter-portrait img { aspect-ratio: 16 / 10; object-position: 50% 28%; }
 }
+
+/* 2026-10-24c：LINE 歡迎訊息用的「醫美消費前必問的 7 個問題」清單頁（checklist.html） */
+.y-ck { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.y-ck li { display: grid; grid-template-columns: 48px 1fr; gap: 14px; padding: 18px 20px; background: var(--y-paper); border-left: 3px solid var(--y-wine); }
+.y-ck li > span { font-family: var(--y-latin); font-size: 26px; line-height: 1.2; color: var(--y-wine); }
+.y-ck h2 { margin: 0; font-size: clamp(18px, 1.9vw, 21px); line-height: 1.6; color: var(--y-ink); }
+.y-ck p { margin: 10px 0 0; font-size: 16px; line-height: 1.85; color: var(--y-muted); }
+.y-ck .y-ck-read { font-size: 14.5px; }
+.y-ck .y-ck-read a { display: block; margin-top: 4px; color: var(--y-wine); text-decoration: underline; text-underline-offset: 3px; }
+.y-ck-note { margin: 28px 0 18px; font-size: 15px; line-height: 1.85; color: var(--y-muted); }
+@media (max-width: 640px) { .y-ck li { grid-template-columns: 36px 1fr; gap: 10px; padding: 16px; } .y-ck li > span { font-size: 22px; } }
+.letter-body .y-body-img { margin: 32px 0; }
+.letter-body .y-body-img img { display: block; width: 100%; max-width: 560px; height: auto; border-radius: 4px; filter: var(--y-grade); }

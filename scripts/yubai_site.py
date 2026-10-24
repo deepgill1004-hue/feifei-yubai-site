@@ -36,7 +36,7 @@ BRAND = "蘇菲餘白"
 # 對外定位句：首頁、關於頁、llms.txt 三處用字完全一致（2026-10-20 協調員指定）；FB／YouTube 簡介第一句請貼同一句
 POSITIONING = ("蘇菲餘白專注大健康與自費醫美，由護理師、心臟醫材、醫美營運出身的蘇菲，"
                "把複雜的健康與療程資訊翻成一般人看得懂的判斷。")
-ASSET_VER = "20261024b"
+ASSET_VER = "20261024c"
 FOOTER_NOTE = "內容僅供衛教與消費判斷參考，不取代醫師診療或個別法律意見。"
 # 文章列表的主題篩選鈕：（顯示文字, 關鍵字以 | 分隔，比對標題＋摘要）
 CHIPS = [
@@ -404,7 +404,7 @@ def render_letters_index(metas: list[dict]) -> str:
     <meta name="description" content="蘇菲餘白文章庫：每篇只拆一個醫美判斷題，從療程、預算、風險到診所話術，幫你把問題問對。" />
     <meta property="og:title" content="《蘇菲餘白》文章｜醫美判斷力筆記" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="{SITE_URL}/assets/sophie-portrait-laugh.jpg" />
+    <meta property="og:image" content="{SITE_URL}/assets/sophie-lib/consult-listen-cup.jpg" />
     <link rel="canonical" href="{SITE_URL}/letters/" />
     <link rel="alternate" type="application/rss+xml" title="{BRAND}" href="../feed.xml" />
     {head_block("../")}
@@ -423,7 +423,7 @@ def render_letters_index(metas: list[dict]) -> str:
               <a class="button secondary" href="#letters">看全部 {n} 篇</a>
             </div>
           </div>
-          <figure class="letter-portrait y-hide-m"><img src="../assets/sophie-portrait-laugh.webp" alt="蘇菲在診所場景中整理醫美文章" /></figure>
+          <figure class="letter-portrait y-hide-m"><img src="../assets/sophie-lib/consult-listen-cup.webp" alt="蘇菲端著咖啡，坐在諮詢室裡聽諮詢者說話" /></figure>
         </div>
       </section>
 
@@ -544,7 +544,7 @@ def render_home(metas: list[dict]) -> str:
 <meta property="og:title" content="蘇菲餘白｜醫美判斷力與療程諮詢筆記" />
 <meta property="og:description" content="做醫美前，先把療程、預算、風險與診所話術看懂。" />
 <meta property="og:type" content="website" />
-<meta property="og:image" content="{SITE_URL}/assets/sophie-portrait-clinic.jpg" />
+<meta property="og:image" content="{SITE_URL}/assets/sophie-lib/formal-seated.jpg" />
 <link rel="canonical" href="{SITE_URL}/" />
 <link rel="alternate" type="application/rss+xml" title="{BRAND}" href="feed.xml" />
 <link rel="sitemap" type="application/xml" href="sitemap.xml" />
@@ -668,7 +668,8 @@ def build_indexes(repo: Path, extra: dict[str, str] | None = None) -> dict[str, 
     metas = collect(repo, extra)
     return {"letters/index.html": render_letters_index(metas), "index.html": render_home(metas),
             "letters/articles.json": render_articles_json(metas),
-            "videos.html": render_videos_page(load_videos(repo), metas)}
+            "videos.html": render_videos_page(load_videos(repo), metas),
+            "checklist.html": render_checklist_page()}
 
 
 def render_articles_json(metas: list[dict]) -> str:
@@ -768,7 +769,7 @@ TOPIC_PAGES = [
     ("水光", "topics/skinbooster.html", "水光|PN|PDRN|Skinbooster|skin booster"),
 ]
 
-# 三個欄目（2026-10-20 凱菲拍板；來源 sophie-agent\topics\columns.json）。
+# 三個欄目（2026-10-20 蘇菲拍板；來源 sophie-agent\topics\columns.json）。
 # 歸屬規則：優先讀 sophie-agent\topics\column_keywords.json（另一位 agent 維護；尚未建立時用下面這組標題／內文關鍵字）。
 COLUMNS = [
     ("A", "自費醫美怎麼選、術後怎麼顧", "醫美|療程|診所|玻尿酸|肉毒|電波|音波|雷射|皮秒|術後|防曬|填充|拉提|水光|隆乳|隆鼻|整形|預付|合約|廣告|同意書|消保|價格"),
@@ -950,7 +951,8 @@ def ensure_cta_links(text: str) -> str:
 
 
 CTA_LINE_RE = re.compile(r"<!--yubai:ctaline-->.*?<!--/yubai:ctaline-->", re.S)
-CTA_LINE_TEXT = "加入 LINE，領諮詢前必問清單"
+# 官方 LINE「加入好友的歡迎訊息」放上 checklist.html 連結之後，才改回「加入 LINE，領諮詢前必問清單」
+CTA_LINE_TEXT = "加入官方 LINE"
 
 
 def ensure_cta_line_button(text: str) -> str:
@@ -1205,7 +1207,7 @@ def render_videos_page(videos: list[dict], metas: list[dict]) -> str:
     <meta property="og:title" content="短影片｜{BRAND}" />
     <meta property="og:description" content="{esc(desc)}" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="{SITE_URL}/assets/sophie-portrait-clinic.jpg" />
+    <meta property="og:image" content="{SITE_URL}/assets/sophie-lib/formal-seated.jpg" />
     <link rel="canonical" href="{page_url}" />
     {head_block("")}
     {ld}
@@ -1230,6 +1232,70 @@ def render_videos_page(videos: list[dict], metas: list[dict]) -> str:
           <div class="y-vids">
 {chr(10).join(cards)}
           </div>
+        </div>
+      </section>
+    </main>
+    {footer_block("")}
+    {script_block("")}
+  </body>
+</html>
+"""
+
+
+# 後 3 題：內容只取自站上已發表的文章（020、059、077、078、079、068、081），不另外加料、不寫價格
+CHECKLIST_MORE = [
+    ("預算怎麼抓？", "先問這個報價是單次，還是整個療程。總共要做幾次、每次隔多久、之後多久要補一次、回診和術後用品另外算不算錢，全部加起來才是真正的預算。",
+     "如果要預付一大筆錢，先看契約寫了什麼：適用範圍、履約保障、退費期限，還有每次做完的消費紀錄。",
+     [("醫美諮詢不要先問多少錢，先問這五件事", "letters/020-consultation-questions-before-price.html"),
+      ("美容療程預付超過 5 萬，簽約前先問這 3 件事", "letters/077-beauty-prepaid-contract-protection-20260824.html")]),
+    ("哪些話聽起來很美，其實要先停下來？", "「今天簽才有這個優惠」、「無息分期、低自備款就能開始」、「唯一、保證、永不復發」。聽到這幾句，先不要當天決定，回家把總價和必要性想清楚再說。",
+     "醫療廣告用這些字眼本身就是紅旗；平台上有藍勾勾，也不代表內容合法或有證據。",
+     [("診所用「無息分期」招攬病人，可能踩法規紅線", "letters/078-interest-free-installment-medical-solicitation-20260825.html"),
+      ("醫療廣告出現「唯一、保證、永不復發」，先停", "letters/079-medical-advertising-red-flags-20260826.html")]),
+    ("萬一不如預期，誰負責、怎麼處理？", "付款前先問：術後多久會追蹤、晚上或假日出狀況打給誰、出現不良反應時診所怎麼處理、後續費用誰付。",
+     "同時自己先留好三樣東西：病歷與同意書、逐項收費明細、同角度拍的術前術後照片。",
+     [("術後保障，為什麼差這麼多？", "letters/068-post-treatment-protection-20260801.html"),
+      ("出事前先留 3 樣：病歷、明細、術前術後照片", "letters/081-medical-records-consent-evidence-20260828.html")]),
+]
+
+
+def render_checklist_page() -> str:
+    first = "\n".join(
+        f'            <li><span>{i + 1:02d}</span><div><h2>{html.escape(q, quote=False)}</h2></div></li>' for i, q in enumerate(QUESTIONS))
+    more = "\n".join(
+        f'            <li><span>{len(QUESTIONS) + i + 1:02d}</span><div><h2>{html.escape(q, quote=False)}</h2>'
+        f'<p>{html.escape(a, quote=False)}</p><p>{html.escape(b, quote=False)}</p>'
+        f'<p class="y-ck-read">延伸閱讀：' + "".join(f'<a href="{u}">{html.escape(x, quote=False)}</a>' for x, u in links) + '</p></div></li>'
+        for i, (q, a, b, links) in enumerate(CHECKLIST_MORE))
+    return f"""<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>醫美消費前必問的 7 個問題｜{BRAND}</title>
+    <meta name="robots" content="noindex" />
+    <meta name="description" content="進診間前，把這 7 題問清楚：想改善什麼、療程處理哪一層、不如預期怎麼辦、恢復期能不能配合、預算怎麼抓、哪些話要先停、出事誰負責。" />
+    <link rel="canonical" href="{SITE_URL}/checklist.html" />
+    {head_block("")}
+  </head>
+  <body>
+    {header_block("")}
+    <main>
+      <section class="page-hero">
+        <div class="section-inner page-hero-narrow">
+          <p class="eyebrow">Consultation Checklist</p>
+          <h1>醫美消費前必問的 7 個問題</h1>
+          <p class="letter-dek">進診間前，先把這 7 題問清楚。可以截圖存在手機，諮詢時一題一題對。</p>
+        </div>
+      </section>
+      <section class="section">
+        <div class="section-inner page-hero-narrow">
+          <ol class="y-ck">
+{first}
+{more}
+          </ol>
+          <p class="y-ck-note">這份清單只幫你把問題問對，不取代醫師面診。想把自己的狀況整理成問題，可以直接在 LINE 問蘇菲。</p>
+          <div class="hero-actions"><a class="button primary" href="consult.html">看諮詢整理方式</a><a class="button secondary" href="letters/index.html">看全部文章</a></div>
         </div>
       </section>
     </main>
@@ -1266,7 +1332,7 @@ def apply_theme(repo: Path) -> list[str]:
     touched = []
     # picks.html 由 affiliate_sync.py 自己產（已用同一組 head/header/footer 函式），不在這裡重套，免得兩邊互相改空白造成每次都有 diff
     # videos.html 由 build_indexes 整頁產生，也不重套
-    targets = [(f, "") for f in repo.glob("*.html") if f.name not in ("index.html", "404.html", "picks.html", "videos.html")]
+    targets = [(f, "") for f in repo.glob("*.html") if f.name not in ("index.html", "404.html", "picks.html", "videos.html", "checklist.html")]
     targets += [(f, "../") for f in (repo / "letters").glob("*.html") if f.name != "index.html"]
     targets += [(f, "../") for f in (repo / "topics").glob("*.html")]
     for f, p in targets:
@@ -1276,7 +1342,7 @@ def apply_theme(repo: Path) -> list[str]:
             f.write_text(new, encoding="utf-8", newline="\n")
             touched.append(f.relative_to(repo).as_posix())
     # 文章列表與首頁會引用的固定圖
-    ensure_webp(repo / "assets" / "sophie-portrait-laugh.jpg")
+    ensure_webp(repo / "assets" / "sophie-lib" / "consult-listen-cup.jpg")
     for rel, text in build_indexes(repo).items():
         f = repo / rel
         if not f.exists() or f.read_text(encoding="utf-8") != text:
