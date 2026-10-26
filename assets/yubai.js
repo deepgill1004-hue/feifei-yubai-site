@@ -181,7 +181,7 @@
       const newer = i > 0 ? all[i - 1] : null;
       const older = i >= 0 && i < all.length - 1 ? all[i + 1] : null;
       const pick = all.filter((a, k) => k !== i && a !== newer && a !== older).slice(0, 8);
-      const card = (a) => `<a href="${url(a)}"><figure>${a.i ? `<img src="${new URL(a.i, root).href}" alt="" loading="lazy" decoding="async" />` : ""}</figure><small>No.${a.n}</small><b>${esc(a.t)}</b></a>`;
+      const card = (a) => `<a href="${url(a)}"><figure>${a.i ? `<img src="${new URL(a.i, root).href}"${a.p ? ` style="object-position:${esc(a.p)}"` : ""} alt="" loading="lazy" decoding="async" />` : ""}</figure><small>No.${a.n}</small><b>${esc(a.t)}</b></a>`;
       const pn = (a, cls, label) => a ? `<a class="${cls}" href="${url(a)}"><small>${label}</small><b>${esc(a.t)}</b></a>` : "<span></span>";
       const sec = document.createElement("section");
       sec.className = "y-more";
