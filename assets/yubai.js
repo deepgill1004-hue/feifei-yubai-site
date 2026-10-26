@@ -132,6 +132,7 @@
   if (toolbar && list) {
     const cards = [...list.querySelectorAll(".y-card")];
     const hay = cards.map((c) => c.textContent.toLowerCase());
+    const hayChip = hay.map((h) => h.replaceAll("超音波", ""));  // 腹部超音波是檢查，不算「電波・音波」
     const input = toolbar.querySelector("input");
     const chips = [...toolbar.querySelectorAll(".y-chips button")];
     const views = [...toolbar.querySelectorAll(".y-view button")];
@@ -142,7 +143,7 @@
       const keys = chip ? chip.toLowerCase().split("|") : [];
       let shown = 0;
       cards.forEach((c, i) => {
-        const ok = (!q || hay[i].includes(q)) && (!keys.length || keys.some((k) => hay[i].includes(k)));
+        const ok = (!q || hay[i].includes(q)) && (!keys.length || keys.some((k) => hayChip[i].includes(k)));
         c.hidden = !ok;
         if (ok) { shown += 1; c.classList.add("in"); }
       });
