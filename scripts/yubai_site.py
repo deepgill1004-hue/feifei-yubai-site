@@ -1568,6 +1568,68 @@ def ensure_sitemap_entry(repo: Path, rel: str, lastmod: str, bump: bool) -> bool
     return True
 
 
+# ---------------------------------------------------------------- 2026-10-26：上架檢查（GitHub Actions 每次 push 自動跑）
+# 擋自動上架流程會出的錯：編號撞號、標籤跟內文對不上、禁用字／AI 符號、寫作範本筆記漏到頁面。
+# 有 ERROR 就 exit 1（GitHub 會寄信通知）；WARN 只提醒。
+
+FORBIDDEN_WORDS = ["浪潮針"]
+AI_SYMBOLS_RE = re.compile(r"[★✨✅❌▶]|\*\*|(?<![&#\w])##")
+TEMPLATE_LEAK_RE = re.compile(r"承接互動|不從名詞開場|LINE CTA")
+
+
+def check_site(repo: Path) -> tuple[list[str], list[str]]:
+    errors, warns = [], []
+    seen_issue: dict[str, str] = {}
+    seen_img: dict[str, str] = {}
+    for f in sorted((repo / "letters").glob("[0-9][0-9][0-9]*.html")):
+        text = f.read_text(encoding="utf-8")
+        if 'http-equiv="refresh"' in text:          # 001-before：轉址頁
+            continue
+        name, issue = f.name, f.name[:3]
+        if issue in seen_issue:
+            errors.append(f"{name}：期數 {issue} 跟 {seen_issue[issue]} 撞號")
+        seen_issue.setdefault(issue, name)
+        main = text[text.find("<main"):] if "<main" in text else text
+        visible = _strip(re.sub(r"<script.*?</script>|<style.*?</style>", " ", main, flags=re.S))
+        body = _strip(_body_region(text))
+        for w in FORBIDDEN_WORDS:
+            if w in text:
+                errors.append(f"{name}：出現禁用字「{w}」")
+        if AI_SYMBOLS_RE.search(visible):
+            errors.append(f"{name}：頁面上有 AI 符號（{AI_SYMBOLS_RE.search(visible).group(0)}）")
+        if TEMPLATE_LEAK_RE.search(visible):
+            errors.append(f"{name}：寫作範本的內部筆記出現在頁面上（{TEMPLATE_LEAK_RE.search(visible).group(0)}）")
+        norm = lambda s: re.sub(r"[\s\-－]", "", s).lower()  # noqa: E731
+        h1 = re.search(r"<h1[^>]*>(.*?)</h1>", text, re.S)
+        lead = (_strip(h1.group(1)) if h1 else "") + _meta_content(text, "name", "description")
+        body_n = norm(lead + re.sub(r"#\S+", "", body))
+        for tag in _tags_of(text):
+            tn = norm(tag)
+            if tn in body_n:
+                continue
+            # 複合詞（醫美術後＝醫美＋術後）：每兩個字一段，全部找得到才算對；一段都找不到＝跟主題無關
+            parts = [tn[k:k + 2] for k in range(0, len(tn), 2)]
+            if len(parts) > 1 and len(parts[-1]) == 1:
+                parts[-1] = tn[-2:]
+            hit = sum(1 for s in parts if s in body_n)
+            if hit == 0:
+                errors.append(f"{name}：標籤 #{tag} 在內文裡完全找不到，跟文章主題對不上")
+            elif hit < len(parts):
+                warns.append(f"{name}：標籤 #{tag} 只有部分字詞出現在內文，確認一下是否貼切")
+        if 'class="y-answer"' not in text:
+            warns.append(f"{name}：沒有結論框（data/answers.json 補一條，或用 AEO 模板）")
+        img = re.search(r'<figure class="letter-portrait[^"]*">\s*<img src="([^"]+)"', main)
+        if img:
+            key = img.group(1).rsplit(".", 1)[0]
+            if key in seen_img:
+                warns.append(f"{name}：主視覺跟 {seen_img[key]} 用同一張圖")
+            seen_img.setdefault(key, name)
+        og = _meta_content(text, "property", "og:image")
+        if og.startswith(SITE_URL + "/") and not (repo / urllib.parse.unquote(og[len(SITE_URL) + 1:])).exists():
+            errors.append(f"{name}：og:image 指到不存在的檔案 {og}")
+    return errors, warns
+
+
 # ---------------------------------------------------------------- 全站重套
 
 def apply_theme(repo: Path) -> list[str]:
@@ -1609,10 +1671,18 @@ if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     import argparse
     ap = argparse.ArgumentParser(description="蘇菲餘白：全站套用版型／重建首頁與文章列表")
-    ap.add_argument("cmd", choices=["apply-theme", "indexes", "llms"])
+    ap.add_argument("cmd", choices=["apply-theme", "indexes", "llms", "check"])
     ap.add_argument("--repo", default=str(Path(__file__).resolve().parent.parent))
     args = ap.parse_args()
     repo = Path(args.repo).resolve()
+    if args.cmd == "check":
+        errs, warns = check_site(repo)
+        for w in warns:
+            print("WARN  " + w)
+        for e in errs:
+            print("ERROR " + e)
+        print(f"{len(errs)} errors, {len(warns)} warnings")
+        sys.exit(1 if errs else 0)
     if args.cmd == "apply-theme":
         changed = apply_theme(repo)
     elif args.cmd == "llms":

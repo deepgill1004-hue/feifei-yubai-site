@@ -1,0 +1,66 @@
+# 每次推到 main：①上架檢查（撞號、標籤跟內文對不上、禁用字、AI 符號、範本筆記外漏）②把有變動的頁面送 IndexNow
+# 手動執行（Actions → site-check → Run workflow，all=true）會把 sitemap 全部網址送出一次
+name: site-check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      all:
+        description: "送出 sitemap 全部網址到 IndexNow"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 上架檢查
+        run: python -B scripts/yubai_site.py check
+
+  indexnow:
+    needs: check
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: 等 GitHub Pages 部署
+        run: sleep 120
+      - name: 送 IndexNow
+        env:
+          BEFORE: ${{ github.event.before }}
+          ALL: ${{ inputs.all }}
+        run: |
+          if [ "$ALL" = "true" ]; then
+            python -B scripts/indexnow.py --sitemap
+            exit 0
+          fi
+          if [ -z "$BEFORE" ] || ! git cat-file -e "$BEFORE" 2>/dev/null; then
+            echo "沒有前一個版本可比對，略過"; exit 0
+          fi
+          args=""
+          for f in $(git diff --name-only "$BEFORE" "$GITHUB_SHA" -- '*.html' | grep -v '^google' ); do
+            [ -f "$f" ] || continue
+            case "$f" in
+              index.html) u="https://sophieyubai.com/" ;;
+              404.html) continue ;;
+              *) u="https://sophieyubai.com/$f" ;;
+            esac
+            args="$args --url $u"
+          done
+          if [ -z "$args" ]; then echo "沒有頁面變動"; exit 0; fi
+          python -B scripts/indexnow.py $args
