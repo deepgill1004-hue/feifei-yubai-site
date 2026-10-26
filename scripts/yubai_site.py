@@ -180,6 +180,9 @@ def article_ld(text: str, page_path: Path, site_root: Path) -> list[dict]:
     desc = _meta_content(text, "name", "description")
     if desc:
         obj["description"] = desc
+    abstract = answer_text(text)
+    if abstract:
+        obj["abstract"] = abstract
     # 日期只用頁面自己已有的（article:published_time／檔名日期／頁面顯示日期＝article_meta 同一套）；
     # 都沒有就不放 datePublished，dateModified 退而用 sitemap.xml 的 lastmod，再沒有就整個不放，不編
     pub = meta["date"]
@@ -833,7 +836,7 @@ def _body_region(text: str) -> str:
         return ""
     ends = [x for x in (text.find(m, i) for m in ('<!--yubai:aeo-->', '<p class="hashtag-line">',
                                                    '<section class="letter-cta">', "</article>")) if x >= 0]
-    return VIDEO_RE.sub("", text[i:min(ends)])
+    return ANSWER_RE.sub("", VIDEO_RE.sub("", text[i:min(ends)]))
 
 
 def _tags_of(text: str) -> list[str]:
@@ -1055,8 +1058,12 @@ def enhance_page(text: str, page_path: Path, metas: list[dict] | None) -> str:
     in_letters = page_path.parent.name == "letters" and re.match(r"\d{3}", name)
     text = AEO_RE.sub("", text)
     text = VIDEO_RE.sub("", text)
+    text = ANSWER_RE.sub("", text)
     if in_letters:
         text = fix_md_leftovers(text)
+        ans = load_answers(root).get(name)
+        if ans:
+            text = insert_answer_box(text, ans)
         vids = videos_for(root, f"letters/{name}")
         if vids:
             text = insert_article_video(text, article_video_block(vids))
@@ -1098,6 +1105,50 @@ def enhance_page(text: str, page_path: Path, metas: list[dict] | None) -> str:
 # ---------------------------------------------------------------- 2026-10-24：YouTube 短影片（網站 ↔ 頻道互相導流）
 # 資料唯一來源＝data/videos.json（本機上架產線往後追加；欄位說明見 data/README.md）。
 # 播放器一律「先放縮圖、點了才換成 youtube-nocookie iframe」（yubai.js），不拖慢首屏、不先載入 YouTube 的追蹤碼。
+
+# 2026-10-26：文章開頭的「結論」框（AEO）：資料在 data/answers.json（{檔名: 結論}），內容只能整理自該篇文章本身。
+# 頁面本來就有 y-answer（AEO 模板新文章）就不再加。
+ANSWER_RE = re.compile(r"[ \t]*<!--yubai:answer-->.*?<!--/yubai:answer-->\n", re.S)
+_ANSWERS_CACHE: dict = {}
+
+
+def load_answers(root: Path) -> dict:
+    f = root / "data" / "answers.json"
+    if not f.exists():
+        return {}
+    key = (str(f), f.stat().st_mtime_ns)
+    if key not in _ANSWERS_CACHE:
+        try:
+            d = json.loads(f.read_text(encoding="utf-8"))
+        except ValueError as e:
+            print(f"[answers] data/answers.json 不是合法 JSON，先略過：{e}", file=sys.stderr)
+            d = {}
+        _ANSWERS_CACHE.clear()
+        _ANSWERS_CACHE[key] = {k: v.strip() for k, v in d.items() if isinstance(v, str) and v.strip()} if isinstance(d, dict) else {}
+    return _ANSWERS_CACHE[key]
+
+
+def insert_answer_box(text: str, answer: str) -> str:
+    tag = '<article class="letter-body">'
+    i = text.find(tag)
+    if i < 0 or 'class="y-answer"' in text:
+        return text
+    k = i + len(tag)
+    if text[k:k + 1] == "\n":
+        k += 1
+    block = ('<!--yubai:answer--><aside class="y-answer" aria-label="結論"><p class="y-answer-label">結論</p>'
+             f'<p>{html.escape(answer, quote=False)}</p></aside><!--/yubai:answer-->\n')
+    return text[:k] + block + text[k:]
+
+
+def answer_text(text: str) -> str:
+    """頁面上結論框的文字（AEO 模板原生的或 answers.json 補的），給 BlogPosting.abstract 用。"""
+    m = re.search(r'<aside class="y-answer"[^>]*>(.*?)</aside>', text, re.S)
+    if not m:
+        return ""
+    ps = re.findall(r"<p>(.*?)</p>", m.group(1), re.S)
+    return _strip(ps[-1]) if ps else ""
+
 
 VIDEO_RE = re.compile(r"[ \t]*<!--yubai:video-->.*?<!--/yubai:video-->\n", re.S)   # 整行插入、整行拿掉，重套結果不變
 YT_ID_RE = re.compile(r"^[A-Za-z0-9_-]{11}$")
