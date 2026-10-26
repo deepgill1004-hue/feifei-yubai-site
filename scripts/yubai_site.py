@@ -36,7 +36,7 @@ BRAND = "蘇菲餘白"
 # 對外定位句：首頁、關於頁、llms.txt 三處用字完全一致（2026-10-20 協調員指定）；FB／YouTube 簡介第一句請貼同一句
 POSITIONING = ("蘇菲餘白專注大健康與自費醫美，由護理師、心臟醫材、醫美營運出身的蘇菲，"
                "把複雜的健康與療程資訊翻成一般人看得懂的判斷。")
-ASSET_VER = "20261024c"
+ASSET_VER = "20261026"
 FOOTER_NOTE = "內容僅供衛教與消費判斷參考，不取代醫師診療或個別法律意見。"
 # 文章列表的主題篩選鈕：（顯示文字, 關鍵字以 | 分隔，比對標題＋摘要）
 CHIPS = [
@@ -504,7 +504,7 @@ QUESTIONS = [
 HERO_SLIDES = ["hero-clinic", "hero-window", "hero-night", "hero-city"]
 
 
-def render_home(metas: list[dict]) -> str:
+def render_home(metas: list[dict], shorts: list[dict] | None = None) -> str:
     h = lambda k: f"assets/home/{k}.webp"  # noqa: E731
     n = len(metas)
     feat, rest = (metas[0], metas[1:1 + HOME_CARDS]) if metas else (None, [])
@@ -532,11 +532,19 @@ def render_home(metas: list[dict]) -> str:
         f'        <figure><img src="{h(k)}" alt="{t}" loading="lazy" /></figure>\n'
         f'        <div class="topic-body"><span class="num">{num}</span><h3>{t}</h3><p>{d}</p><span class="more">看判斷重點</span></div>\n      </a>'
         for i, (num, t, d, k, href) in enumerate(TOPICS))
-    videos = "\n      ".join(
-        f'<button class="video reveal" style="--d:{i * 70}ms" data-src="assets/video/{k}.mp4" aria-label="播放：{t}">\n'
-        f'        <img src="{h(k + "-poster")}" alt="" loading="lazy" />\n'
-        f'        <span class="play" aria-hidden="true"></span>\n        <span class="video-title">{t}</span>\n      </button>'
-        for i, (k, t) in enumerate(VIDEOS))
+    # 2026-10-26：首頁影片區改放蘇菲本人口播的 YouTube Shorts（data/videos.json，新到舊最多 6 支）；
+    # 沒有影片資料時才退回舊的「蘇菲小談」本機短片（assets/video/）
+    if shorts:
+        videos = "\n      ".join(
+            f'<div class="video y-home-yt reveal" style="--d:{i * 70}ms">{yt_player(v)}'
+            f'<span class="video-title">{html.escape(v["title"], quote=False)}</span></div>'
+            for i, v in enumerate(_videos_sorted(shorts)[:6]))
+    else:
+        videos = "\n      ".join(
+            f'<button class="video reveal" style="--d:{i * 70}ms" data-src="assets/video/{k}.mp4" aria-label="播放：{t}">\n'
+            f'        <img src="{h(k + "-poster")}" alt="" loading="lazy" />\n'
+            f'        <span class="play" aria-hidden="true"></span>\n        <span class="video-title">{t}</span>\n      </button>'
+            for i, (k, t) in enumerate(VIDEOS))
     paths = "\n      ".join(
         f'<article class="path reveal" style="--d:{i * 90}ms">\n'
         f'        <figure><img src="{h(k)}" alt="" loading="lazy" /></figure>\n'
@@ -613,7 +621,7 @@ def render_home(metas: list[dict]) -> str:
       <p class="eyebrow">Video Notes</p>
       <h2>一支短片，只拆一個判斷題。</h2>
     </div>
-    <div class="video-rail">
+    <div class="video-rail{" y-yt-rail" if shorts else ""}">
       {videos}
     </div>
     <div class="center reveal"><a class="btn ghost" href="videos.html">看全部 YouTube 短影片</a></div>
@@ -678,7 +686,7 @@ def render_home(metas: list[dict]) -> str:
 def build_indexes(repo: Path, extra: dict[str, str] | None = None) -> dict[str, str]:
     """回傳 {"letters/index.html": ..., "index.html": ...}；extra＝尚未寫檔的新文章 {檔名: html}。"""
     metas = collect(repo, extra)
-    return {"letters/index.html": render_letters_index(metas), "index.html": render_home(metas),
+    return {"letters/index.html": render_letters_index(metas), "index.html": render_home(metas, load_videos(repo)),
             "letters/articles.json": render_articles_json(metas),
             "videos.html": render_videos_page(load_videos(repo), metas),
             "checklist.html": render_checklist_page()}
