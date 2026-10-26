@@ -36,7 +36,7 @@ BRAND = "蘇菲餘白"
 # 對外定位句：首頁、關於頁、llms.txt 三處用字完全一致（2026-10-20 協調員指定）；FB／YouTube 簡介第一句請貼同一句
 POSITIONING = ("蘇菲餘白專注大健康與自費醫美，由護理師、心臟醫材、醫美營運出身的蘇菲，"
                "把複雜的健康與療程資訊翻成一般人看得懂的判斷。")
-ASSET_VER = "20261026"
+ASSET_VER = "20261026b"
 FOOTER_NOTE = "內容僅供衛教與消費判斷參考，不取代醫師診療或個別法律意見。"
 # 文章列表的主題篩選鈕：（顯示文字, 關鍵字以 | 分隔，比對標題＋摘要）
 CHIPS = [
@@ -341,6 +341,8 @@ def article_meta(name: str, text: str, repo: Path) -> dict | None:
     img = re.search(r'<figure class="letter-portrait">\s*<img src="([^"]+)"', main) or re.search(
         r'<img src="([^"]+)"', main)
     img_rel = None
+    # 封面取景點：文章主視覺 <img> 帶 style="object-position:X% Y%" 時，卡片縮圖跟著用（頭部偏上的直式照片才不會被切頭）
+    fo = re.search(r'<figure class="letter-portrait[^"]*">\s*<img [^>]*?style="object-position:\s*(\d{1,3}% \d{1,3}%)', main)
     if img:
         target = (repo / "letters" / urllib.parse.unquote(img.group(1))).resolve()
         webp = target.with_suffix(".webp")
@@ -364,6 +366,7 @@ def article_meta(name: str, text: str, repo: Path) -> dict | None:
     return {
         "file": name, "issue": m.group(1), "title": title,
         "desc": html.unescape(desc.group(1)) if desc else "", "date": date_s, "img": img_rel,
+        "focus": fo.group(1) if fo else "",
         "tags": _tags_of(text), "cats": cats, "col": col,
     }
 
@@ -391,10 +394,14 @@ def collect(repo: Path, extra: dict[str, str] | None = None) -> list[dict]:
 
 # ---------------------------------------------------------------- 文章列表
 
+def focus_attr(a: dict) -> str:
+    return f' style="object-position:{a["focus"]}"' if a.get("focus") else ""
+
+
 def render_letters_index(metas: list[dict]) -> str:
     cards = []
     for a in metas:
-        img = (f'<figure><img src="../{a["img"]}" alt="" loading="lazy" decoding="async" /></figure>'
+        img = (f'<figure><img src="../{a["img"]}"{focus_attr(a)} alt="" loading="lazy" decoding="async" /></figure>'
                if a["img"] else "")
         date = a["date"].replace("-", ".")
         cards.append(
@@ -510,7 +517,7 @@ def render_home(metas: list[dict], shorts: list[dict] | None = None) -> str:
     feat, rest = (metas[0], metas[1:1 + HOME_CARDS]) if metas else (None, [])
 
     def jimg(a):
-        return f'<figure><img src="{a["img"]}" alt="" loading="lazy" decoding="async" /></figure>' if a["img"] else "<figure></figure>"
+        return f'<figure><img src="{a["img"]}"{focus_attr(a)} alt="" loading="lazy" decoding="async" /></figure>' if a["img"] else "<figure></figure>"
 
     feature = ""
     if feat:
@@ -695,7 +702,7 @@ def build_indexes(repo: Path, extra: dict[str, str] | None = None) -> dict[str, 
 def render_articles_json(metas: list[dict]) -> str:
     """文章頁底部「繼續看」由 yubai.js 讀這份清單產生；新文章上架只更新這一檔，舊文章頁不用動。"""
     import json
-    rows = [{"f": a["file"], "n": a["issue"], "t": a["title"], "d": a["date"], "i": a["img"] or ""} for a in metas]
+    rows = [{"f": a["file"], "n": a["issue"], "t": a["title"], "d": a["date"], "i": a["img"] or "", **({"p": a["focus"]} if a.get("focus") else {})} for a in metas]
     return json.dumps(rows, ensure_ascii=False, separators=(",", ":")) + "\n"
 
 
