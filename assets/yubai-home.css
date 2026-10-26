@@ -270,3 +270,8 @@ h1, h2, h3 { text-wrap: balance; }
 
 /* 2026-10-24b：手機首屏數據列往上讓，不被右下角 LINE 按鈕壓到 */
 @media (max-width: 900px) { .hero-foot { margin-bottom: 64px; } }
+
+/* 2026-10-26：首頁影片區改放 YouTube Shorts 口播（縮圖＋點了才載入播放器，樣式沿用 yubai.css 的 .y-yt） */
+.video-rail.y-yt-rail { grid-template-columns: repeat(auto-fit, minmax(190px, 240px)); justify-content: center; }
+.y-home-yt { cursor: default; }
+.y-home-yt .y-yt { height: 100%; border-radius: inherit; }
