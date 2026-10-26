@@ -36,7 +36,7 @@ BRAND = "蘇菲餘白"
 # 對外定位句：首頁、關於頁、llms.txt 三處用字完全一致（2026-10-20 協調員指定）；FB／YouTube 簡介第一句請貼同一句
 POSITIONING = ("蘇菲餘白專注大健康與自費醫美，由護理師、心臟醫材、醫美營運出身的蘇菲，"
                "把複雜的健康與療程資訊翻成一般人看得懂的判斷。")
-ASSET_VER = "20261026b"
+ASSET_VER = "20261026c"
 FOOTER_NOTE = "內容僅供衛教與消費判斷參考，不取代醫師診療或個別法律意見。"
 # 文章列表的主題篩選鈕：（顯示文字, 關鍵字以 | 分隔，比對標題＋摘要）
 CHIPS = [
@@ -801,7 +801,7 @@ TOPIC_PAGES = [
 COLUMNS = [
     ("A", "自費醫美怎麼選、術後怎麼顧", "醫美|療程|診所|玻尿酸|肉毒|電波|音波|雷射|皮秒|術後|防曬|填充|拉提|水光|隆乳|隆鼻|整形|預付|合約|廣告|同意書|消保|價格"),
     ("B", "瘦瘦針與身形臉部變化", "GLP|瘦瘦針|減重|減肥|體重|猛健樂|司美|週纜|肥胖|停藥|臉垮|臉凹"),
-    ("C", "預防醫學與日常健康數字", "血壓|血糖|代謝|抗衰|抗老|骨質|更年期|荷爾蒙|預防|健檢|膽固醇|心血管|睡眠|長壽|失智|疫苗|NAD|健康數字"),
+    ("C", "預防醫學與日常健康數字", "血壓|血糖|脂肪肝|肝指數|代謝|抗衰|抗老|骨質|更年期|荷爾蒙|預防|健檢|膽固醇|心血管|睡眠|長壽|失智|疫苗|NAD|健康數字"),
 ]
 
 
@@ -814,6 +814,11 @@ FALLBACK_IMGS = ["home/hero-clinic", "sophie-lib/consult-listen-beige", "sophie-
 def fallback_img(issue: str) -> str:
     """回傳 assets/ 底下的路徑（不含副檔名）。從 093 起算，第一篇沒圖的文章用 hero-clinic（目前沒有其他文章用）。"""
     return FALLBACK_IMGS[(int(issue) - 93) % len(FALLBACK_IMGS)]
+
+
+def _kw_rx(kw: str) -> re.Pattern:
+    # 「腹部超音波」是檢查，不是音波拉提：比對「音波」時排除前面是「超」的情況
+    return re.compile(kw.replace("音波", "(?<!超)音波"), re.I)
 
 
 def _load_columns() -> list[tuple[str, str, re.Pattern]]:
@@ -836,11 +841,11 @@ def _load_columns() -> list[tuple[str, str, re.Pattern]]:
                 kws[cid] = "|".join(re.escape(w) for w in words if isinstance(w, str) and w)
     except (OSError, ValueError, AttributeError):
         pass
-    return [(cid, names[cid], re.compile(kws[cid], re.I)) for cid, *_ in COLUMNS]
+    return [(cid, names[cid], _kw_rx(kws[cid])) for cid, *_ in COLUMNS]
 
 
 _COLS = _load_columns()
-_CAT_RX = [(label, re.compile(kw, re.I)) for label, kw in CHIPS] + [(l, re.compile(k, re.I)) for l, _, k in TOPIC_PAGES]
+_CAT_RX = [(label, _kw_rx(kw)) for label, kw in CHIPS] + [(l, _kw_rx(k)) for l, _, k in TOPIC_PAGES]
 GENERIC_TAGS = {"蘇菲餘白", "醫美", "醫美判斷力", "知情選擇"}
 
 
