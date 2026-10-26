@@ -1235,6 +1235,7 @@ def enhance_page(text: str, page_path: Path, metas: list[dict] | None) -> str:
             text = re.sub(r"\s*</article>", lambda _: "\n        " + article_aeo_block(me, metas, True) + "\n      </article>",
                           text, count=1)
         text = ensure_cta_line_button(text)
+        text = TEMPLATE_SIDEBAR_RE.sub("", text)
     elif page_path.parent.name == "topics":
         label = next((l for l, f, _ in TOPIC_PAGES if f == f"topics/{name}"), None)
         if label and "</main>" in text:
@@ -1286,6 +1287,12 @@ def insert_answer_box(text: str, answer: str) -> str:
     block = ('<!--yubai:answer--><aside class="y-answer" aria-label="結論"><p class="y-answer-label">結論</p>'
              f'<p>{html.escape(answer, quote=False)}</p></aside><!--/yubai:answer-->\n')
     return text[:k] + block + text[k:]
+
+
+# 2026-10-26：011、029–049 的側欄「閱讀重點」是當初寫作範本的內部筆記（「先用真實困擾開場」「LINE CTA 承接互動」），
+# 不是文章重點；整段拿掉，側欄只留按鈕（文章開頭已有結論框）
+TEMPLATE_SIDEBAR_RE = re.compile(
+    r'[ \t]*<p class="path-label">閱讀重點</p>\s*<ol>(?:(?!</ol>).)*承接互動(?:(?!</ol>).)*</ol>\n?', re.S)
 
 
 def answer_text(text: str) -> str:
