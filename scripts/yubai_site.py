@@ -367,6 +367,7 @@ def article_meta(name: str, text: str, repo: Path) -> dict | None:
         "file": name, "issue": m.group(1), "title": title,
         "desc": html.unescape(desc.group(1)) if desc else "", "date": date_s, "img": img_rel,
         "focus": fo.group(1) if fo else "",
+        "answer": answer_text(text),
         "tags": _tags_of(text), "cats": cats, "col": col,
     }
 
@@ -690,13 +691,138 @@ def render_home(metas: list[dict], shorts: list[dict] | None = None) -> str:
 """
 
 
+# ---------------------------------------------------------------- 2026-10-26：三個欄目的總覽頁（主題叢集頁）
+# 欄目 → 子主題（文章列表篩選鈕的分類）分組，每篇附上「結論」，讓搜尋引擎與 AI 一頁看懂這個欄目涵蓋什麼。
+COLUMN_PAGES = {
+    "A": ("columns/aesthetic.html", "Column A", "sophie-lib/consult-reading",
+          "玻尿酸、肉毒、電波音波、雷射、再生療程與手術，從諮詢前該問什麼、報價和契約怎麼看，到術後出狀況怎麼處理。每篇只拆一個判斷題。"),
+    "B": ("columns/glp1.html", "Column B", "sophie-lib/consult-listen-beige",
+          "瘦瘦針、口服減重藥、停藥後的體重變化，還有瘦下來之後臉的改變。先弄清楚用藥是為了什麼、副作用怎麼看，再談臉要不要處理。"),
+    "C": ("columns/health.html", "Column C", "sophie-lib/formal-seated",
+          "血壓、肝指數、骨質、更年期、疫苗與抗老研究。看懂檢查數字代表什麼、什麼時候該回診，不靠單一數字下結論。"),
+}
+# 欄目頁內的子主題：比對標題（權重高）＋摘要＋結論，取最高分；都沒有就歸「更多文章」。順序＝頁面上的顯示順序
+HUB_GROUPS = {
+    "A": [("玻尿酸與填充", "玻尿酸|填充|饅化|法令紋|骨膜|RADIESSE|晶亮瓷|超載"),
+          ("肉毒", "肉毒|Botox"),
+          ("電波、音波、雷射與儀器", "電波|(?<!超)音波|雷射|皮秒|Morpheus|保養儀|美容儀|設備|機器"),
+          ("再生、膠原與膚質", "再生|PN|膠原|Profhilo|水光|膚質|幹細胞|肌底"),
+          ("手術與整形", "手術|隆乳|隆鼻|整鼻|鼻子|鼻王|整形|線雕|眼袋|麻醉|動刀"),
+          ("諮詢、合約與術後保障", "諮詢|報價|價格|成本|費用|預付|契約|合約|分期|廣告|法規|新制|同意書|病歷|術後|保障|消保|低價|偷拍|隱私|停業|直美|資格|藥物|保健品|營養針|風險|權益|新規|自保"),
+          ("審美與長期規劃", "自然|審美|塑膠臉|高級|長期|規劃|名人|年齡管理|少女感|判斷|保養型|定期|維護|孫淑媚|黃曉明")],
+    "B": [],
+    "C": [("血壓、肝指數與健康數字", "血壓|肝指數|脂肪肝|檢查|健檢|疲勞|健康管理"),
+          ("循環與心血管", "EECP|ILIB|心血管|循環|血管"),
+          ("女性與男性健康", "停經|更年期|骨質|男性|荷爾蒙"),
+          ("抗老與長壽研究", "長壽|抗老|抗衰|Klotho|老化|NAD|點滴|維他命"),
+          ("疫苗與感染", "疫苗|流感|發燒")],
+}
+_HUB_RX: dict = {}
+
+
+def _hub_group(cid: str, a: dict) -> str:
+    rest = (a.get("desc") or "") + (a.get("answer") or "")
+    best, best_s = "更多文章", 0
+    if cid not in _HUB_RX:
+        _HUB_RX[cid] = [(l, _kw_rx(k)) for l, k in HUB_GROUPS.get(cid, [])]
+    for label, rx in _HUB_RX[cid]:
+        s = 5 * len(rx.findall(a["title"])) + min(len(rx.findall(rest)), 4)
+        if s > best_s:
+            best, best_s = label, s
+    return best
+
+
+def column_url(cid: str, prefix: str = "") -> str:
+    return prefix + COLUMN_PAGES[cid][0] if cid in COLUMN_PAGES else ""
+
+
+def render_column_page(cid: str, metas: list[dict]) -> str:
+    rel, eyebrow, img, intro = COLUMN_PAGES[cid]
+    name = col_name(cid)
+    page_url = f"{SITE_URL}/{rel}"
+    mine = [a for a in metas if a["col"] == cid]
+    groups: dict[str, list[dict]] = {}
+    for a in mine:
+        groups.setdefault(_hub_group(cid, a) if HUB_GROUPS.get(cid) else "全部文章", []).append(a)
+    labels = [l for l, _ in HUB_GROUPS.get(cid, [])] + ["更多文章", "全部文章"]
+    order = [l for l in labels if l in groups]
+    secs = []
+    for label in order:
+        items = []
+        for a in groups[label]:
+            summ = a.get("answer") or a.get("desc") or ""
+            items.append(f'              <li><a href="../letters/{a["file"]}">{html.escape(a["title"], quote=False)}</a>'
+                         f'<small>No.{a["issue"]} · {a["date"].replace("-", ".")}</small>'
+                         + (f'<p>{html.escape(summ, quote=False)}</p>' if summ else "") + "</li>")
+        secs.append(f'          <h2 id="g{order.index(label) + 1}">{html.escape(label, quote=False)}<span>{len(groups[label])} 篇</span></h2>\n'
+                    f'          <ul class="y-hub-list">\n' + "\n".join(items) + "\n          </ul>")
+    toc = "".join(f'<a href="#g{k + 1}">{html.escape(l, quote=False)}</a>' for k, l in enumerate(order))
+    others = "".join(f'<a href="../{COLUMN_PAGES[c][0]}">{html.escape(col_name(c), quote=False)}</a>'
+                     for c in COLUMN_PAGES if c != cid)
+    desc = f"{BRAND}欄目「{name}」：{intro}"
+    ld = ld_block([
+        {"@type": "CollectionPage", "name": f"{name}｜{BRAND}", "url": page_url, "inLanguage": "zh-Hant",
+         "description": desc, "isPartOf": {"@type": "WebSite", "name": BRAND, "url": SITE_URL + "/"},
+         "author": {"@type": "Person", "name": "蘇菲"},
+         "mainEntity": {"@type": "ItemList", "numberOfItems": len(mine), "itemListElement": [
+             {"@type": "ListItem", "position": k + 1, "url": f"{SITE_URL}/letters/{a['file']}", "name": a["title"]}
+             for k, a in enumerate(mine)]}},
+        {"@type": "BreadcrumbList", "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "首頁", "item": SITE_URL + "/"},
+            {"@type": "ListItem", "position": 2, "name": "文章", "item": f"{SITE_URL}/letters/index.html"},
+            {"@type": "ListItem", "position": 3, "name": name, "item": page_url}]},
+    ])
+    return f"""<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{html.escape(name, quote=False)}｜{BRAND}</title>
+    <meta name="description" content="{esc(desc)}" />
+    <meta property="og:title" content="{esc(name)}｜{BRAND}" />
+    <meta property="og:description" content="{esc(desc)}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="{SITE_URL}/assets/{img}.jpg" />
+    <link rel="canonical" href="{page_url}" />
+    {head_block("../")}
+    {ld}
+  </head>
+  <body>
+    {header_block("../")}
+    <main>
+      <section class="page-hero">
+        <div class="section-inner page-hero-narrow">
+          <p class="eyebrow">{eyebrow}</p>
+          <h1>{html.escape(name, quote=False)}</h1>
+          <p class="letter-dek">{html.escape(intro, quote=False)}</p>
+          <p class="y-hub-count">這個欄目目前 {len(mine)} 篇，由新到舊排列；每篇下面是那篇文章的結論。</p>
+          <nav class="y-hub-toc" aria-label="子主題">{toc}</nav>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-inner y-hub">
+{chr(10).join(secs)}
+          <p class="y-h">其他欄目</p>
+          <p class="y-hub-other">{others}<a href="../letters/index.html">看全部文章</a></p>
+        </div>
+      </section>
+    </main>
+    {footer_block("../")}
+    {script_block("../")}
+  </body>
+</html>
+"""
+
+
 def build_indexes(repo: Path, extra: dict[str, str] | None = None) -> dict[str, str]:
     """回傳 {"letters/index.html": ..., "index.html": ...}；extra＝尚未寫檔的新文章 {檔名: html}。"""
     metas = collect(repo, extra)
     return {"letters/index.html": render_letters_index(metas), "index.html": render_home(metas, load_videos(repo)),
             "letters/articles.json": render_articles_json(metas),
             "videos.html": render_videos_page(load_videos(repo), metas),
-            "checklist.html": render_checklist_page()}
+            "checklist.html": render_checklist_page(),
+            **{COLUMN_PAGES[cid][0]: render_column_page(cid, metas) for cid in COLUMN_PAGES}}
 
 
 def render_articles_json(metas: list[dict]) -> str:
@@ -750,6 +876,7 @@ def render_llms_txt(repo: Path, extra: dict[str, str] | None = None) -> str:
         if rows:
             out.extend(["", f"## {head}", ""] + [_llms_line(*r) for r in rows])
 
+    section("欄目", [repo / v[0] for v in COLUMN_PAGES.values()])
     section("療程主題", [repo / "treatments.html"] + sorted((repo / "topics").glob("*.html")))
     section("影片", [repo / "videos.html"])
     out.append(f"- [YouTube 頻道]({YT_CHANNEL}): {BRAND}短影片，每支只講一個判斷題")
@@ -801,7 +928,7 @@ TOPIC_PAGES = [
 COLUMNS = [
     ("A", "自費醫美怎麼選、術後怎麼顧", "醫美|療程|診所|玻尿酸|肉毒|電波|音波|雷射|皮秒|術後|防曬|填充|拉提|水光|隆乳|隆鼻|整形|預付|合約|廣告|同意書|消保|價格"),
     ("B", "瘦瘦針與身形臉部變化", "GLP|瘦瘦針|減重|減肥|體重|猛健樂|司美|週纜|肥胖|停藥|臉垮|臉凹"),
-    ("C", "預防醫學與日常健康數字", "血壓|血糖|脂肪肝|肝指數|代謝|抗衰|抗老|骨質|更年期|荷爾蒙|預防|健檢|膽固醇|心血管|睡眠|長壽|失智|疫苗|NAD|健康數字"),
+    ("C", "預防醫學與日常健康數字", "血壓|血糖|脂肪肝|肝指數|疲勞|健康管理|代謝|抗衰|抗老|骨質|更年期|荷爾蒙|預防|健檢|膽固醇|心血管|睡眠|長壽|失智|疫苗|NAD|健康數字"),
 ]
 
 
@@ -1029,7 +1156,7 @@ def article_aeo_block(me: dict, metas: list[dict], with_cta: bool) -> str:
     topics = [(l, f) for l, f, _ in TOPIC_PAGES if l in me["cats"]]
     topics.sort(key=lambda x: -me["cats"][x[0]])
     topic_line = "".join(f'<a href="../{f}">{l}</a>' for l, f in topics[:2])
-    meta_line = (f'<p class="y-col">所屬欄目：<b>{html.escape(col_name(me["col"]), quote=False)}</b>'
+    meta_line = (f'<p class="y-col">所屬欄目：<b><a href="{column_url(me["col"], "../")}">{html.escape(col_name(me["col"]), quote=False)}</a></b>'
                  + (f'<span>相關療程主題：{topic_line}</span>' if topic_line else "") + "</p>")
     pn = ""
     if prev_a or next_a:
@@ -1052,7 +1179,7 @@ def _cols_html(metas: list[dict], prefix: str) -> str:
     cols = []
     for cid, name, _ in _COLS:
         latest = [a for a in metas if a["col"] == cid][:2]
-        cols.append(f'<div><h3>{cid}｜{html.escape(name, quote=False)}</h3><ul>'
+        cols.append(f'<div><h3><a href="{column_url(cid, prefix)}">{cid}｜{html.escape(name, quote=False)}</a></h3><ul>'
                     + "".join(_li(f"{prefix}letters/{a['file']}", a["title"]) for a in latest) + "</ul></div>")
     return '<p class="y-h">欄目導覽</p><div class="y-cols">' + "".join(cols) + "</div>"
 
@@ -1454,9 +1581,13 @@ def apply_theme(repo: Path) -> list[str]:
     for rel, text in build_indexes(repo).items():
         f = repo / rel
         if not f.exists() or f.read_text(encoding="utf-8") != text:
+            f.parent.mkdir(parents=True, exist_ok=True)
             f.write_text(text, encoding="utf-8", newline="\n")
             touched.append(rel)
-    if ensure_sitemap_entry(repo, "videos.html", date.today().isoformat(), "videos.html" in touched):
+    sm = False
+    for rel in ["videos.html"] + [v[0] for v in COLUMN_PAGES.values()]:
+        sm = ensure_sitemap_entry(repo, rel, date.today().isoformat(), rel in touched) or sm
+    if sm:
         touched.append("sitemap.xml")
     if write_llms(repo):
         touched.append("llms.txt")
@@ -1482,6 +1613,7 @@ if __name__ == "__main__":
     else:
         changed = []
         for rel, text in build_indexes(repo).items():
+            (repo / rel).parent.mkdir(parents=True, exist_ok=True)
             (repo / rel).write_text(text, encoding="utf-8", newline="\n")
             changed.append(rel)
     print(f"changed {len(changed)} files")
