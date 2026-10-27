@@ -243,6 +243,12 @@ def ensure_webp(src: Path) -> Path | None:
         from PIL import Image
     except ImportError:
         return None
+    # 2026-10-26：webp 長邊超過 WEBP_MAX＝刻意做的高解析版（Retina 用，AI 放大過），不准被 jpg 縮小版蓋掉
+    # （git pull 後檔案時間會亂，不能只靠 mtime 判斷）
+    if dest.exists():
+        with Image.open(dest) as cur:
+            if max(cur.size) > WEBP_MAX:
+                return dest
     im = Image.open(src).convert("RGB")
     im.thumbnail((WEBP_MAX, WEBP_MAX))
     im.save(dest, "WEBP", quality=80, method=6)
