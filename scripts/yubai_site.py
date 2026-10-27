@@ -1627,6 +1627,11 @@ def check_site(repo: Path) -> tuple[list[str], list[str]]:
         og = _meta_content(text, "property", "og:image")
         if og.startswith(SITE_URL + "/") and not (repo / urllib.parse.unquote(og[len(SITE_URL) + 1:])).exists():
             errors.append(f"{name}：og:image 指到不存在的檔案 {og}")
+    for f in sorted(repo.rglob("*.html")):
+        if ".git" in f.parts:
+            continue
+        if '"FAQPage"' in f.read_text(encoding="utf-8"):
+            errors.append(f"{f.relative_to(repo).as_posix()}：有 FAQPage 結構化資料（蘇菲規定不加）")
     return errors, warns
 
 
