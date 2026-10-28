@@ -6,37 +6,13 @@ jobs:
   crawl:
     runs-on: ubuntu-latest
     steps:
-      - name: YouTube 頻道與 Shorts
+      - name: Shorts 說明欄
         run: |
           UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
-          H="Accept-Language: zh-TW,zh;q=0.9"
-          c=$(curl -s -L -A "$UA" -H "$H" -b "CONSENT=YES+1" "https://www.youtube.com/channel/UCq-gFBlAjGaeJ6UAzMXzuyw/about")
-          n=$(echo "$c" | grep -o "sophieyubai" | wc -l); d=$(echo "$c" | grep -o '"description":{"simpleText":"[^"]\{0,120\}' | head -1)
-          l=$(echo "$c" | grep -o 'sophieyubai[^"\\ ]\{0,40\}' | sort -u | head -3 | tr '\n' ' ')
-          echo "::notice title=YT 頻道::sophieyubai 出現 $n 次 | $l | $d"
-          for v in 3jMtx7mfNac Zz4W8x7xZ4Y -- --RLZkD9wDo dN0sLLDaZs0; do
-            [ "$v" = "--" ] && continue
-            p=$(curl -s -L -A "$UA" -H "$H" -b "CONSENT=YES+1" "https://www.youtube.com/watch?v=$v")
-            s=$(echo "$p" | grep -o '"shortDescription":"[^"]*' | head -1 | sed 's/"shortDescription":"//')
-            echo "::notice title=YT $v::含 sophieyubai: $(echo "$s" | grep -c sophieyubai) | $(echo "$s" | grep -o 'sophieyubai[^ \\]*' | head -1) | 說明前 80 字: ${s:0:80}"
+          for v in 3jMtx7mfNac Zz4W8x7xZ4Y dN0sLLDaZs0 RLZkD9wDo-FULL; do
+            [ "$v" = "RLZkD9wDo-FULL" ] && v="--RLZkD9wDo"
+            for u in "https://www.youtube.com/watch?v=$v&hl=zh-TW" "https://www.youtube.com/shorts/$v"; do
+              p=$(curl -s -L -A "$UA" -H "Accept-Language: zh-TW,zh;q=0.9" -b "CONSENT=YES+cb; SOCS=CAI" "$u")
+              echo "::notice title=$v $(echo $u | cut -d/ -f4 | cut -c1-6)::len=${#p} title=$(echo "$p" | grep -o '<title>[^<]*' | head -1 | cut -c8-60) | sophieyubai=$(echo "$p" | grep -o sophieyubai | wc -l) | shortDesc=$(echo "$p" | grep -c shortDescription) | attr=$(echo "$p" | grep -o 'sophieyubai[^"\\ ]\{0,60\}' | sort -u | head -2 | tr '\n' ' ')"
+            done
           done
-      - name: FB 與 LINE
-        run: |
-          UA="Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
-          f=$(curl -s -L -A "$UA" "https://www.facebook.com/profile.php?id=100080504551842")
-          echo "::notice title=FB::長度 ${#f} | sophieyubai 出現 $(echo "$f" | grep -o sophieyubai | wc -l) 次 | title: $(echo "$f" | grep -o '<title>[^<]*' | head -1)"
-          for u in https://page.line.me/371arhqu https://line.me/R/ti/p/@371arhqu; do
-            g=$(curl -s -L -A "Mozilla/5.0" "$u")
-            echo "::notice title=LINE $u::長度 ${#g} | sophieyubai 出現 $(echo "$g" | grep -o sophieyubai | wc -l) 次 | title: $(echo "$g" | grep -o '<title>[^<]*' | head -1)"
-          done
-      - name: 搜尋引擎收錄
-        run: |
-          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
-          b=$(curl -s -L -A "$UA" -H "Accept-Language: zh-TW" "https://www.bing.com/search?q=site%3Asophieyubai.com&setlang=zh-TW")
-          echo "::notice title=Bing site:::sophieyubai.com 連結 $(echo "$b" | grep -o 'https://sophieyubai.com[^"&< ]*' | sort -u | wc -l) 個 | $(echo "$b" | grep -o 'https://sophieyubai.com[^"&< ]*' | sort -u | head -5 | tr '\n' ' ')"
-          b2=$(curl -s -L -A "$UA" "https://www.bing.com/search?q=%E8%98%87%E8%8F%B2%E9%A4%98%E7%99%BD")
-          echo "::notice title=Bing 蘇菲餘白::sophieyubai 出現 $(echo "$b2" | grep -o sophieyubai | wc -l) 次"
-          gg=$(curl -s -L -A "$UA" -w "\nHTTP=%{http_code}" "https://www.google.com/search?q=site%3Asophieyubai.com&hl=zh-TW")
-          echo "::notice title=Google site:::$(echo "$gg" | tail -1) | sophieyubai 連結 $(echo "$gg" | grep -o 'https://sophieyubai.com[^"&< ]*' | sort -u | wc -l) 個 | captcha=$(echo "$gg" | grep -c -i 'unusual traffic\|recaptcha')"
-          d=$(curl -s -L -A "$UA" "https://html.duckduckgo.com/html/?q=site%3Asophieyubai.com")
-          echo "::notice title=DuckDuckGo site:::sophieyubai.com 連結 $(echo "$d" | grep -o 'sophieyubai.com[^"&< ]*' | sort -u | wc -l) 個"
