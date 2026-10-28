@@ -1,0 +1,21 @@
+name: diag-crawl
+on:
+  push:
+    branches: [diag-crawl]
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Googlebot 視角檢查
+        run: |
+          UA="Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+          for u in https://sophieyubai.com/ http://sophieyubai.com/ https://www.sophieyubai.com/ https://sophieyubai.com/letters/099-skinbooster-microbotox-20261026.html https://sophieyubai.com/robots.txt https://sophieyubai.com/sitemap.xml https://deepgill1004-hue.github.io/feifei-yubai-site/ https://deepgill1004-hue.github.io/feifei-yubai-site/letters/045-morpheus8-vs-monopolar-rf-20260705.html; do
+            r=$(curl -s -o /tmp/b -A "$UA" -L --max-time 30 -w "%{http_code} final=%{url_effective} redirects=%{num_redirects} ssl=%{ssl_verify_result}" "$u" 2>&1)
+            h=$(curl -s -I -A "$UA" --max-time 30 "$u" | tr -d '\r' | grep -i -E '^(HTTP|location|server|x-robots-tag|cf-mitigated|cache-control):' | tr '\n' ' ')
+            nb=$(grep -o -i '<meta name="robots"[^>]*>' /tmp/b | head -1)
+            t=$(grep -o '<title>[^<]*' /tmp/b | head -1)
+            echo "::notice title=$u::$r | $h | $nb | $t"
+          done
+          echo "::notice title=DNS::$(dig +short sophieyubai.com A | tr '\n' ' ') www=$(dig +short www.sophieyubai.com | tr '\n' ' ') NS=$(dig +short NS sophieyubai.com | tr '\n' ' ')"
+          echo "::notice title=TXT::$(dig +short TXT sophieyubai.com | tr '\n' ' ')"
+          echo "::notice title=WHOIS::$(whois sophieyubai.com 2>/dev/null | grep -i -E 'creation date|registrar:' | head -2 | tr '\n' ' ')"
