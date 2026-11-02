@@ -187,12 +187,12 @@ def article_ld(text: str, page_path: Path, site_root: Path) -> list[dict]:
     # 都沒有就不放 datePublished，dateModified 退而用 sitemap.xml 的 lastmod，再沒有就整個不放，不編
     pub = meta["date"]
     if pub:
-        obj["datePublished"] = pub
-        obj["dateModified"] = pub
+        obj["datePublished"] = ld_datetime(pub)
+        obj["dateModified"] = ld_datetime(pub)
     else:
         lm = _sitemap_lastmod(site_root, url)
         if lm:
-            obj["dateModified"] = lm
+            obj["dateModified"] = ld_datetime(lm)
     img = _meta_content(text, "property", "og:image")
     if img:
         obj["image"] = img if img.startswith("http") else f"{SITE_URL}/{img.lstrip('./')}"
@@ -1355,12 +1355,18 @@ def yt_thumb(vid: str) -> str:
     return f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg"
 
 
+def ld_datetime(d: str) -> str:
+    """結構化資料的日期一律帶台灣時區（Search Console：uploadDate 缺少時區／datetime 值無效）。
+    只有日期就補 T00:00:00+08:00；已經是完整時間就原樣。"""
+    return f"{d}T00:00:00+08:00" if re.fullmatch(r"\d{4}-\d{2}-\d{2}", d or "") else d
+
+
 def video_ld(v: dict) -> dict:
     """VideoObject；uploadDate 只用 videos.json 的 publishedDate，沒填就不放（不編日期）。"""
     vid = v["id"]
     o = {"@type": "VideoObject", "name": v["title"], "description": v["description"], "thumbnailUrl": yt_thumb(vid)}
     if v.get("publishedDate"):
-        o["uploadDate"] = v["publishedDate"]
+        o["uploadDate"] = ld_datetime(v["publishedDate"])
     o.update({"embedUrl": f"https://www.youtube.com/embed/{vid}", "contentUrl": yt_watch(vid),
               "inLanguage": "zh-Hant", "publisher": _org()})
     return o
