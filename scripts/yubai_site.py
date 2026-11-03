@@ -122,7 +122,7 @@ PERSON_ID = ABOUT_URL + "#sophie"
 # 只能用 about.html 已經寫出來的事實；不加頭銜、年資、學歷、真名
 ABOUT_PERSON_DESC = ("蘇菲的內容來自醫療、護理、醫療器材銷售與醫美營運現場的長期觀察，"
                      "把醫美療程原理、諮詢流程、常見話術、風險與預算拆開，讓消費者知道下一步該問什麼。")
-SITE_DESC = "醫美判斷力與療程諮詢筆記：整理醫美療程、抗老選擇、診所諮詢與消費判斷。"
+SITE_DESC = "十年醫材加醫美營運的業內人，教你看懂療程背後的儀器與帳：整理醫美療程、抗老選擇、診所諮詢與消費判斷。"
 
 
 def _org() -> dict:
@@ -573,10 +573,10 @@ def render_home(metas: list[dict], shorts: list[dict] | None = None) -> str:
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>蘇菲餘白｜醫美判斷力與療程諮詢筆記</title>
-<meta name="description" content="蘇菲餘白整理醫美療程、抗老選擇、診所諮詢與消費判斷。用 15 年醫療與醫美營運經驗，把複雜療程變成問得出口的問題。" />
-<meta property="og:title" content="蘇菲餘白｜醫美判斷力與療程諮詢筆記" />
-<meta property="og:description" content="做醫美前，先把療程、預算、風險與診所話術看懂。" />
+<title>蘇菲餘白｜看懂療程背後的儀器與帳，十年醫材＋醫美營運的業內人</title>
+<meta name="description" content="蘇菲餘白由十年醫材加醫美營運的業內人撰寫，教你看懂電波、音波、雷射、注射等療程背後的儀器原理，和一個療程的帳怎麼排、錢花在哪一步，再決定要不要做。" />
+<meta property="og:title" content="蘇菲餘白｜看懂療程背後的儀器與帳，十年醫材＋醫美營運的業內人" />
+<meta property="og:description" content="十年醫材加醫美營運的業內人，教你看懂療程背後的儀器與帳。" />
 <meta property="og:type" content="website" />
 <meta property="og:image" content="{SITE_URL}/assets/sophie-lib/formal-seated.jpg" />
 <link rel="canonical" href="{SITE_URL}/" />
