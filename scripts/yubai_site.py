@@ -32,6 +32,8 @@ SITE_URL = "https://sophieyubai.com"
 LINE_URL = "https://line.me/R/ti/p/@371arhqu"
 YT_CHANNEL = "https://www.youtube.com/channel/UCq-gFBlAjGaeJ6UAzMXzuyw"
 FB_PAGE = "https://www.facebook.com/profile.php?id=100080504551842"
+IG_URL = "https://www.instagram.com/sophie.beautylab/"   # 2026-11-03 蘇菲同意加入（Google AI 摘要主要引用這個帳號）
+SOCIAL = [LINE_URL, YT_CHANNEL, FB_PAGE, IG_URL]         # Organization／Person 的 sameAs 共用
 BRAND = "蘇菲餘白"
 # 對外定位句：首頁、關於頁、llms.txt 三處用字完全一致（2026-10-20 協調員指定）；FB／YouTube 簡介第一句請貼同一句
 POSITIONING = ("蘇菲餘白專注大健康與自費醫美，由護理師、心臟醫材、醫美營運出身的蘇菲，"
@@ -102,6 +104,7 @@ def footer_block(p: str) -> str:
             f'<a href="{p}consult.html">諮詢</a></nav>\n'
             f'      <p class="footer-links"><a href="{LINE_URL}" rel="noopener">官方 LINE</a>'
             f'<a href="{YT_CHANNEL}" rel="noopener">YouTube</a><a href="{FB_PAGE}" rel="noopener">Facebook</a>'
+            f'<a href="{IG_URL}" rel="noopener">Instagram</a>'
             f'<a href="{p}feed.xml">RSS</a></p>\n'
             f'      <p class="fine">{BRAND}｜{FOOTER_NOTE}</p>\n'
             f'      {LINE_FAB}\n'
@@ -146,7 +149,7 @@ def home_ld() -> str:
     return ld_block([
         {"@type": "WebSite", "name": BRAND, "url": SITE_URL + "/", "inLanguage": "zh-Hant",
          "description": SITE_DESC, "publisher": _org()},
-        {**_org(), "description": POSITIONING, "sameAs": [LINE_URL, YT_CHANNEL, FB_PAGE]},
+        {**_org(), "description": POSITIONING, "sameAs": SOCIAL},
     ])
 
 
@@ -187,12 +190,12 @@ def article_ld(text: str, page_path: Path, site_root: Path) -> list[dict]:
     # 都沒有就不放 datePublished，dateModified 退而用 sitemap.xml 的 lastmod，再沒有就整個不放，不編
     pub = meta["date"]
     if pub:
-        obj["datePublished"] = pub
-        obj["dateModified"] = pub
+        obj["datePublished"] = ld_datetime(pub)
+        obj["dateModified"] = ld_datetime(pub)
     else:
         lm = _sitemap_lastmod(site_root, url)
         if lm:
-            obj["dateModified"] = lm
+            obj["dateModified"] = ld_datetime(lm)
     img = _meta_content(text, "property", "og:image")
     if img:
         obj["image"] = img if img.startswith("http") else f"{SITE_URL}/{img.lstrip('./')}"
@@ -201,7 +204,7 @@ def article_ld(text: str, page_path: Path, site_root: Path) -> list[dict]:
     return [obj]
 
 
-# FAQPage（2026-11-03 凱菲「我通通都要做」，取代 10/20「不加 FAQPage schema」）：
+# FAQPage（2026-11-03 蘇菲「我通通都要做」，取代 10/20「不加 FAQPage schema」）：
 # 文章「常見問題」小節的每個 H3（問）＋緊接的第一段 <p>（答）→ schema.org FAQPage；沒有問答小節就不加。
 # 答案只取第一段：問答之後的結語段落不算答案。文字去標籤、去 HTML 實體，不改內容。
 FAQ_SEC_RE = re.compile(r"<h2\b[^>]*>\s*常見問題\s*</h2>(.*?)(?=<h2\b|</article\b|</main\b|$)", re.S)
@@ -234,7 +237,7 @@ def about_ld(text: str) -> list[dict]:
     if desc:
         page["description"] = desc
     person = {"@type": "Person", "@id": PERSON_ID, "name": AUTHOR_NAME, "alternateName": BRAND, "url": ABOUT_URL,
-              "description": ABOUT_PERSON_DESC}
+              "description": ABOUT_PERSON_DESC, "sameAs": SOCIAL}
     return [page, person]
 
 
@@ -912,6 +915,7 @@ def render_llms_txt(repo: Path, extra: dict[str, str] | None = None) -> str:
     section("療程主題", [repo / "treatments.html"] + sorted((repo / "topics").glob("*.html")))
     section("影片", [repo / "videos.html"])
     out.append(f"- [YouTube 頻道]({YT_CHANNEL}): {BRAND}短影片，每支只講一個判斷題")
+    out.append(f"- [Instagram @sophie.beautylab]({IG_URL}): {BRAND}的 Instagram，拆解醫美儀器與療程")
     section("好物清單", [repo / "picks.html"] + sorted((repo / "picks").glob("*.html")))
     section("關於", [repo / "about.html", repo / "faq.html", repo / "consult.html", repo / "letters" / "index.html"])
     out += [f"- [RSS 訂閱]({SITE_URL}/feed.xml): 文章更新的 RSS feed",
@@ -1381,12 +1385,18 @@ def yt_thumb(vid: str) -> str:
     return f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg"
 
 
+def ld_datetime(d: str) -> str:
+    """結構化資料的日期一律帶台灣時區（Search Console：uploadDate 缺少時區／datetime 值無效）。
+    只有日期就補 T00:00:00+08:00；已經是完整時間就原樣。"""
+    return f"{d}T00:00:00+08:00" if re.fullmatch(r"\d{4}-\d{2}-\d{2}", d or "") else d
+
+
 def video_ld(v: dict) -> dict:
     """VideoObject；uploadDate 只用 videos.json 的 publishedDate，沒填就不放（不編日期）。"""
     vid = v["id"]
     o = {"@type": "VideoObject", "name": v["title"], "description": v["description"], "thumbnailUrl": yt_thumb(vid)}
     if v.get("publishedDate"):
-        o["uploadDate"] = v["publishedDate"]
+        o["uploadDate"] = ld_datetime(v["publishedDate"])
     o.update({"embedUrl": f"https://www.youtube.com/embed/{vid}", "contentUrl": yt_watch(vid),
               "inLanguage": "zh-Hant", "publisher": _org()})
     return o
@@ -1648,6 +1658,11 @@ def check_site(repo: Path) -> tuple[list[str], list[str]]:
                 errors.append(f"{name}：標籤 #{tag} 在內文裡完全找不到，跟文章主題對不上")
             elif hit < len(parts):
                 warns.append(f"{name}：標籤 #{tag} 只有部分字詞出現在內文，確認一下是否貼切")
+        hl = re.search(r'<p class="hashtag-line">(.*?)</p>', text, re.S)
+        if hl and re.findall(r"#[^\s#<]+", hl.group(1)) and not _tags_of(text):
+            errors.append(f"{name}：標籤全是通用詞（#蘇菲餘白／#醫美判斷力／#知情選擇…），至少要有一個這篇的主題詞")
+        if re.search(r"-[0-9a-f]{6}-\d{8}\.html$", name) or "sophie-note" in name:
+            warns.append(f"{name}：網址含亂碼或 sophie-note，對 SEO 沒有意義（新文章請用主題英文詞；已上線的不改網址）")
         if 'class="y-answer"' not in text:
             warns.append(f"{name}：沒有結論框（data/answers.json 補一條，或用 AEO 模板）")
         img = re.search(r'<figure class="letter-portrait[^"]*">\s*<img src="([^"]+)"', main)
@@ -1664,7 +1679,7 @@ def check_site(repo: Path) -> tuple[list[str], list[str]]:
             continue
         _t = f.read_text(encoding="utf-8")
         _rel = f.relative_to(repo).as_posix()
-        # 2026-11-03 凱菲「我通通都要做」：有「常見問題」小節的文章頁必須帶 FAQPage（取代 10/20「規定不加」）
+        # 2026-11-03 蘇菲「我通通都要做」：有「常見問題」小節的文章頁必須帶 FAQPage（取代 10/20「規定不加」）
         if f.parent.name == "letters" and re.match(r"\d{3}", f.name) and FAQ_SEC_RE.search(_t) and '"FAQPage"' not in _t:
             errors.append(f"{_rel}：有「常見問題」小節但缺 FAQPage 結構化資料（重跑 apply-theme）")
         elif '"FAQPage"' in _t and not FAQ_SEC_RE.search(_t):
