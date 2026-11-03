@@ -1,0 +1,20 @@
+# 第三方監控的時鐘（2026-11-03）：每 15 分鐘叫 ops-board Worker 跑一次監控
+# （電腦心跳、YouTube／網站公開訊號、週結；邏輯在 ~/.claude/tools/ops-board/worker/worker.js runMonitor）。
+# 為什麼放這裡：Cloudflare 免費帳號 5 個 cron 已被其他 Worker 用滿，GitHub Actions 是另一家、不在蘇菲電腦上；
+# 這個 repo 每天有上架 commit，不會因「60 天無活動」被 GitHub 停掉排程。tick 路由不用 token、不回資料。
+name: monitor-tick
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: monitor-tick
+  cancel-in-progress: false
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: tick
+        run: curl -fsS --max-time 60 "https://kaifei-ops-board.deepgill1004.workers.dev/api/monitor/tick"

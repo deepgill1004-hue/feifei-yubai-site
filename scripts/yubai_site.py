@@ -32,6 +32,8 @@ SITE_URL = "https://sophieyubai.com"
 LINE_URL = "https://line.me/R/ti/p/@371arhqu"
 YT_CHANNEL = "https://www.youtube.com/channel/UCq-gFBlAjGaeJ6UAzMXzuyw"
 FB_PAGE = "https://www.facebook.com/profile.php?id=100080504551842"
+IG_URL = "https://www.instagram.com/sophie.beautylab/"   # 2026-11-03 蘇菲同意加入（Google AI 摘要主要引用這個帳號）
+SOCIAL = [LINE_URL, YT_CHANNEL, FB_PAGE, IG_URL]         # Organization／Person 的 sameAs 共用
 BRAND = "蘇菲餘白"
 # 對外定位句：首頁、關於頁、llms.txt 三處用字完全一致（2026-10-20 協調員指定）；FB／YouTube 簡介第一句請貼同一句
 POSITIONING = ("蘇菲餘白專注大健康與自費醫美，由護理師、心臟醫材、醫美營運出身的蘇菲，"
@@ -102,6 +104,7 @@ def footer_block(p: str) -> str:
             f'<a href="{p}consult.html">諮詢</a></nav>\n'
             f'      <p class="footer-links"><a href="{LINE_URL}" rel="noopener">官方 LINE</a>'
             f'<a href="{YT_CHANNEL}" rel="noopener">YouTube</a><a href="{FB_PAGE}" rel="noopener">Facebook</a>'
+            f'<a href="{IG_URL}" rel="noopener">Instagram</a>'
             f'<a href="{p}feed.xml">RSS</a></p>\n'
             f'      <p class="fine">{BRAND}｜{FOOTER_NOTE}</p>\n'
             f'      {LINE_FAB}\n'
@@ -146,7 +149,7 @@ def home_ld() -> str:
     return ld_block([
         {"@type": "WebSite", "name": BRAND, "url": SITE_URL + "/", "inLanguage": "zh-Hant",
          "description": SITE_DESC, "publisher": _org()},
-        {**_org(), "description": POSITIONING, "sameAs": [LINE_URL, YT_CHANNEL, FB_PAGE]},
+        {**_org(), "description": POSITIONING, "sameAs": SOCIAL},
     ])
 
 
@@ -201,6 +204,31 @@ def article_ld(text: str, page_path: Path, site_root: Path) -> list[dict]:
     return [obj]
 
 
+# FAQPage（2026-11-03 蘇菲「我通通都要做」，取代 10/20「不加 FAQPage schema」）：
+# 文章「常見問題」小節的每個 H3（問）＋緊接的第一段 <p>（答）→ schema.org FAQPage；沒有問答小節就不加。
+# 答案只取第一段：問答之後的結語段落不算答案。文字去標籤、去 HTML 實體，不改內容。
+FAQ_SEC_RE = re.compile(r"<h2\b[^>]*>\s*常見問題\s*</h2>(.*?)(?=<h2\b|</article\b|</main\b|$)", re.S)
+FAQ_QA_RE = re.compile(r"<h3\b[^>]*>(.*?)</h3>\s*<p\b[^>]*>(.*?)</p>", re.S)
+
+
+def _plain(s: str) -> str:
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", s))).strip()
+
+
+def faq_ld(text: str, url: str) -> list[dict]:
+    m = FAQ_SEC_RE.search(text)
+    if not m:
+        return []
+    qa = []
+    for q, a in FAQ_QA_RE.findall(m.group(1)):
+        q, a = _plain(q), _plain(a)
+        if q and a:
+            qa.append({"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}})
+    if not qa:
+        return []
+    return [{"@type": "FAQPage", "@id": url + "#faq", "url": url, "inLanguage": "zh-Hant", "mainEntity": qa}]
+
+
 def about_ld(text: str) -> list[dict]:
     desc = _meta_content(text, "name", "description")
     page = {"@type": "AboutPage", "name": "關於蘇菲", "url": ABOUT_URL, "inLanguage": "zh-Hant",
@@ -209,7 +237,7 @@ def about_ld(text: str) -> list[dict]:
     if desc:
         page["description"] = desc
     person = {"@type": "Person", "@id": PERSON_ID, "name": AUTHOR_NAME, "alternateName": BRAND, "url": ABOUT_URL,
-              "description": ABOUT_PERSON_DESC}
+              "description": ABOUT_PERSON_DESC, "sameAs": SOCIAL}
     return [page, person]
 
 
@@ -223,6 +251,7 @@ def ld_for_page(text: str, page_path: Path) -> str:
     if parent.name == "letters" and re.match(r"\d{3}", page_path.name):
         objs = article_ld(text, page_path, root)
         if objs:
+            objs += faq_ld(text, f"{SITE_URL}/letters/{page_path.name}")   # 2026-11-03：問答小節 → FAQPage
             objs += [video_ld(v) for v in videos_for(root, f"letters/{page_path.name}")]
         return ld_block(objs) if objs else ""
     return ""
@@ -886,6 +915,7 @@ def render_llms_txt(repo: Path, extra: dict[str, str] | None = None) -> str:
     section("療程主題", [repo / "treatments.html"] + sorted((repo / "topics").glob("*.html")))
     section("影片", [repo / "videos.html"])
     out.append(f"- [YouTube 頻道]({YT_CHANNEL}): {BRAND}短影片，每支只講一個判斷題")
+    out.append(f"- [Instagram @sophie.beautylab]({IG_URL}): {BRAND}的 Instagram，拆解醫美儀器與療程")
     section("好物清單", [repo / "picks.html"] + sorted((repo / "picks").glob("*.html")))
     section("關於", [repo / "about.html", repo / "faq.html", repo / "consult.html", repo / "letters" / "index.html"])
     out += [f"- [RSS 訂閱]({SITE_URL}/feed.xml): 文章更新的 RSS feed",
@@ -1628,6 +1658,11 @@ def check_site(repo: Path) -> tuple[list[str], list[str]]:
                 errors.append(f"{name}：標籤 #{tag} 在內文裡完全找不到，跟文章主題對不上")
             elif hit < len(parts):
                 warns.append(f"{name}：標籤 #{tag} 只有部分字詞出現在內文，確認一下是否貼切")
+        hl = re.search(r'<p class="hashtag-line">(.*?)</p>', text, re.S)
+        if hl and re.findall(r"#[^\s#<]+", hl.group(1)) and not _tags_of(text):
+            errors.append(f"{name}：標籤全是通用詞（#蘇菲餘白／#醫美判斷力／#知情選擇…），至少要有一個這篇的主題詞")
+        if re.search(r"-[0-9a-f]{6}-\d{8}\.html$", name) or "sophie-note" in name:
+            warns.append(f"{name}：網址含亂碼或 sophie-note，對 SEO 沒有意義（新文章請用主題英文詞；已上線的不改網址）")
         if 'class="y-answer"' not in text:
             warns.append(f"{name}：沒有結論框（data/answers.json 補一條，或用 AEO 模板）")
         img = re.search(r'<figure class="letter-portrait[^"]*">\s*<img src="([^"]+)"', main)
@@ -1642,8 +1677,13 @@ def check_site(repo: Path) -> tuple[list[str], list[str]]:
     for f in sorted(repo.rglob("*.html")):
         if ".git" in f.parts:
             continue
-        if '"FAQPage"' in f.read_text(encoding="utf-8"):
-            errors.append(f"{f.relative_to(repo).as_posix()}：有 FAQPage 結構化資料（蘇菲規定不加）")
+        _t = f.read_text(encoding="utf-8")
+        _rel = f.relative_to(repo).as_posix()
+        # 2026-11-03 蘇菲「我通通都要做」：有「常見問題」小節的文章頁必須帶 FAQPage（取代 10/20「規定不加」）
+        if f.parent.name == "letters" and re.match(r"\d{3}", f.name) and FAQ_SEC_RE.search(_t) and '"FAQPage"' not in _t:
+            errors.append(f"{_rel}：有「常見問題」小節但缺 FAQPage 結構化資料（重跑 apply-theme）")
+        elif '"FAQPage"' in _t and not FAQ_SEC_RE.search(_t):
+            warns.append(f"{_rel}：有 FAQPage 但找不到「常見問題」小節，確認一下")
     return errors, warns
 
 
