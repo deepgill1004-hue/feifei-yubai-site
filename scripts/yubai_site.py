@@ -201,6 +201,31 @@ def article_ld(text: str, page_path: Path, site_root: Path) -> list[dict]:
     return [obj]
 
 
+# FAQPage（2026-11-03 凱菲「我通通都要做」，取代 10/20「不加 FAQPage schema」）：
+# 文章「常見問題」小節的每個 H3（問）＋緊接的第一段 <p>（答）→ schema.org FAQPage；沒有問答小節就不加。
+# 答案只取第一段：問答之後的結語段落不算答案。文字去標籤、去 HTML 實體，不改內容。
+FAQ_SEC_RE = re.compile(r"<h2\b[^>]*>\s*常見問題\s*</h2>(.*?)(?=<h2\b|</article\b|</main\b|$)", re.S)
+FAQ_QA_RE = re.compile(r"<h3\b[^>]*>(.*?)</h3>\s*<p\b[^>]*>(.*?)</p>", re.S)
+
+
+def _plain(s: str) -> str:
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", s))).strip()
+
+
+def faq_ld(text: str, url: str) -> list[dict]:
+    m = FAQ_SEC_RE.search(text)
+    if not m:
+        return []
+    qa = []
+    for q, a in FAQ_QA_RE.findall(m.group(1)):
+        q, a = _plain(q), _plain(a)
+        if q and a:
+            qa.append({"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}})
+    if not qa:
+        return []
+    return [{"@type": "FAQPage", "@id": url + "#faq", "url": url, "inLanguage": "zh-Hant", "mainEntity": qa}]
+
+
 def about_ld(text: str) -> list[dict]:
     desc = _meta_content(text, "name", "description")
     page = {"@type": "AboutPage", "name": "關於蘇菲", "url": ABOUT_URL, "inLanguage": "zh-Hant",
@@ -223,6 +248,7 @@ def ld_for_page(text: str, page_path: Path) -> str:
     if parent.name == "letters" and re.match(r"\d{3}", page_path.name):
         objs = article_ld(text, page_path, root)
         if objs:
+            objs += faq_ld(text, f"{SITE_URL}/letters/{page_path.name}")   # 2026-11-03：問答小節 → FAQPage
             objs += [video_ld(v) for v in videos_for(root, f"letters/{page_path.name}")]
         return ld_block(objs) if objs else ""
     return ""
@@ -1636,8 +1662,13 @@ def check_site(repo: Path) -> tuple[list[str], list[str]]:
     for f in sorted(repo.rglob("*.html")):
         if ".git" in f.parts:
             continue
-        if '"FAQPage"' in f.read_text(encoding="utf-8"):
-            errors.append(f"{f.relative_to(repo).as_posix()}：有 FAQPage 結構化資料（蘇菲規定不加）")
+        _t = f.read_text(encoding="utf-8")
+        _rel = f.relative_to(repo).as_posix()
+        # 2026-11-03 凱菲「我通通都要做」：有「常見問題」小節的文章頁必須帶 FAQPage（取代 10/20「規定不加」）
+        if f.parent.name == "letters" and re.match(r"\d{3}", f.name) and FAQ_SEC_RE.search(_t) and '"FAQPage"' not in _t:
+            errors.append(f"{_rel}：有「常見問題」小節但缺 FAQPage 結構化資料（重跑 apply-theme）")
+        elif '"FAQPage"' in _t and not FAQ_SEC_RE.search(_t):
+            warns.append(f"{_rel}：有 FAQPage 但找不到「常見問題」小節，確認一下")
     return errors, warns
 
 
