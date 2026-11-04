@@ -201,7 +201,16 @@ def article_ld(text: str, page_path: Path, site_root: Path) -> list[dict]:
         obj["image"] = img if img.startswith("http") else f"{SITE_URL}/{img.lstrip('./')}"
     obj.update({"inLanguage": "zh-Hant", "mainEntityOfPage": {"@type": "WebPage", "@id": url}, "url": url,
                 "author": _person_ref(), "publisher": _org()})
-    return [obj]
+    cid = meta.get("col")
+    if cid not in COLUMN_PAGES:
+        return [obj]
+    # 2026-11-04 凱菲：GEO／AEO 要樹枝狀。文章標出屬於哪個欄目主幹，首頁 → 欄目 → 文章一條路徑
+    hub = f"{SITE_URL}/{COLUMN_PAGES[cid][0]}"
+    obj["isPartOf"] = {"@type": "CollectionPage", "@id": hub, "url": hub, "name": col_name(cid)}
+    return [obj, {"@type": "BreadcrumbList", "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "首頁", "item": SITE_URL + "/"},
+        {"@type": "ListItem", "position": 2, "name": col_name(cid), "item": hub},
+        {"@type": "ListItem", "position": 3, "name": headline, "item": url}]}]
 
 
 # FAQPage（2026-11-03 蘇菲「我通通都要做」，取代 10/20「不加 FAQPage schema」）：
@@ -755,9 +764,12 @@ HUB_GROUPS = {
 _HUB_RX: dict = {}
 
 
+HUB_MISC = "更多文章"   # 分枝的收容格，不是真的分枝：同在這一格不算同分枝
+
+
 def _hub_group(cid: str, a: dict) -> str:
     rest = (a.get("desc") or "") + (a.get("answer") or "")
-    best, best_s = "更多文章", 0
+    best, best_s = HUB_MISC, 0
     if cid not in _HUB_RX:
         _HUB_RX[cid] = [(l, _kw_rx(k)) for l, k in HUB_GROUPS.get(cid, [])]
     for label, rx in _HUB_RX[cid]:
@@ -779,7 +791,7 @@ def render_column_page(cid: str, metas: list[dict]) -> str:
     groups: dict[str, list[dict]] = {}
     for a in mine:
         groups.setdefault(_hub_group(cid, a) if HUB_GROUPS.get(cid) else "全部文章", []).append(a)
-    labels = [l for l, _ in HUB_GROUPS.get(cid, [])] + ["更多文章", "全部文章"]
+    labels = [l for l, _ in HUB_GROUPS.get(cid, [])] + [HUB_MISC, "全部文章"]
     order = [l for l in labels if l in groups]
     secs = []
     for label in order:
@@ -1037,7 +1049,8 @@ def _score_cats(title: str, body: str) -> dict:
 
 
 def _column_of(title: str, body: str) -> str:
-    best, best_s = "A", 0
+    """回傳欄目代號；一個欄目關鍵字都沒中回空字串（職場題不屬於任何欄目，不准硬塞 A，article_ld 才不會帶 isPartOf／Breadcrumb）。"""
+    best, best_s = "", 0
     for cid, _, rx in _COLS:
         s = 4 * len(rx.findall(title)) + min(len(rx.findall(body)), 8)
         if s > best_s:
@@ -1064,6 +1077,8 @@ def related_for(me: dict, metas: list[dict], n: int = 3) -> list[dict]:
         ob = _bigrams(o["title"])
         jac = len(tb & ob) / max(1, len(tb | ob))
         s = 4 * len(set(me["tags"]) & set(o["tags"])) + 3 * len(set(me["cats"]) & set(o["cats"])) + 6 * jac
+        if me["col"] == o["col"] and HUB_GROUPS.get(me["col"]) and _hub_group(me["col"], me) == _hub_group(o["col"], o) != HUB_MISC:
+            s += 8   # 2026-11-04：同一分枝優先互連
         scored.append((o["col"] != me["col"], -round(s, 4), abs(int(o["issue"]) - int(me["issue"])), o["issue"], o))
     scored.sort(key=lambda x: x[:4])
     return [x[4] for x in scored[:n]]
@@ -1192,8 +1207,10 @@ def article_aeo_block(me: dict, metas: list[dict], with_cta: bool) -> str:
     topics = [(l, f) for l, f, _ in TOPIC_PAGES if l in me["cats"]]
     topics.sort(key=lambda x: -me["cats"][x[0]])
     topic_line = "".join(f'<a href="../{f}">{l}</a>' for l, f in topics[:2])
-    meta_line = (f'<p class="y-col">所屬欄目：<b><a href="{column_url(me["col"], "../")}">{html.escape(col_name(me["col"]), quote=False)}</a></b>'
-                 + (f'<span>相關療程主題：{topic_line}</span>' if topic_line else "") + "</p>")
+    col_part = (f'所屬欄目：<b><a href="{column_url(me["col"], "../")}">{html.escape(col_name(me["col"]), quote=False)}</a></b>'
+                if me["col"] in COLUMN_PAGES else "")     # 不屬於欄目的文章不出現空連結
+    topic_part = f'<span>相關療程主題：{topic_line}</span>' if topic_line else ""
+    meta_line = f'<p class="y-col">{col_part}{topic_part}</p>' if col_part or topic_part else ""
     pn = ""
     if prev_a or next_a:
         pn = ('<nav class="y-pn-static" aria-label="上一篇與下一篇">'
