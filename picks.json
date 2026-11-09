@@ -1,6 +1,6 @@
 {
  "disclosure": "商品是化妝品或一般用品，不是醫療器材，術後怎麼用請先問你的醫師。",
- "updated": "2026-10-19",
+ "updated": "2026-11-09",
  "products": [
   {
    "id": "obge-stick",
@@ -53,21 +53,20 @@
    "go": "https://sophie-go.deepgill1004.workers.dev/go/drmay-sun"
   },
   {
-   "id": "medicube-ager",
-   "name": "medicube AGE-R Booster Cleanser 智能潔面儀",
-   "category": "美容家電",
-   "price": "NT$4,599",
-   "why": "想用洗臉機的人可以參考；術後脫皮期先停，等醫師說可以再從最輕檔開始。",
+   "id": "cerave-foam-cleanser",
+   "name": "CeraVe 適樂膚 溫和洗卸泡沫潔膚乳 236ml",
+   "category": "清潔",
+   "price": "NT$407",
+   "why": "泡沫型、洗卸合一；洗臉機收起來那段，手洗用這種溫和型就好",
    "tags": [
     "洗臉",
     "清潔",
-    "毛孔",
+    "敏感",
+    "術後",
     "換膚",
-    "果酸",
-    "居家",
-    "美容儀"
+    "果酸"
    ],
-   "go": "https://sophie-go.deepgill1004.workers.dev/go/medicube-ager"
+   "go": "https://sophie-go.deepgill1004.workers.dev/go/cerave-foam-cleanser"
   }
  ]
 }
