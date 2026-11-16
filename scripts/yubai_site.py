@@ -657,8 +657,8 @@ def render_letters_index(metas: list[dict]) -> str:
 # 照片與物件浮在空中慢慢飄；文章區保留 card-grid 縮圖版（凱菲：樣張的純文字清單不要套）。
 # 樣式 assets/yubai-home.css、動態 assets/yubai-home.js（只有首頁載入，版本號 HOME_VER，不必重套全站）。
 
-HOME_VER = "20261116a"
-HOME_ISLE = __import__("os").environ.get("YUBAI_HOME_ISLE") or "v2"   # 首屏漂浮島：v1 歷程小島／v2 過來人／v3 四座小島（凱菲 11/16 選 V2：「V3 沒有跳躍感，V2 很可愛」）
+HOME_VER = "20261116b"
+HOME_ISLE = __import__("os").environ.get("YUBAI_HOME_ISLE") or "v3"   # 首屏漂浮島：v1 歷程小島／v2 過來人／v3 四座小島（凱菲 11/16 先選 V2，問「V3 的跳躍呢」後改選 V3 跳躍 A 版）
 
 TOPICS = [  # 編號、標題、一句話、圖、連結、對應 7 問第 2 題的標籤、圖說
     ("01", "鳳凰電波", "會緊，跟會拉不是同一件事。", "t-rf", "topics/thermage.html", "質地", "蘇菲手拿電波手把"),
@@ -691,6 +691,17 @@ ISLE_V2 = ("isle-v2", 640, 681, "一塊長著青苔和兩朵小白花的石頭�
 ISLE_V3 = (1.6148, "M10.5,82.1 Q22.4,29.1 34.3,35.1 Q48.2,29.1 62.1,39.3 Q74.8,2.0 87.4,8.0", [  # 左、上、寬（%）、漂浮秒數、起點、圖寬高
     (0.0, 77.03, 20.96, 7.4, -1, 295, 204), (22.0, 21.53, 24.59, 6.6, -3, 344, 528),
     (49.48, 33.61, 25.33, 7.9, -5, 354, 228), (74.89, 0.0, 25.11, 7.0, -2, 351, 317)])
+# V3 女生真的會跳（2026-11-16 凱菲問「V3 的跳躍呢」）：a 一路跳上去、b 跳過去再跳回來、c 原地彈跳；off＝原圖不動。
+# 第二顆換成拆掉女生的乾淨石頭，女生另成一層，由 yubai-home.js 依石頭當下漂到哪裡算落腳點；暫停或沒有 JS 時她站在第二顆上（.rider）。
+HOME_HOP = __import__("os").environ.get("YUBAI_HOME_HOP") or "a"    # 凱菲 11/16 選 A「一路跳上去」
+ISLE_V3_HOP = {
+    "stone2": ("isle-v3-2b", 57.55, 344, 216),            # 乾淨石頭：圖名、上（%，石頭位置不變）、圖寬高
+    "feet": [(0.76, 0.36), (0.5465, 0.25), (0.47, 0.40), (0.64, 0.53)],   # 每顆的落腳點（佔石頭圖寬、高的比例）
+    "feet2": {4: (0.84, 0.50)},                           # 第四顆轉身回看站的點（鏡子右邊，不擋鏡子）
+    "girl": ("isle-v3-girl", 174, 361, 23, 360),          # 站姿：圖寬高、後腳鞋底（原圖 px）
+    "air": ("isle-v3-girl-air", 168, 321, 35, 341),       # 半空：圖寬高、對到站姿腳底的點（兩張腰線對齊）
+    "scale": {"a": 0.8, "b": 1.0, "c": 1.0},              # a 要跳到最高那顆，縮小一點頭才不會碰到選單
+}
 
 
 def isle_block() -> str:
@@ -711,14 +722,40 @@ def isle_block() -> str:
                 f'<img src="assets/home/{k}.webp" alt="{alt}" width="{w}" height="{h}" fetchpriority="high" decoding="async" />'
                 f'<span class="isle-shadow" aria-hidden="true"></span></div></div>')
     ar, trail, stones = ISLE_V3
-    links = "".join(
-        f'<a class="stone" style="--l:{l}%;--t:{t}%;--w:{w}%;--dur:{dur}s;--dl:{dl}s" href="{href}">'
-        f'<span class="fl2"><img src="assets/home/isle-v3-{i}.webp" alt="" width="{iw}" height="{ih}" decoding="async" /></span>'
-        f'<span class="sh" aria-hidden="true"></span><span class="lbl"><b>{num}</b>{label}</span></a>'
-        for i, ((l, t, w, dur, dl, iw, ih), (num, label, href)) in enumerate(zip(stones, ISLE_STOPS), 1))
-    return (f'<div class="isle-stage v3 par" data-depth="-0.05" data-mx="-12">{ghost}'
+    hop = HOME_HOP if HOME_HOP in ISLE_V3_HOP["scale"] else ""
+    hp = ISLE_V3_HOP
+    sc = hp["scale"].get(hop, 1.0)
+    gname, gw, gh, gfx, gfy = hp["girl"]
+    links = ""
+    for i, ((l, t, w, dur, dl, iw, ih), (num, label, href)) in enumerate(zip(stones, ISLE_STOPS), 1):
+        name, extra, feet = f"isle-v3-{i}", "", ""
+        if hop:
+            fx, fy = hp["feet"][i - 1]
+            feet = f' data-feet="{fx},{fy}"'
+            if i in hp["feet2"]:
+                feet += ' data-feet2="{},{}"'.format(*hp["feet2"][i])
+            if i == 2:
+                name, t, iw, ih = hp["stone2"]
+                ref = iw   # 女生的原圖 px 跟第二顆石頭同一個比例
+                rider_w = gw / ref * sc * 100
+                rider_l = fx * 100 - gfx / ref * sc * 100
+                rider_t = (fy * ih - gfy * sc) / ih * 100
+                extra = (f'<img class="rider" src="assets/home/{gname}.webp" alt="" width="{gw}" height="{gh}" decoding="async" '
+                         f'style="left:{rider_l:.2f}%;top:{rider_t:.2f}%;width:{rider_w:.2f}%" />')
+        links += (f'<a class="stone" style="--l:{l}%;--t:{t}%;--w:{w}%;--dur:{dur}s;--dl:{dl}s" href="{href}"{feet}>'
+                  f'<span class="fl2"><span class="dip"><img src="assets/home/{name}.webp" alt="" width="{iw}" height="{ih}" decoding="async" />{extra}</span></span>'
+                  f'<span class="sh" aria-hidden="true"></span><span class="lbl"><b>{num}</b>{label}</span></a>')
+    hopper, attr = "", ""
+    if hop:
+        aname, aw, ah, afx, afy = hp["air"]
+        attr = f' data-hop="{hop}"'
+        hopper = (f'<span class="hopper" aria-hidden="true" data-st="{gw},{gh},{gfx},{gfy}" data-air="{aw},{ah},{afx},{afy}" '
+                  f'data-ref="{hp["stone2"][2]}" data-scale="{sc}">'
+                  f'<img class="h-st" src="assets/home/{gname}.webp" alt="" width="{gw}" height="{gh}" decoding="async" />'
+                  f'<img class="h-air" src="assets/home/{aname}.webp" alt="" width="{aw}" height="{ah}" decoding="async" /></span>')
+    return (f'<div class="isle-stage v3 par" data-depth="-0.05" data-mx="-12"{attr}>{ghost}'
             f'<nav class="archi" style="--ar:{ar}" aria-label="四個步驟：推門諮詢、看懂儀器、算清楚帳、術後回看">'
-            f'<svg class="trail" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="{trail}"/></svg>{links}</nav></div>')
+            f'<svg class="trail" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="{trail}"/></svg>{links}{hopper}</nav></div>')
 
 
 def render_home(metas: list[dict], shorts: list[dict] | None = None) -> str:

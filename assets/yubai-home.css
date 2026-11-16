@@ -113,6 +113,15 @@ h1, h2, h3 { font-family: var(--serif); text-wrap: balance; }
 .stone .lbl { position: absolute; left: 50%; top: calc(100% + 14px); transform: translateX(-50%); transition: color 0.3s var(--ease); }
 .stone:hover img, .stone:focus-visible img { transform: translateY(-6px); }
 .stone:hover .lbl, .stone:focus-visible .lbl { color: var(--wine); }
+/* V3 跳躍版（2026-11-16）：女生另成一層，yubai-home.js 依石頭當下漂到的位置算落腳點；落地那顆石頭被踩得往下沉一下（.dip） */
+.stone .dip { position: relative; display: block; }
+.stone .rider { position: absolute; max-width: none; pointer-events: none; }
+.hopper { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 3; pointer-events: none; display: none; }
+.hopper img { position: absolute; left: 0; top: 0; max-width: none; height: auto; opacity: 0; will-change: transform, opacity; }
+.isle-stage.hopping .hopper { display: block; }
+.isle-stage.hopping .rider { visibility: hidden; }
+.isle-stage.v3[data-hop="a"] .archi { margin-top: 8%; }
+.stone .lbl.on { color: var(--wine); }
 
 /* ── Why：梅紫整段＋直書餘白 ── */
 .why { position: relative; overflow: hidden; background: var(--plum); color: var(--plum-ink); padding-block: clamp(72px, 10vw, 128px); isolation: isolate; }
