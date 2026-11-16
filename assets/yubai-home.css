@@ -120,7 +120,7 @@ h2 { font-size: clamp(28px, 3.8vw, 46px); }
 /* 文章 */
 .feature { display: grid; grid-template-columns: 1.3fr 1fr; background: var(--paper); border-radius: 2px; overflow: hidden; margin-bottom: 44px; transition: box-shadow 0.5s; }
 .feature:hover { box-shadow: 0 30px 50px -30px rgba(60, 40, 25, 0.35); }
-.feature figure { aspect-ratio: 16 / 10; }
+.feature figure { aspect-ratio: 3 / 2; }  /* 跟縮圖取景同比例（yubai_site FOCUS_V_ASPECT），頭不會被切 */
 .feature img { filter: var(--grade); transition: transform 1.4s var(--ease); object-position: 50% 30%; }
 .feature:hover img { transform: scale(1.04); }
 .feature-body { padding: clamp(28px, 4vw, 56px); align-self: center; }
