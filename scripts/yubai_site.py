@@ -658,7 +658,7 @@ def render_letters_index(metas: list[dict]) -> str:
 # 樣式 assets/yubai-home.css、動態 assets/yubai-home.js（只有首頁載入，版本號 HOME_VER，不必重套全站）。
 
 HOME_VER = "20261116a"
-HOME_ISLE = __import__("os").environ.get("YUBAI_HOME_ISLE") or "v3"   # 首屏漂浮島：v1 歷程小島／v2 過來人／v3 四座小島
+HOME_ISLE = __import__("os").environ.get("YUBAI_HOME_ISLE") or "v2"   # 首屏漂浮島：v1 歷程小島／v2 過來人／v3 四座小島（凱菲 11/16 選 V2：「V3 沒有跳躍感，V2 很可愛」）
 
 TOPICS = [  # 編號、標題、一句話、圖、連結、對應 7 問第 2 題的標籤、圖說
     ("01", "鳳凰電波", "會緊，跟會拉不是同一件事。", "t-rf", "topics/thermage.html", "質地", "蘇菲手拿電波手把"),
