@@ -378,7 +378,7 @@ _HERE = Path(__file__).resolve()
 FOCUS_CACHE = Path(__import__("os").environ.get("YUBAI_FOCUS_CACHE") or (_HERE.parents[2] / "thumb_focus_cache.json"))
 FACE_MODEL = Path(__import__("os").environ.get("YUBAI_FACE_MODEL") or
                   (_HERE.parents[3] / "tools" / "autoedit" / "models" / "face" / "face_detection_yunet_2023mar.onnx"))
-FOCUS_V_ASPECT = 3 / 2     # 卡片主力比例（首頁卡片、文章列表）；首頁主打 16:10 只多切一點點
+FOCUS_V_ASPECT = 3 / 2     # 卡片主力比例（首頁主打與卡片、文章列表；其他卡片都等於或高於 3:2）
 FOCUS_H_ASPECT = 1.0       # 最窄的卡片（文章列表的清單模式 1:1）
 _FOCUS_MEM: dict | None = None
 _FACE_DET = None
@@ -400,9 +400,11 @@ def _focus_store() -> dict:
     global _FOCUS_MEM
     if _FOCUS_MEM is None:
         try:
-            _FOCUS_MEM = json.loads(FOCUS_CACHE.read_text(encoding="utf-8"))
+            raw = json.loads(FOCUS_CACHE.read_text(encoding="utf-8"))
         except (OSError, ValueError):
-            _FOCUS_MEM = {}
+            raw = {}
+        # 快取只存臉框（偵測最花時間）；取景規則改了照樣用，不必重跑偵測。舊格式（取景字串）丟掉重算
+        _FOCUS_MEM = {k: v for k, v in raw.items() if isinstance(v, dict) and "f" in v}
     return _FOCUS_MEM
 
 
@@ -440,8 +442,9 @@ def focus_from_faces(W: int, H: int, faces: list) -> str:
     規則（2026-11-16 逐張比對 128 張後定案）：
     1. 只看夠大的臉（≥ 最大那張的 25%），背景海報、遠處路人不算。
     2. 以「頭頂最高的那個人」為準：切頭一定是從上面切，最高的頭保住了，其他人的頭也在框內。
-    3. 整顆頭（頭髮到下巴）放得進 3:2 卡片：頭頂上方留 4% 空間；放不下但臉放得下：保住下巴、頭髮盡量多留；
-       臉本身就比框大（近拍）：眼睛放在框高 45%。
+    3. 整顆頭（頭髮到下巴）放得進 3:2 卡片：頭頂上方留 4% 空間；放不下但臉放得下（近拍大頭照）：
+       下巴以臉框底再多 4% 臉高為準、只留 2% 框高，其餘全給頭頂（11/16 線上讀回：舊規則 21 張頭髮貼齊上緣）；
+       臉本身就比框大（特寫）：眼睛放在框高 45%。
     4. 水平以最窄的 1:1 卡片算，對準主臉（面積×信心²最大）。"""
     if not faces:
         return ""
@@ -459,7 +462,7 @@ def focus_from_faces(W: int, H: int, faces: list) -> str:
         if chin - head_top + 2 * m <= V:
             s = head_top - m
         elif chin - y + 2 * m <= V:
-            s = chin + m - V
+            s = max(head_top - m, y + 1.04 * h + 0.02 * V - V)
         else:
             s = eyes - 0.45 * V
         py = max(0.0, min(H - V, s)) / (H - V) * 100
@@ -483,22 +486,22 @@ def auto_focus(repo: Path, img_rel: str | None) -> str:
     import hashlib
     key = f"{urllib.parse.unquote(img_rel)}|{hashlib.sha1(data).hexdigest()[:16]}"
     store = _focus_store()
-    if key in store:
-        return store[key]
-    try:
-        det = _detect_faces(path)
-        val = focus_from_faces(*det) if det else ""
-    except Exception as e:   # 偵測出任何錯都不能讓上架失敗：維持 CSS 預設，不寫快取
-        print(f"[focus] {img_rel} 偵測失敗：{e}", file=sys.stderr)
-        return ""
-    if det is None:          # 沒有 OpenCV／模型：不寫快取，下次有環境再算
-        return ""
-    store[key] = val
-    try:
-        FOCUS_CACHE.write_text(json.dumps(store, ensure_ascii=False, indent=0, sort_keys=True), encoding="utf-8")
-    except OSError:
-        pass
-    return val
+    det = store.get(key)
+    if det is None:
+        try:
+            raw = _detect_faces(path)
+        except Exception as e:   # 偵測出任何錯都不能讓上架失敗：維持 CSS 預設，不寫快取
+            print(f"[focus] {img_rel} 偵測失敗：{e}", file=sys.stderr)
+            return ""
+        if raw is None:          # 沒有 OpenCV／模型：不寫快取，下次有環境再算
+            return ""
+        det = {"w": raw[0], "h": raw[1], "f": [list(f) for f in raw[2]]}
+        store[key] = det
+        try:
+            FOCUS_CACHE.write_text(json.dumps(store, ensure_ascii=False, indent=0, sort_keys=True), encoding="utf-8")
+        except OSError:
+            pass
+    return focus_from_faces(det["w"], det["h"], [tuple(f) for f in det["f"]])
 
 
 def article_meta(name: str, text: str, repo: Path) -> dict | None:
