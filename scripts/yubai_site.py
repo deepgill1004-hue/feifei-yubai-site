@@ -74,7 +74,7 @@ LINE_FAB = ('<a class="y-line-fab" href="' + LINE_URL + '" rel="noopener" aria-l
 
 def head_block(p: str, home: bool = False) -> str:
     css = (f'<link rel="stylesheet" href="{p}assets/yubai.css?v={ASSET_VER}" />'
-           f'<link rel="stylesheet" href="{p}assets/yubai-home.css?v={ASSET_VER}" />' if home else
+           f'<link rel="stylesheet" href="{p}assets/yubai-home.css?v={HOME_VER}" />' if home else
            f'<link rel="stylesheet" href="{p}assets/styles-v2.css?v=20260503-2" />'
            f'<link rel="stylesheet" href="{p}assets/yubai.css?v={ASSET_VER}" />')
     icons = (f'<link rel="icon" href="{p}favicon.ico" sizes="any" />'
@@ -653,35 +653,25 @@ def render_letters_index(metas: list[dict]) -> str:
 
 
 # ---------------------------------------------------------------- 首頁
+# 2026-11-16 首頁綜合版（凱菲 11/15 核准「直接套用」）：白與米色是底，梅紫三段（首屏拱窗、Why、收尾），
+# 照片與物件浮在空中慢慢飄；文章區保留 card-grid 縮圖版（凱菲：樣張的純文字清單不要套）。
+# 樣式 assets/yubai-home.css、動態 assets/yubai-home.js（只有首頁載入，版本號 HOME_VER，不必重套全站）。
 
-TOPICS = [
-    ("01", "鳳凰電波", "會緊，跟會拉不是同一件事。", "t-rf", "topics/thermage.html"),
-    ("02", "音波拉提", "先問自己是鬆、凹、脂肪，還是骨架。", "t-hifu", "topics/ultherapy.html"),
-    ("03", "玻尿酸填充", "臉不是牆壁，哪裡凹補哪裡，常是變腫的開始。", "t-ha", "topics/hyaluronic-acid.html"),
-    ("04", "肉毒桿菌", "不是把表情關掉，是讓太用力的肌肉小聲一點。", "t-botox", "topics/botox.html"),
-    ("05", "水光與膚質", "都叫水光，成分、層次與目的可能差很多。", "t-skin", "topics/skinbooster.html"),
+HOME_VER = "20261116a"
+HOME_ISLE = __import__("os").environ.get("YUBAI_HOME_ISLE") or "v3"   # 首屏漂浮島：v1 歷程小島／v2 過來人／v3 四座小島
+
+TOPICS = [  # 編號、標題、一句話、圖、連結、對應 7 問第 2 題的標籤、圖說
+    ("01", "鳳凰電波", "會緊，跟會拉不是同一件事。", "t-rf", "topics/thermage.html", "質地", "蘇菲手拿電波手把"),
+    ("02", "音波拉提", "先問自己是鬆、凹、脂肪，還是骨架。", "t-hifu", "topics/ultherapy.html", "支撐", "蘇菲雙手各拿一支音波儀器手把"),
+    ("03", "玻尿酸填充", "臉不是牆壁，哪裡凹補哪裡，常是變腫的開始。", "t-ha", "topics/hyaluronic-acid.html", "容量", "蘇菲輕觸自己的臉頰"),
+    ("04", "肉毒桿菌", "不是把表情關掉，是讓太用力的肌肉小聲一點。", "t-botox", "topics/botox.html", "肌肉動態", "蘇菲指著臉部肌肉模型"),
+    ("05", "水光與膚質", "都叫水光，成分、層次與目的可能差很多。", "t-skin", "topics/skinbooster.html", "質地", "蘇菲拿著一瓶保養精華"),
 ]
-VIDEOS = [
+VIDEOS = [  # 沒有 data/videos.json 時才用的本機短片
     ("v1", "四十歲一到臉就得送修？"),
     ("v2", "展示品很軟，放進去就一定自然？"),
     ("v3", "拉提還沒做，先被叫去減重？"),
     ("v4", "想要小臉，別連飽滿都刪掉"),
-    ("v5", "做局部減脂，卻拿體重計驗收？"),
-    ("v6", "今天能做，不等於今天要做"),
-]
-PATHS = [
-    ("p-first", "第一次接觸醫美", "先建立判斷力，再決定要不要做", [
-        ("做醫美前，先把判斷力找回來", "letters/001.html"),
-        ("黑眼圈分三型，90 秒先自檢", "letters/002-dark-circles-three-types.html"),
-        ("常見問題與諮詢前提醒", "faq.html")]),
-    ("p-compare", "正在比較療程", "把療程拆成問題、期待、風險", [
-        ("五大療程主題", "treatments.html"),
-        ("玻尿酸不是補土", "topics/hyaluronic-acid.html"),
-        ("音波不是小臉神器", "topics/ultherapy.html")]),
-    ("p-help", "想有人幫忙整理", "把疑問變成帶得進診間的問題", [
-        ("諮詢整理方式", "consult.html"),
-        ("加入官方 LINE", LINE_URL),
-        ("蘇菲餘白文章庫", "letters/index.html")]),
 ]
 QUESTIONS = [
     "我真正想改善的是皮膚、輪廓、比例，還是疲態？",
@@ -689,7 +679,46 @@ QUESTIONS = [
     "如果效果不如預期，有沒有修正或等待方案？",
     "恢復期、風險與術後照護，我真的能配合嗎？",
 ]
-HERO_SLIDES = ["hero-clinic", "hero-window", "hero-night", "hero-city"]
+# 首屏拱窗的 4 張照片（臉的位置量過，取景對準臉）
+HERO_SLIDES = [("arch-clinic", "50% 20%", "蘇菲穿白袍在診間微笑"), ("arch-window", "45% 22%", ""),
+               ("arch-night", "41% 18%", ""), ("arch-city", "58% 28%", "")]
+FLOATS = [(8, 0, -10), (9, -3, -12), (8.5, -5, -9), (9.5, -2, -12), (8, -6, -10)]   # 每張卡各自的漂浮節奏（秒、起點、幅度 px）
+ISLE_STOPS = [("01", "推門諮詢", "consult.html"), ("02", "看懂儀器", "treatments.html"),
+              ("03", "算清楚帳", "columns/aesthetic.html"), ("04", "術後回看", "letters/index.html")]
+ISLE_V1 = ("isle-v1", 1100, 559, "浮在空中的青苔小島，一條碎石小路依序經過一扇白色的門、一支白色儀器手把、一捲收據和一面照著天空的手鏡；"
+           "一位穿梅紫裙子的女生正走在路上", [(17.0, 19.7), (42.5, 18.7), (61.8, 21.1), (77.9, 9.5)])
+ISLE_V2 = ("isle-v2", 640, 681, "一塊長著青苔和兩朵小白花的石頭浮在空中，一位穿梅紫裙子的女生坐在石頭邊上，低頭看手上的單子，身旁放著一支白色儀器手把")
+ISLE_V3 = (1.6148, "M10.5,82.1 Q22.4,29.1 34.3,35.1 Q48.2,29.1 62.1,39.3 Q74.8,2.0 87.4,8.0", [  # 左、上、寬（%）、漂浮秒數、起點、圖寬高
+    (0.0, 77.03, 20.96, 7.4, -1, 295, 204), (22.0, 21.53, 24.59, 6.6, -3, 344, 528),
+    (49.48, 33.61, 25.33, 7.9, -5, 354, 228), (74.89, 0.0, 25.11, 7.0, -2, 351, 317)])
+
+
+def isle_block() -> str:
+    """首屏文字上方的漂浮島（三版擇一，HOME_ISLE）。V1、V3 的四站都可以點。"""
+    ghost = '<span class="ghost" aria-hidden="true"><i>餘</i><i>白</i></span>'
+    if HOME_ISLE == "v1":
+        k, w, h, alt, pts = ISLE_V1
+        lines = "".join(f'<line x1="{x}" y1="-0.5" x2="{x}" y2="{y2}"/>' for x, y2 in pts)
+        stops = "".join(f'<a class="stop" style="--x:{x}%;--row:-2%" href="{href}"><b>{num}</b>{label}</a>'
+                        for (x, _), (num, label, href) in zip(pts, ISLE_STOPS))
+        return (f'<div class="isle-stage v1 par" data-depth="-0.05" data-mx="-12"><div class="isle"><div class="isle-float">'
+                f'<img src="assets/home/{k}.webp" alt="{alt}" width="{w}" height="{h}" fetchpriority="high" decoding="async" />'
+                f'<svg class="leads" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">{lines}</svg>{stops}</div>'
+                f'<span class="isle-shadow" aria-hidden="true"></span></div></div>')
+    if HOME_ISLE == "v2":
+        k, w, h, alt = ISLE_V2
+        return (f'<div class="isle-stage v2 par" data-depth="-0.05" data-mx="-12">{ghost}<div class="isle">'
+                f'<img src="assets/home/{k}.webp" alt="{alt}" width="{w}" height="{h}" fetchpriority="high" decoding="async" />'
+                f'<span class="isle-shadow" aria-hidden="true"></span></div></div>')
+    ar, trail, stones = ISLE_V3
+    links = "".join(
+        f'<a class="stone" style="--l:{l}%;--t:{t}%;--w:{w}%;--dur:{dur}s;--dl:{dl}s" href="{href}">'
+        f'<span class="fl2"><img src="assets/home/isle-v3-{i}.webp" alt="" width="{iw}" height="{ih}" decoding="async" /></span>'
+        f'<span class="sh" aria-hidden="true"></span><span class="lbl"><b>{num}</b>{label}</span></a>'
+        for i, ((l, t, w, dur, dl, iw, ih), (num, label, href)) in enumerate(zip(stones, ISLE_STOPS), 1))
+    return (f'<div class="isle-stage v3 par" data-depth="-0.05" data-mx="-12">{ghost}'
+            f'<nav class="archi" style="--ar:{ar}" aria-label="四個步驟：推門諮詢、看懂儀器、算清楚帳、術後回看">'
+            f'<svg class="trail" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="{trail}"/></svg>{links}</nav></div>')
 
 
 def render_home(metas: list[dict], shorts: list[dict] | None = None) -> str:
@@ -700,53 +729,53 @@ def render_home(metas: list[dict], shorts: list[dict] | None = None) -> str:
     def jimg(a):
         return f'<figure><img src="{a["img"]}"{focus_attr(a)} alt="" loading="lazy" decoding="async" /></figure>' if a["img"] else "<figure></figure>"
 
+    def fl(i):
+        dur, dl, amp = FLOATS[i % len(FLOATS)]
+        return f'<div class="fl" style="--dur:{dur}s;--delay:{dl}s;--amp:{amp}px">'
+
     feature = ""
     if feat:
-        feature = (f'<a class="feature reveal" href="letters/{feat["file"]}">\n      {jimg(feat)}\n'
-                   f'      <div class="feature-body">\n'
-                   f'        <p class="meta">No.{feat["issue"]} · {feat["date"].replace("-", ".")} · 最新</p>\n'
-                   f'        <h3>{html.escape(feat["title"], quote=False)}</h3>\n'
-                   f'        <span class="more">閱讀全文</span>\n      </div>\n    </a>')
-    cards = "\n      ".join(
+        feature = (f'<a class="feature reveal" href="letters/{feat["file"]}">\n        {jimg(feat)}\n'
+                   f'        <div class="feature-body">\n'
+                   f'          <p class="meta">No.{feat["issue"]} · {feat["date"].replace("-", ".")} · 最新</p>\n'
+                   f'          <h3>{html.escape(feat["title"], quote=False)}</h3>\n'
+                   f'          <span class="more">閱讀全文</span>\n        </div>\n      </a>')
+    cards = "\n        ".join(
         f'<a class="card reveal" style="--d:{(i % 3) * 80}ms" href="letters/{a["file"]}">\n'
-        f'        {jimg(a)}\n        <p class="meta">No.{a["issue"]} · {a["date"].replace("-", ".")}</p>\n'
-        f'        <h3>{html.escape(a["title"], quote=False)}</h3>\n      </a>' for i, a in enumerate(rest))
-    slides = "\n      ".join(
-        f'<img class="slide{" on" if i == 0 else ""}" src="{h(k)}" alt="" '
-        f'{"fetchpriority=" + chr(34) + "high" + chr(34) if i == 0 else "loading=" + chr(34) + "lazy" + chr(34)} />'
-        for i, k in enumerate(HERO_SLIDES))
-    topics = "\n      ".join(
-        f'<a class="topic reveal" style="--d:{i * 80}ms" href="{href}">\n'
-        f'        <figure><img src="{h(k)}" alt="{t}" loading="lazy" /></figure>\n'
-        f'        <div class="topic-body"><span class="num">{num}</span><h3>{t}</h3><p>{d}</p><span class="more">看判斷重點</span></div>\n      </a>'
-        for i, (num, t, d, k, href) in enumerate(TOPICS))
-    # 2026-10-26：首頁影片區改放蘇菲本人口播的 YouTube Shorts（data/videos.json，新到舊最多 6 支）；
-    # 沒有影片資料時才退回舊的「蘇菲小談」本機短片（assets/video/）
+        f'          {jimg(a)}\n          <p class="meta">No.{a["issue"]} · {a["date"].replace("-", ".")}</p>\n'
+        f'          <h3>{html.escape(a["title"], quote=False)}</h3>\n        </a>' for i, a in enumerate(rest))
+    slides = "\n              ".join(
+        f'<img{" class=" + chr(34) + "on" + chr(34) if i == 0 else ""} src="{h(k)}" alt="{alt}" style="object-position:{pos}" '
+        f'{"fetchpriority=" + chr(34) + "high" + chr(34) if i == 0 else "loading=" + chr(34) + "lazy" + chr(34)} decoding="async" />'
+        for i, (k, pos, alt) in enumerate(HERO_SLIDES))
+    topics = "\n        ".join(
+        f'<li class="reveal" style="--d:{i * 80}ms">{fl(i)}\n'
+        f'          <a class="tcard" href="{href}">\n'
+        f'            <div class="thumb"><img src="{h(k)}" alt="{alt}" width="675" height="1200" loading="lazy" decoding="async" /></div>\n'
+        f'            <div class="meta"><span class="num">{num}</span><span class="chip">{chip}</span></div>\n'
+        f'            <h3>{t}</h3><p>{d}</p><span class="more">看判斷重點 →</span>\n          </a></div></li>'
+        for i, (num, t, d, k, href, chip, alt) in enumerate(TOPICS))
+    # 影片：蘇菲本人口播的 YouTube Shorts（data/videos.json，新到舊 4 支）；點了才在原地載入播放器
     if shorts:
-        videos = "\n      ".join(
-            f'<div class="video y-home-yt reveal" style="--d:{i * 70}ms">{yt_player(v)}'
-            f'<span class="video-title">{html.escape(v["title"], quote=False)}</span></div>'
-            for i, v in enumerate(_videos_sorted(shorts)[:6]))
+        vids = "\n        ".join(
+            f'<li class="reveal" style="--d:{i * 70}ms">{fl(i + 1)}<div class="vcard"><div class="vthumb">{yt_player(v)}</div>'
+            f'<span>{html.escape(v["title"], quote=False)}</span></div></div></li>'
+            for i, v in enumerate(_videos_sorted(shorts)[:4]))
     else:
-        videos = "\n      ".join(
-            f'<button class="video reveal" style="--d:{i * 70}ms" data-src="assets/video/{k}.mp4" aria-label="播放：{t}">\n'
-            f'        <img src="{h(k + "-poster")}" alt="" loading="lazy" />\n'
-            f'        <span class="play" aria-hidden="true"></span>\n        <span class="video-title">{t}</span>\n      </button>'
+        vids = "\n        ".join(
+            f'<li class="reveal" style="--d:{i * 70}ms">{fl(i + 1)}<div class="vcard"><div class="vthumb">'
+            f'<button class="video" type="button" data-src="assets/video/{k}.mp4" aria-label="播放：{t}">'
+            f'<img src="{h(k + "-poster")}" alt="" loading="lazy" /></button></div><span>{t}</span></div></div></li>'
             for i, (k, t) in enumerate(VIDEOS))
-    paths = "\n      ".join(
-        f'<article class="path reveal" style="--d:{i * 90}ms">\n'
-        f'        <figure><img src="{h(k)}" alt="" loading="lazy" /></figure>\n'
-        f'        <p class="path-label">{label}</p>\n        <h3>{t}</h3>\n'
-        f'        <ul>{"".join(f"<li><a href={chr(34)}{u}{chr(34)}{" rel=" + chr(34) + "noopener" + chr(34) if u.startswith("http") else ""}>{x}</a></li>" for x, u in links)}</ul>\n      </article>'
-        for i, (k, label, t, links) in enumerate(PATHS))
-    qs = "\n        ".join(
-        f'<li class="reveal" style="--d:{i * 80}ms"><span>{i + 1:02d}</span>{q}</li>' for i, q in enumerate(QUESTIONS))
+    qs = "\n            ".join(
+        f'<li><label><input type="checkbox" /><span class="box" aria-hidden="true"></span><span><b>Q{i + 1}</b>{q}</span></label></li>'
+        for i, q in enumerate(QUESTIONS))
 
     return f"""<!doctype html>
 <html lang="zh-Hant">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>蘇菲餘白｜醫美判斷力與療程諮詢筆記</title>
 <meta name="description" content="蘇菲餘白整理醫美療程、抗老選擇、診所諮詢與消費判斷。用 15 年醫療與醫美營運經驗，把複雜療程變成問得出口的問題。" />
 <meta property="og:title" content="蘇菲餘白｜醫美判斷力與療程諮詢筆記" />
@@ -759,106 +788,137 @@ def render_home(metas: list[dict], shorts: list[dict] | None = None) -> str:
 {head_block("", home=True)}
 {home_ld()}
 </head>
-<body class="home y-dark-top">
+<body class="home">
 {header_block("")}
 
 <main>
-  <section class="hero" aria-label="{BRAND}">
-    <div class="hero-media">
-      {slides}
-    </div>
-    <div class="hero-veil"></div>
-    <div class="hero-text">
-      <p class="eyebrow">Aesthetic Judgment Notes</p>
-      <h1>{BRAND}</h1>
-      <p class="hero-line">不是叫你跟風變美，<br />而是先看懂療程、預算、風險與診所現場邏輯。</p>
-      <div class="actions">
-        <a class="btn primary" href="consult.html">整理我的諮詢問題</a>
-        <a class="btn ghost" href="#topics">認識療程主題</a>
+  <section class="hero" aria-labelledby="hero-t">
+    <div class="hwrap hero-grid">
+      <div class="hero-text">
+        {isle_block()}
+        <p class="eyebrow reveal">Aesthetic Judgment Notes</p>
+        <h1 id="hero-t" class="reveal" style="--d:80ms">{BRAND}</h1>
+        <p class="hero-line reveal" style="--d:160ms"><span>不是叫你跟風變美，</span><span>而是先看懂療程、預算、風險與診所現場邏輯。</span></p>
+        <div class="cta-row reveal" style="--d:240ms">
+          <a class="btn btn-p" href="consult.html">整理我的諮詢問題 <span class="arr" aria-hidden="true">→</span></a>
+          <a class="btn btn-s" href="#topics">認識療程主題</a>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="par l-plum" data-depth="0.10" data-mx="14">
+          <div class="fl" style="--dur:11s;--amp:-10px">
+            <div class="plum-arch arch"><img src="{h("hero-plum")}" alt="" width="1536" height="1024" decoding="async" /><span class="v-mark" aria-hidden="true">餘白</span></div>
+          </div>
+        </div>
+        <div class="par l-photo" data-depth="0.04" data-mx="-10">
+          <div class="fl" style="--dur:8s;--delay:-2s;--amp:-14px">
+            <div class="photo-arch arch">
+              {slides}
+            </div>
+          </div>
+        </div>
+        <div class="par l-pill1" data-depth="-0.06" data-mx="22"><div class="fl pill" style="--dur:7s;--delay:-1s;--amp:-9px"><b>15<small>年</small></b><span>醫療、器材與醫美營運</span></div></div>
+        <div class="par l-pill3" data-depth="-0.10" data-mx="-18"><div class="fl pill" style="--dur:9s;--delay:-4s;--amp:-8px"><b>{n}<small>篇</small></b><span>醫美判斷長文</span></div></div>
+        <div class="par l-pill2" data-depth="-0.08" data-mx="18"><div class="fl pill" style="--dur:10s;--delay:-6s;--amp:-11px"><b class="word">不取代診療</b><span>只幫你把問題問對</span></div></div>
       </div>
     </div>
-    <div class="hero-foot">
-      <div><b>15 年</b><span>醫療、器材與醫美營運</span></div>
-      <div><b>{n} 篇</b><span>醫美判斷長文</span></div>
-      <div><b>不取代診療</b><span>只幫你把問題問對</span></div>
+    <button class="still-btn" type="button" aria-pressed="false">暫停動態</button>
+  </section>
+
+  <section class="why" aria-labelledby="why-t">
+    <div class="why-bg par" data-depth="0.08"><img src="{h("why-plum")}" alt="" width="1536" height="1024" loading="lazy" decoding="async" /></div>
+    <span class="v-big" aria-hidden="true">餘白</span>
+    <div class="hwrap">
+      <div class="door par" data-depth="-0.06">
+        <div class="fl" style="--dur:9s;--amp:-12px;height:100%">
+          <div class="arch"><img src="{h("door")}" alt="蘇菲站在診所門口" loading="lazy" decoding="async" /></div>
+        </div>
+      </div>
+      <div>
+        <p class="eyebrow reveal">Why</p>
+        <h2 id="why-t" class="lines reveal" style="--d:80ms"><span>醫美最貴的成本，</span><span>不一定是價格，</span><span>而是期待值錯置。</span></h2>
+        <p class="y-position reveal" style="--d:160ms">{POSITIONING}</p>
+        <p class="reveal" style="--d:220ms">這裡不診斷、不替你決定。只把療程邏輯、風險、預算和恢復期拆開，讓你進診間前就知道該問什麼。</p>
+      </div>
     </div>
   </section>
 
-  <section class="manifesto" aria-label="品牌主張">
-    <div class="manifesto-media"><img data-parallax src="{h("door")}" alt="蘇菲站在診所門口" loading="lazy" /></div>
-    <div class="manifesto-text reveal">
-      <p class="eyebrow">Why</p>
-      <h2>醫美最貴的成本，<br />不一定是價格，<br />而是期待值錯置。</h2>
-      <p class="y-position">{POSITIONING}</p>
-      <p>這裡不診斷、不替你決定。只把療程邏輯、風險、預算和恢復期拆開，讓你進診間前就知道該問什麼。</p>
+  <section class="map" id="topics" aria-labelledby="map-t">
+    <div class="hwrap">
+      <div class="sec-head">
+        <div>
+          <p class="eyebrow reveal">Treatment Map</p>
+          <h2 id="map-t" class="reveal" style="--d:80ms">先分清楚問題，再談療程。</h2>
+        </div>
+        <p class="reveal" style="--d:140ms">卡上的標籤對應 7 問第 2 題：這個療程處理的是質地、支撐、容量，還是肌肉動態。</p>
+      </div>
+      <ul class="cards">
+        {topics}
+      </ul>
     </div>
   </section>
 
-  <section class="section topics" id="topics" aria-label="療程主題">
-    <div class="head reveal">
-      <p class="eyebrow">Treatment Map</p>
-      <h2>先分清楚問題，再談療程。</h2>
-    </div>
-    <div class="topic-rail">
-      {topics}
-    </div>
-  </section>
-
-  <section class="section videos" aria-label="短影片">
-    <div class="head reveal">
-      <p class="eyebrow">Video Notes</p>
-      <h2>一支短片，只拆一個判斷題。</h2>
-    </div>
-    <div class="video-rail{" y-yt-rail" if shorts else ""}">
-      {videos}
-    </div>
-    <div class="center reveal"><a class="btn ghost" href="videos.html">看全部 YouTube 短影片</a></div>
-  </section>
-
-  <section class="section paths" aria-label="閱讀路徑">
-    <div class="head reveal">
-      <p class="eyebrow">Start Here</p>
-      <h2>照你現在的狀態開始。</h2>
-    </div>
-    <div class="path-grid">
-      {paths}
+  <section class="check" aria-labelledby="qs-t">
+    <div class="hwrap">
+      <div class="check-photo par" data-depth="0.05">
+        <div class="fl" style="--dur:10s;--amp:-10px;height:100%">
+          <div class="arch"><img src="{h("checklist")}" alt="蘇菲在諮詢室看資料" loading="lazy" decoding="async" /></div>
+        </div>
+      </div>
+      <div class="check-card par" data-depth="-0.07">
+        <div class="list-card fl" style="--dur:8s;--delay:-3s;--amp:-12px">
+          <p class="card-k">Consultation Checklist <span class="qs-count" aria-live="polite">0 / {len(QUESTIONS)}</span></p>
+          <h2 id="qs-t">醫美消費前，必問的 7 個問題</h2>
+          <ol class="qs">
+            {qs}
+            <li class="lock"><span class="box" aria-hidden="true"></span><span><b>Q5–Q7</b>後 3 題在 LINE：預算怎麼抓、哪些話術聽起來很美其實要小心。</span></li>
+          </ol>
+          <a class="btn btn-p" href="{LINE_URL}" rel="noopener">加 LINE 領完整清單</a>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section class="checklist" aria-label="諮詢前問題清單">
-    <figure class="check-media"><img data-parallax src="{h("checklist")}" alt="蘇菲在諮詢室看資料" loading="lazy" /></figure>
-    <div class="check-body">
-      <p class="eyebrow reveal">Consultation Checklist</p>
-      <h2 class="reveal">醫美消費前<br />必問的 7 個問題</h2>
-      <ol class="qs">
-        {qs}
-        <li class="locked reveal" style="--d:340ms"><span>05–07</span><div>後 3 題在 LINE：預算怎麼抓、哪些話術聽起來很美其實要小心。<a href="{LINE_URL}" rel="noopener">加 LINE 領完整清單</a></div></li>
-      </ol>
+  <section class="vids" aria-labelledby="v-t">
+    <div class="hwrap">
+      <div class="sec-head">
+        <div>
+          <p class="eyebrow reveal">Video Notes</p>
+          <h2 id="v-t" class="reveal" style="--d:80ms">一支短片，只拆一個判斷題。</h2>
+        </div>
+        <a class="btn btn-s reveal" style="--d:140ms" href="videos.html">看全部 YouTube 短影片</a>
+      </div>
+      <ul class="vrail">
+        {vids}
+      </ul>
     </div>
   </section>
 
-  <section class="section journal" aria-label="最新文章">
-    <div class="head reveal">
-      <p class="eyebrow">Journal</p>
-      <h2>每篇文章，只拆一個醫美判斷題。</h2>
+  <section class="journal" aria-labelledby="j-t">
+    <div class="hwrap">
+      <div class="sec-head">
+        <div>
+          <p class="eyebrow reveal">Journal</p>
+          <h2 id="j-t" class="reveal" style="--d:80ms">每篇文章，只拆一個醫美判斷題。</h2>
+        </div>
+      </div>
+      {feature}
+      <div class="card-grid journal-rail">
+        {cards}
+      </div>
+      <div class="center reveal"><a class="btn btn-s" href="letters/index.html">看全部 {n} 篇文章</a></div>
     </div>
-    {feature}
-    <div class="card-grid journal-rail">
-      {cards}
-    </div>
-    <div class="center reveal"><a class="btn ghost" href="letters/index.html">看全部 {n} 篇文章</a></div>
   </section>
 
-  <section class="consult" aria-label="諮詢">
-    <div class="consult-media"><img data-parallax src="{h("consult")}" alt="" loading="lazy" /></div>
-    <div class="consult-veil"></div>
-    <div class="consult-body reveal">
-      <p class="eyebrow">Next Step</p>
-      <h2>把想做的療程，<br />先整理成問得出口的問題。</h2>
-      <p class="consult-items"><span>療程期待校準</span><span>諮詢問題整理</span><span>文章與知識地圖</span></p>
-      <div class="actions">
-        <a class="btn primary" href="{LINE_URL}" rel="noopener">加入官方 LINE</a>
-        <a class="btn ghost" href="consult.html">查看諮詢方式</a>
+  <section class="band" aria-labelledby="band-t">
+    <div class="band-bg par" data-depth="0.10"><img src="{h("hero-plum")}" alt="" width="1536" height="1024" loading="lazy" decoding="async" /></div>
+    <div class="hwrap">
+      <p class="eyebrow reveal">Next Step</p>
+      <h2 id="band-t" class="lines reveal" style="--d:80ms"><span>把想做的療程，</span><span>先整理成問得出口的問題。</span></h2>
+      <ul class="band-items reveal" style="--d:140ms"><li>療程期待校準</li><li>諮詢問題整理</li><li>文章與知識地圖</li></ul>
+      <div class="cta-row reveal" style="--d:200ms">
+        <a class="btn btn-p" href="{LINE_URL}" rel="noopener">加入官方 LINE <span class="arr" aria-hidden="true">→</span></a>
+        <a class="txt-link" href="consult.html">查看諮詢方式</a>
       </div>
     </div>
   </section>
@@ -866,6 +926,7 @@ def render_home(metas: list[dict], shorts: list[dict] | None = None) -> str:
 
 {footer_block("")}
 {script_block("")}
+<script src="assets/yubai-home.js?v={HOME_VER}" defer></script>
 </body>
 </html>
 """
@@ -1556,9 +1617,10 @@ def video_ld(v: dict) -> dict:
 
 
 # Shorts 是直式影片：hqdefault（480×360 橫圖）裡真正有畫面的只剩中間約 200px 寬，放大成直式卡片會糊。
-# 依序試：原比例直式縮圖 oardefault → 高解析橫圖 maxresdefault → hqdefault。
+# 依序試：Shorts 直式原圖 oar2（1080×1920）→ 高解析橫圖 maxresdefault → hqdefault。
+# 2026-11-16 實測：oardefault 對我們的 Shorts 全部 404（一直退回橫圖放大、偏糊），oar2 四支都有，所以換掉。
 # 注意：縮圖不存在時 YouTube 不一定回錯誤，常回一張 120×90 的灰色佔位圖，所以載入後也要檢查寬度，≤120 就換下一張。
-YT_THUMB_CHAIN = ("oardefault", "maxresdefault", "hqdefault")
+YT_THUMB_CHAIN = ("oar2", "maxresdefault", "hqdefault")
 
 
 def yt_player(v: dict) -> str:
