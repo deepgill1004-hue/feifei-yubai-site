@@ -368,6 +368,139 @@ def _strip(s: str) -> str:
     return html.unescape(re.sub(r"<[^>]+>", "", s)).strip()
 
 
+# ---------------------------------------------------------------- 縮圖取景點（2026-11-16 凱菲：「把文章的縮圖全部都切頭的東西優化完成」）
+# 文章頁主視覺有帶 object-position 時照用（人工調過的不動）；沒帶時用人臉偵測算卡片縮圖的取景點：
+# 頭頂到下巴整個進框，頭頂上方留一點空。垂直以 3:2 卡片算（首頁卡片、文章列表的主力比例）、水平以最窄的 1:1 卡片算，
+# 比它高的卡片框（4:3、1:1）同一個取景點一定也裝得下。
+# 結果快取在網站 repo 外（site-publish/thumb_focus_cache.json，不進版控），同一張圖只算一次；
+# 偵測不到臉、沒有 OpenCV 或模型檔都回空字串＝維持 CSS 預設（50% 25%），絕不讓上架失敗。
+_HERE = Path(__file__).resolve()
+FOCUS_CACHE = Path(__import__("os").environ.get("YUBAI_FOCUS_CACHE") or (_HERE.parents[2] / "thumb_focus_cache.json"))
+FACE_MODEL = Path(__import__("os").environ.get("YUBAI_FACE_MODEL") or
+                  (_HERE.parents[3] / "tools" / "autoedit" / "models" / "face" / "face_detection_yunet_2023mar.onnx"))
+FOCUS_V_ASPECT = 3 / 2     # 卡片主力比例（首頁卡片、文章列表）；首頁主打 16:10 只多切一點點
+FOCUS_H_ASPECT = 1.0       # 最窄的卡片（文章列表的清單模式 1:1）
+_FOCUS_MEM: dict | None = None
+_FACE_DET = None
+_FOCUS_WARNED = False
+
+
+def focus_unavailable() -> str:
+    """臉部偵測用不了的原因（空字串＝可用）；check 與上架 log 都會印，避免縮圖悄悄退回預設取景"""
+    try:
+        import cv2  # noqa: F401
+    except ImportError:
+        return "缺 OpenCV（cv2）"
+    if not FACE_MODEL.exists():
+        return f"缺臉部模型 {FACE_MODEL}"
+    return ""
+
+
+def _focus_store() -> dict:
+    global _FOCUS_MEM
+    if _FOCUS_MEM is None:
+        try:
+            _FOCUS_MEM = json.loads(FOCUS_CACHE.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            _FOCUS_MEM = {}
+    return _FOCUS_MEM
+
+
+def _detect_faces(path: Path):
+    """回傳 (圖寬, 圖高, [(x, y, w, h, score), ...])；偵測不了回 None"""
+    global _FACE_DET, _FOCUS_WARNED
+    why = focus_unavailable()
+    if why:
+        if not _FOCUS_WARNED:
+            _FOCUS_WARNED = True
+            print(f"[focus] 臉部偵測停用（{why}）：新文章縮圖改用預設取景，可能切到頭", file=sys.stderr)
+        return None
+    import cv2
+    import numpy as np
+    img = cv2.imdecode(np.fromfile(str(path), dtype=np.uint8), cv2.IMREAD_COLOR)
+    if img is None:
+        return None
+    H, W = img.shape[:2]
+    k = min(1.0, 960 / max(W, H))
+    small = cv2.resize(img, (round(W * k), round(H * k))) if k < 1 else img
+    if _FACE_DET is None:
+        _FACE_DET = cv2.FaceDetectorYN.create(str(FACE_MODEL), "", (320, 320), 0.8, 0.3, 5000)
+    _FACE_DET.setInputSize((small.shape[1], small.shape[0]))
+    _, faces = _FACE_DET.detect(small)
+    out = []
+    for f in (faces if faces is not None else []):
+        x, y, w, h, sc = float(f[0]) / k, float(f[1]) / k, float(f[2]) / k, float(f[3]) / k, float(f[14])
+        if sc >= 0.8 and w >= 0.04 * W:
+            out.append((x, y, w, h, sc))
+    return W, H, out
+
+
+def focus_from_faces(W: int, H: int, faces: list) -> str:
+    """臉框 → 'X% Y%'（object-position）。沒有臉回空字串。
+    規則（2026-11-16 逐張比對 128 張後定案）：
+    1. 只看夠大的臉（≥ 最大那張的 25%），背景海報、遠處路人不算。
+    2. 以「頭頂最高的那個人」為準：切頭一定是從上面切，最高的頭保住了，其他人的頭也在框內。
+    3. 整顆頭（頭髮到下巴）放得進 3:2 卡片：頭頂上方留 4% 空間；放不下但臉放得下：保住下巴、頭髮盡量多留；
+       臉本身就比框大（近拍）：眼睛放在框高 45%。
+    4. 水平以最窄的 1:1 卡片算，對準主臉（面積×信心²最大）。"""
+    if not faces:
+        return ""
+    big = max(f[2] * f[3] for f in faces)
+    cred = [f for f in faces if f[2] * f[3] >= 0.25 * big]
+    main = max(cred, key=lambda f: f[2] * f[3] * f[4] ** 2)
+    t = min(cred, key=lambda f: f[1] - 0.5 * f[3])
+    y, h = t[1], t[3]
+    head_top, chin, eyes = y - 0.5 * h, y + 1.08 * h, y + 0.42 * h
+    V = min(H, W / FOCUS_V_ASPECT)                         # 卡片看得到的高度（原圖像素）
+    if H - V < 1:
+        py = 50.0
+    else:
+        m = 0.04 * V
+        if chin - head_top + 2 * m <= V:
+            s = head_top - m
+        elif chin - y + 2 * m <= V:
+            s = chin + m - V
+        else:
+            s = eyes - 0.45 * V
+        py = max(0.0, min(H - V, s)) / (H - V) * 100
+    U = min(W, H * FOCUS_H_ASPECT)                         # 1:1 卡片看得到的寬度
+    if W - U < 1:
+        px = 50.0
+    else:
+        px = max(0.0, min(W - U, main[0] + main[2] / 2 - U / 2)) / (W - U) * 100
+    return f"{round(px)}% {round(py)}%"
+
+
+def auto_focus(repo: Path, img_rel: str | None) -> str:
+    """文章卡片縮圖的取景點（快取）。img_rel＝網址編碼過的 repo 相對路徑。"""
+    if not img_rel:
+        return ""
+    path = repo / urllib.parse.unquote(img_rel)
+    try:
+        data = path.read_bytes()
+    except OSError:
+        return ""
+    import hashlib
+    key = f"{urllib.parse.unquote(img_rel)}|{hashlib.sha1(data).hexdigest()[:16]}"
+    store = _focus_store()
+    if key in store:
+        return store[key]
+    try:
+        det = _detect_faces(path)
+        val = focus_from_faces(*det) if det else ""
+    except Exception as e:   # 偵測出任何錯都不能讓上架失敗：維持 CSS 預設，不寫快取
+        print(f"[focus] {img_rel} 偵測失敗：{e}", file=sys.stderr)
+        return ""
+    if det is None:          # 沒有 OpenCV／模型：不寫快取，下次有環境再算
+        return ""
+    store[key] = val
+    try:
+        FOCUS_CACHE.write_text(json.dumps(store, ensure_ascii=False, indent=0, sort_keys=True), encoding="utf-8")
+    except OSError:
+        pass
+    return val
+
+
 def article_meta(name: str, text: str, repo: Path) -> dict | None:
     m = re.match(r"^(\d{3})", name)
     h1 = re.search(r"<h1>(.*?)</h1>", text, re.S)
@@ -410,7 +543,7 @@ def article_meta(name: str, text: str, repo: Path) -> dict | None:
     return {
         "file": name, "issue": m.group(1), "title": title,
         "desc": html.unescape(desc.group(1)) if desc else "", "date": date_s, "img": img_rel,
-        "focus": fo.group(1) if fo else "",
+        "focus": fo.group(1) if fo else auto_focus(repo, img_rel),
         "answer": answer_text(text),
         "tags": _tags_of(text), "cats": cats, "col": col,
     }
@@ -1638,6 +1771,9 @@ TEMPLATE_LEAK_RE = re.compile(r"承接互動|不從名詞開場|LINE CTA")
 
 def check_site(repo: Path) -> tuple[list[str], list[str]]:
     errors, warns = [], []
+    why = focus_unavailable()
+    if why:
+        warns.append(f"文章縮圖臉部取景停用：{why}（新文章會用預設 50% 25%，可能切到頭）")
     seen_issue: dict[str, str] = {}
     seen_img: dict[str, str] = {}
     for f in sorted((repo / "letters").glob("[0-9][0-9][0-9]*.html")):
