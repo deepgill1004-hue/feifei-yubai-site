@@ -1,0 +1,10 @@
+# 複製到 repo 外面（例：../蘇菲餘白週報/line-click-worker/wrangler.toml）再填 database_id，不要提交進網站 repo
+# Worker 名稱不要用真名；網址會長這樣：https://yubai-line-click.<帳號的 workers.dev 子網域>.workers.dev
+name = "yubai-line-click"
+main = "worker.js"
+compatibility_date = "2025-06-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "yubai-line-click"
+database_id = "填 npx wrangler d1 create yubai-line-click 給的 id"
