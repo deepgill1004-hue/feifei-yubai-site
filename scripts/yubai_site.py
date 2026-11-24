@@ -1874,6 +1874,16 @@ def ensure_sitemap_entry(repo: Path, rel: str, lastmod: str, bump: bool) -> bool
 FORBIDDEN_WORDS = ["浪潮針"]
 AI_SYMBOLS_RE = re.compile(r"[★✨✅❌▶]|\*\*|(?<![&#\w])##")
 TEMPLATE_LEAK_RE = re.compile(r"承接互動|不從名詞開場|LINE CTA")
+# 網址尾巴是 6 碼亂碼（至少一個數字，免得 decade、facade 這種英文字被當成亂碼）
+NOISY_SLUG_RE = re.compile(r"-(?=[0-9a-f]{0,5}[0-9])[0-9a-f]{6}-\d{8}\.html$")
+# 2026-11-24 蘇菲：這 7 篇已上線，網址不改（改了會斷掉已收錄的網址與分享出去的連結），提醒只留給新文章
+# （145 是產線修好前、11/24 13:54 上架的）
+LEGACY_NOISY_SLUGS = frozenset({
+    "103-blood-sugar-sophie-note-b7402c-20261102.html", "111-sophie-note-39a799-20261101.html",
+    "114-vaccine-sophie-note-0bf33e-20261104.html", "120-sophie-note-6ac147-20261108.html",
+    "134-doctor-sophie-note-5986eb-20261119.html", "144-sophie-note-e133cb-20261124.html",
+    "145-weight-loss-sophie-note-61e7e5-20261124.html",
+})
 
 
 def check_site(repo: Path) -> tuple[list[str], list[str]]:
@@ -1921,8 +1931,8 @@ def check_site(repo: Path) -> tuple[list[str], list[str]]:
         hl = re.search(r'<p class="hashtag-line">(.*?)</p>', text, re.S)
         if hl and re.findall(r"#[^\s#<]+", hl.group(1)) and not _tags_of(text):
             errors.append(f"{name}：標籤全是通用詞（#蘇菲餘白／#醫美判斷力／#知情選擇…），至少要有一個這篇的主題詞")
-        if re.search(r"-[0-9a-f]{6}-\d{8}\.html$", name) or "sophie-note" in name:
-            warns.append(f"{name}：網址含亂碼或 sophie-note，對 SEO 沒有意義（新文章請用主題英文詞；已上線的不改網址）")
+        if (NOISY_SLUG_RE.search(name) or "sophie-note" in name) and name not in LEGACY_NOISY_SLUGS:
+            warns.append(f"{name}：網址含亂碼或 sophie-note，對 SEO 沒有意義（新文章請用主題英文詞：三位數期號-英文主題詞-YYYYMMDD.html）")
         if 'class="y-answer"' not in text:
             warns.append(f"{name}：沒有結論框（data/answers.json 補一條，或用 AEO 模板）")
         img = re.search(r'<figure class="letter-portrait[^"]*">\s*<img src="([^"]+)"', main)

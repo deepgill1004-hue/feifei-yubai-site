@@ -40,3 +40,9 @@ python scripts/yubai_site.py apply-theme
 ## imgen-prompt-presets.json
 
 圖片產線的提示詞預設值（imgen-core.mjs 使用）。
+
+## ai_questions.json：AI 引用面板固定 20 題
+
+每月第一個週二 08:06，ChatGPT（臨時聊天）、Perplexity、Google AI 摘要、Copilot 各問一次，記「有沒有引用 sophieyubai.com、引用哪一頁、前三個來源是誰」。`expect` 是對應文章（`also` 是同主題的其他篇）。題目固定才看得出每月進步，改題目要寫進週報。
+
+週報出檔程式 `scripts/weekly_report.py` 讀這個檔；每週的原始數據（Search Console、Bing、Cloudflare）放在 repo 外面的「蘇菲餘白週報」資料夾，不進 repo、不公開。用法寫在程式開頭。
