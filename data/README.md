@@ -27,6 +27,16 @@ python scripts/yubai_site.py apply-theme
 - 同一篇文章可以對應多支影片，文章頁會全部嵌入。
 - 縮圖固定用 `https://i.ytimg.com/vi/<id>/hqdefault.jpg`，不用另外填。
 
+## analytics.json：訪客統計（Cloudflare Web Analytics）
+
+只有一個欄位 `cf_beacon_token`：Cloudflare 網站分析給的 token（一串英數字，本來就會公開在每一頁的原始碼裡，不是密碼）。
+
+- 取得方式：Cloudflare 後台 Web Analytics → Add a site → 輸入 `sophieyubai.com` → 選手動放 JS 代碼（網站在 GitHub Pages，不用改 DNS）→ 代碼裡 `data-cf-beacon='{"token": "…"}'` 的那串。
+- 填好後跑 `python3 -B scripts/yubai_site.py apply-theme` 兩次（第二次要顯示 `changed 0 files`），再跑 `check`，沒有 ERROR 才上線。全站每一頁會在 yubai.js 後面多一段 `<!--yubai:analytics-->` 代碼。
+- 留空就不裝；清空後重跑 apply-theme 會把代碼全部拿掉。
+- check 會擋：token 格式不對（貼成整段代碼）、某頁缺代碼或重複、token 已清空但頁面還留著代碼。
+- 不用 cookie，不需要另外放同意橫幅。
+
 ## imgen-prompt-presets.json
 
 圖片產線的提示詞預設值（imgen-core.mjs 使用）。
