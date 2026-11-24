@@ -1,0 +1,137 @@
+{
+  "note": "AI 引用面板固定 20 題（2026-11-24 定，出自「蘇菲餘白官網成長儀表板」）。題目固定才看得出每月進步；改題目要寫進週報。每月第一個週二 08:06，ChatGPT（臨時聊天）、Perplexity、Google AI 摘要、Copilot 各問一次。",
+  "questions": [
+    {
+      "id": "q01",
+      "q": "音波拉提打完會腫幾天？",
+      "expect": "letters/102-ultrasound-lift-advertising-clinic-20261102.html",
+      "also": []
+    },
+    {
+      "id": "q02",
+      "q": "鳳凰電波和美國音波差在哪？",
+      "expect": "letters/142-radiofrequency-ultrasound-lift-collagen-20261123.html",
+      "also": []
+    },
+    {
+      "id": "q03",
+      "q": "第一次醫美可以先打肉毒嗎？效果維持多久？",
+      "expect": "letters/143-botulinum-aesthetic-medicine-picosecond-20261123.html",
+      "also": []
+    },
+    {
+      "id": "q04",
+      "q": "肉毒打久了沒效是產生抗體嗎？",
+      "expect": "letters/006-botox-antibody.html",
+      "also": [
+        "letters/104-botulinum-injection-doctor-20261103.html"
+      ]
+    },
+    {
+      "id": "q05",
+      "q": "水光針加肉毒要注意什麼？",
+      "expect": "letters/099-skinbooster-microbotox-20261026.html",
+      "also": []
+    },
+    {
+      "id": "q06",
+      "q": "玻尿酸打太多會饅化嗎？能溶掉嗎？",
+      "expect": "letters/086-puffy-filler-hyaluronic-acid-allergy-20261014.html",
+      "also": []
+    },
+    {
+      "id": "q07",
+      "q": "嘴唇打玻尿酸後人中變短正常嗎？",
+      "expect": "letters/139-hyaluronic-acid-recovery-surgery-20261121.html",
+      "also": []
+    },
+    {
+      "id": "q08",
+      "q": "雷射術後起水泡可以弄破嗎？",
+      "expect": "letters/140-laser-recovery-doctor-20261122.html",
+      "also": []
+    },
+    {
+      "id": "q09",
+      "q": "雷射後多久可以擦防曬？",
+      "expect": "letters/108-laser-sunscreen-clinic-20261027.html",
+      "also": [
+        "letters/109-laser-sunscreen-recovery-20261022.html"
+      ]
+    },
+    {
+      "id": "q10",
+      "q": "皮秒打太頻繁會反白嗎？",
+      "expect": "letters/112-picosecond-laser-20261103.html",
+      "also": []
+    },
+    {
+      "id": "q11",
+      "q": "瘦瘦針停藥會復胖嗎？",
+      "expect": "letters/116-glp1-weight-loss-medication-doctor-20261105.html",
+      "also": [
+        "letters/107-medication-glp1-weight-loss-doctor-20261027.html"
+      ]
+    },
+    {
+      "id": "q12",
+      "q": "打瘦瘦針臉會凹嗎？",
+      "expect": "letters/093-glp1-weight-loss-medication-20261021.html",
+      "also": [
+        "letters/141-doctor-surgery-20261120.html"
+      ]
+    },
+    {
+      "id": "q13",
+      "q": "打 GLP-1 一直吐怎麼辦？",
+      "expect": "letters/135-glp1-weight-loss-medication-blood-sugar-20261120.html",
+      "also": [
+        "letters/121-glp1-weight-loss-medication-doctor-20261109.html"
+      ]
+    },
+    {
+      "id": "q14",
+      "q": "醫美諮詢要先問什麼？",
+      "expect": "letters/020-consultation-questions-before-price.html",
+      "also": []
+    },
+    {
+      "id": "q15",
+      "q": "醫美診所的醫師資格怎麼查？",
+      "expect": "letters/123-doctor-injection-surgery-20261111.html",
+      "also": []
+    },
+    {
+      "id": "q16",
+      "q": "醫美療程預付很多錢，簽約前要注意什麼？",
+      "expect": "letters/077-beauty-prepaid-contract-protection-20260824.html",
+      "also": []
+    },
+    {
+      "id": "q17",
+      "q": "醫美出事要留哪些證據？",
+      "expect": "letters/081-medical-records-consent-evidence-20260828.html",
+      "also": []
+    },
+    {
+      "id": "q18",
+      "q": "鳳凰電波探頭怎麼確認是正貨？",
+      "expect": "letters/115-radiofrequency-recovery-clinic-20261106.html",
+      "also": []
+    },
+    {
+      "id": "q19",
+      "q": "黑眼圈要怎麼分型？",
+      "expect": "letters/126-eye-bags-allergy-sunscreen-20261115.html",
+      "also": [
+        "letters/002-dark-circles-three-types.html"
+      ]
+    },
+    {
+      "id": "q20",
+      "q": "醫美診所手術房可以裝監視器嗎？",
+      "expect": "letters/128-aesthetic-medicine-clinic-surgery-20261115.html",
+      "also": []
+    }
+  ]
+}
