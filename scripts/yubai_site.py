@@ -1829,11 +1829,13 @@ AI_SYMBOLS_RE = re.compile(r"[★✨✅❌▶]|\*\*|(?<![&#\w])##")
 TEMPLATE_LEAK_RE = re.compile(r"承接互動|不從名詞開場|LINE CTA")
 # 網址尾巴是 6 碼亂碼（至少一個數字，免得 decade、facade 這種英文字被當成亂碼）
 NOISY_SLUG_RE = re.compile(r"-(?=[0-9a-f]{0,5}[0-9])[0-9a-f]{6}-\d{8}\.html$")
-# 2026-11-24 蘇菲：這 6 篇已上線，網址不改（改了會斷掉已收錄的網址與分享出去的連結），提醒只留給新文章
+# 2026-11-24 蘇菲：這 7 篇已上線，網址不改（改了會斷掉已收錄的網址與分享出去的連結），提醒只留給新文章
+# （145 是產線修好前、11/24 13:54 上架的）
 LEGACY_NOISY_SLUGS = frozenset({
     "103-blood-sugar-sophie-note-b7402c-20261102.html", "111-sophie-note-39a799-20261101.html",
     "114-vaccine-sophie-note-0bf33e-20261104.html", "120-sophie-note-6ac147-20261108.html",
     "134-doctor-sophie-note-5986eb-20261119.html", "144-sophie-note-e133cb-20261124.html",
+    "145-weight-loss-sophie-note-61e7e5-20261124.html",
 })
 
 
