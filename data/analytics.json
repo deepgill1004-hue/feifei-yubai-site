@@ -1,4 +1,4 @@
 {
-  "cf_beacon_token": "da7d16b4e818408594eede2b5b380ead",
+  "cf_beacon_token": "",
   "note": "Cloudflare Web Analytics（網站分析）的 token。Cloudflare 後台 Web Analytics → Add a site → sophieyubai.com → 選手動放 JS 代碼（不用改 DNS），代碼裡 data-cf-beacon 的 token 那串英數字填到上面。填好跑 apply-theme 兩次（第二次要 changed 0 files）、check 沒有 ERROR 再上線。留空＝不裝統計。"
 }
