@@ -10,8 +10,9 @@
 # 另外每次現算網站 repo 本身：網站地圖網址數、robots.txt、上架檢查、結構化資料、文章清單、20 題（data/ai_questions.json）
 # 寫：out/dash_<週次>.json（週報頁讀的檔，裡面附本程式原文供查核）
 #
-# 用法：python -X utf8 scripts/weekly_report.py [--week 2026-W48] [--data ../蘇菲餘白週報]
-#       不給 --week＝上一個完整的週（週一～週日）。
+# 用法：python -X utf8 scripts/weekly_report.py [--week 2026-W48] [--data ../蘇菲餘白週報] [--repo 網站 repo]
+#       不給 --week＝上一個完整的週（週一～週日）。程式放在 repo 外面時用 --repo 指到網站 repo；
+#       repo 裡還沒有 data/ai_questions.json 時，改讀跟程式放在一起的 ai_questions.json。
 # 規則：收不到的欄位是 null，原因寫在 *_state；不補猜的數字。門檻是起始值，累積 4 週真實數據後調一次並寫進週報。
 #
 # browser.json 格式：
@@ -436,17 +437,20 @@ def draft_text(tag, row, prev, facts, hits, need):
 
 
 def main():
+    global REPO
     ap = argparse.ArgumentParser()
     ap.add_argument("--week")
-    ap.add_argument("--data", default=str(REPO.parent / "蘇菲餘白週報"))
+    ap.add_argument("--data")
     ap.add_argument("--collected", default="")
+    ap.add_argument("--repo", default=str(REPO))
     a = ap.parse_args()
-    data_dir = Path(a.data).resolve()
+    REPO = Path(a.repo).resolve()
+    data_dir = Path(a.data).resolve() if a.data else REPO.parent / "蘇菲餘白週報"
     today = datetime.date.today()
     tag = a.week or shift_week(f"{today.isocalendar()[0]}-W{today.isocalendar()[1]:02d}", -1)
     facts = site_facts()
     pidx = page_index()
-    questions = (load(REPO / "data" / "ai_questions.json") or {}).get("questions") or []
+    questions = (load(REPO / "data" / "ai_questions.json") or load(Path(__file__).resolve().parent / "ai_questions.json") or {}).get("questions") or []
     weeks = {}
     for d in sorted((data_dir / "data").glob("????-W??")) if (data_dir / "data").exists() else []:
         if d.name <= tag:
