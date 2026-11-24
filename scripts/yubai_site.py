@@ -111,8 +111,54 @@ def footer_block(p: str) -> str:
             f'    </footer>')
 
 
+# 2026-11-24 訪客統計：Cloudflare Web Analytics（不用 cookie）。token 放 data/analytics.json 的 cf_beacon_token，
+# 留空就不裝；填了之後 apply-theme 會把代碼放進每一頁（這串 token 本來就會公開在網頁上，不是密碼）
+CF_BEACON_SRC = "https://static.cloudflareinsights.com/beacon.min.js"
+ANALYTICS_RE = re.compile(r"\s*<!--yubai:analytics-->.*?<!--/yubai:analytics-->", re.S)
+CF_TOKEN_RE = re.compile(r"[0-9A-Za-z]{20,64}")
+_ANALYTICS_REPO = Path(__file__).resolve().parent.parent   # 指令列給了 --repo 時在 __main__ 換掉
+
+
+def _raw_cf_token(repo: Path) -> str:
+    """data/analytics.json 原樣的 cf_beacon_token；檔案不在回空字串，壞掉的 JSON 丟 ValueError。"""
+    f = repo / "data" / "analytics.json"
+    if not f.exists():
+        return ""
+    data = json.loads(f.read_text(encoding="utf-8"))
+    return str((data.get("cf_beacon_token") if isinstance(data, dict) else "") or "").strip()
+
+
+def analytics_block(repo: Path | None = None) -> str:
+    """全站統計代碼；沒有 token、格式不對或 JSON 壞掉都回空字串（由 check 報錯，不讓上架整個停住）。"""
+    try:
+        tok = _raw_cf_token(repo or _ANALYTICS_REPO)
+    except ValueError:
+        return ""
+    if not CF_TOKEN_RE.fullmatch(tok):
+        return ""
+    return (f'<!--yubai:analytics--><script defer src="{CF_BEACON_SRC}" '
+            f"data-cf-beacon='{{\"token\": \"{tok}\"}}'></script><!--/yubai:analytics-->")
+
+
+def ensure_analytics(text: str, block: str) -> str:
+    """不經過 theme_page／build_indexes 的頁（好物清單等）：統計代碼補上、換新或拿掉；重跑結果不變。"""
+    if '<header class="site-header"' not in text:
+        return text
+    found = ANALYTICS_RE.findall(text)
+    if block and len(found) == 1 and found[0].strip() == block:
+        return text
+    text = ANALYTICS_RE.sub("", text)
+    if not block:
+        return text
+    m = re.search(r'<script src="[^"]*assets/yubai\.js[^"]*" defer></script>', text)
+    if m:
+        return text[:m.end()] + "\n    " + block + text[m.end():]
+    return text.replace("</body>", f"    {block}\n  </body>", 1)
+
+
 def script_block(p: str) -> str:
-    return f'<script src="{p}assets/yubai.js?v={ASSET_VER}" defer></script>'
+    a = analytics_block()
+    return f'<script src="{p}assets/yubai.js?v={ASSET_VER}" defer></script>' + (f"\n    {a}" if a else "")
 
 
 # ---------------------------------------------------------------- 機器可讀層：JSON-LD
@@ -327,6 +373,7 @@ def theme_page(text: str, p: str, page_path: Path | None = None, make_webp: bool
     text = re.sub(r'<footer class="site-footer.*?</footer>', lambda _: footer_block(p), text, count=1, flags=re.S)
     # 動態腳本
     text = re.sub(r'\s*<script src="[^"]*assets/yubai\.js[^"]*" defer></script>', "", text)
+    text = ANALYTICS_RE.sub("", text)
     text = text.replace("</body>", f"    {script_block(p)}\n  </body>", 1)
     # 文章／主題頁有電影感頁首：頁首透明
     dark = 'class="letter-masthead' in text
@@ -1887,6 +1934,16 @@ def check_site(repo: Path) -> tuple[list[str], list[str]]:
         og = _meta_content(text, "property", "og:image")
         if og.startswith(SITE_URL + "/") and not (repo / urllib.parse.unquote(og[len(SITE_URL) + 1:])).exists():
             errors.append(f"{name}：og:image 指到不存在的檔案 {og}")
+    try:
+        raw_tok = _raw_cf_token(repo)
+    except ValueError:
+        raw_tok = ""
+        errors.append("data/analytics.json 不是合法 JSON")
+    if raw_tok and not CF_TOKEN_RE.fullmatch(raw_tok):
+        errors.append("data/analytics.json 的 cf_beacon_token 格式不對：只填 token 那串英數字，不要貼整段代碼")
+    blk = analytics_block(repo)
+    if not blk and not raw_tok:
+        warns.append("還沒裝訪客統計：data/analytics.json 的 cf_beacon_token 是空的（Cloudflare 網站分析）")
     for f in sorted(repo.rglob("*.html")):
         if ".git" in f.parts:
             continue
@@ -1897,6 +1954,13 @@ def check_site(repo: Path) -> tuple[list[str], list[str]]:
             errors.append(f"{_rel}：有「常見問題」小節但缺 FAQPage 結構化資料（重跑 apply-theme）")
         elif '"FAQPage"' in _t and not FAQ_SEC_RE.search(_t):
             warns.append(f"{_rel}：有 FAQPage 但找不到「常見問題」小節，確認一下")
+        # 訪客統計：有 token 就每頁剛好一段且是最新的；沒有 token 就不能留舊代碼
+        if '<header class="site-header"' in _t:
+            n = len(ANALYTICS_RE.findall(_t))
+            if blk and (n != 1 or blk not in _t):
+                errors.append(f"{_rel}：訪客統計代碼缺少、重複或不是最新的 token（重跑 apply-theme）")
+            elif not blk and n:
+                errors.append(f"{_rel}：data/analytics.json 沒有可用的 token，頁面卻留著統計代碼（重跑 apply-theme）")
     return errors, warns
 
 
@@ -1923,6 +1987,16 @@ def apply_theme(repo: Path) -> list[str]:
             f.parent.mkdir(parents=True, exist_ok=True)
             f.write_text(text, encoding="utf-8", newline="\n")
             touched.append(rel)
+    # 訪客統計：上面兩步產的頁已經帶好；這裡補其餘有網站頁首的頁（好物清單由別的產線產）
+    blk = analytics_block(repo)
+    for f in sorted(repo.rglob("*.html")):
+        if ".git" in f.parts:
+            continue
+        old = f.read_text(encoding="utf-8")
+        new = ensure_analytics(old, blk)
+        if new != old:
+            f.write_text(new, encoding="utf-8", newline="\n")
+            touched.append(f.relative_to(repo).as_posix())
     sm = False
     for rel in ["videos.html"] + [v[0] for v in COLUMN_PAGES.values()]:
         sm = ensure_sitemap_entry(repo, rel, date.today().isoformat(), rel in touched) or sm
@@ -1945,6 +2019,7 @@ if __name__ == "__main__":
     ap.add_argument("--repo", default=str(Path(__file__).resolve().parent.parent))
     args = ap.parse_args()
     repo = Path(args.repo).resolve()
+    _ANALYTICS_REPO = repo
     if args.cmd == "check":
         errs, warns = check_site(repo)
         for w in warns:
