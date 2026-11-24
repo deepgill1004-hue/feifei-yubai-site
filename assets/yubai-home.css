@@ -1,7 +1,7 @@
-/* 蘇菲餘白｜首頁專用（2026-11-16 綜合版；凱菲 11/15 核准「直接套用」）
-   白與米色是底，梅紫是三段整版色塊（首屏拱窗、Why、收尾）；照片與物件浮在空中慢慢飄。
-   文章區保留 card-grid 縮圖版（凱菲：樣張的純文字清單不要套）。頁首頁尾由 yubai.css 負責，
-   動態在 yubai-home.js；系統「減少動態」或按「暫停動態」時全部停住。 */
+/* 蘇菲餘白｜首頁專用（2026-11-24 A 版「留白肖像」，蘇菲選定）
+   首屏左文字、右邊大照片由下往上揭幕輪播；首屏正下方是療程地圖（五個療程＋三個欄目的分類）。
+   其他段落沿用 11/16 版：白與米色是底，梅紫兩段整版色塊（Why、收尾）。頁首頁尾由 yubai.css 負責，
+   動態在 yubai-home.js（GSAP 放在 assets/vendor）；系統「減少動態」或按「暫停動態」時全部停住。 */
 :root {
   --serif: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
   --latin: "Cormorant Garamond", Georgia, "Times New Roman", serif;
@@ -46,82 +46,40 @@ h1, h2, h3 { font-family: var(--serif); text-wrap: balance; }
 @keyframes float { 0%, 100% { transform: translate3d(0, 0, 0); } 50% { transform: translate3d(0, var(--amp, -12px), 0); } }
 .arch { border-radius: 999px 999px 28px 28px; overflow: hidden; }
 
-/* ── 首屏：左文字（上方漂浮島），右邊三層漂浮（梅紫拱窗＋蘇菲照片拱窗＋數字小卡） ── */
-.hero { position: relative; background: var(--paper); padding-block: clamp(92px, 9vw, 128px) clamp(64px, 8vw, 104px); }
-.hero-grid { position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 1.05fr; gap: clamp(24px, 4vw, 56px); align-items: center; }
-.hero-text { min-width: 0; }
-.hero h1 { font: 900 clamp(44px, 6vw, 80px)/1.1 var(--serif); letter-spacing: 0.06em; color: var(--ink); margin: 0 0 18px; }
-.hero-line { font: 500 clamp(18px, 1.9vw, 22px)/1.75 var(--serif); max-width: 22em; }
+/* ── 首屏 A 版：左文字，右邊拱窗大照片（由下往上揭幕輪播），背景直書「餘白」 ── */
+.hero { position: relative; background: var(--paper); padding-block: clamp(92px, 9vw, 120px) clamp(64px, 7vw, 96px); overflow: hidden; }
+.ha-grid { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(24px, 4vw, 64px); align-items: center; }
+.ha-text { min-width: 0; display: grid; gap: 22px; }
+.ha-text .eyebrow { margin: 0; }
+.ha-title { font: 900 clamp(60px, 8.4vw, 124px)/1.04 var(--serif); letter-spacing: 0.02em; color: var(--ink); }
+.ha-c { display: inline-block; }
+.hero-line { font: 500 clamp(18px, 1.7vw, 22px)/1.8 var(--serif); max-width: 24em; }
 .hero-line span { display: block; }
-.cta-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
-.stage { position: relative; height: clamp(460px, 52vw, 660px); min-width: 0; }
-.stage > .par { position: absolute; }
-.l-plum { right: 0; top: 0; width: 62%; height: 90%; }
-.l-photo { left: 2%; bottom: 0; width: 50%; height: 74%; }
-.l-plum > .fl, .l-photo > .fl { height: 100%; }
-.l-pill1 { left: -2%; top: 10%; }
-.l-pill2 { right: 4%; bottom: 6%; }
-.l-pill3 { left: 44%; top: -1%; }
-.plum-arch { width: 100%; height: 100%; position: relative; background: var(--plum-2); box-shadow: 0 40px 80px rgba(42, 24, 32, 0.28); }
-.plum-arch img { width: 100%; height: 100%; object-fit: cover; object-position: 46% 50%; }
-.v-mark { position: absolute; right: 10%; top: 12%; writing-mode: vertical-rl; font: 900 clamp(40px, 4.6vw, 64px)/1 var(--serif); letter-spacing: 0.18em; color: rgba(245, 235, 229, 0.32); pointer-events: none; }
-.photo-arch { width: 100%; height: 100%; position: relative; background: var(--sand); box-shadow: 0 36px 70px rgba(42, 24, 32, 0.24); outline: 8px solid var(--paper); }
-.photo-arch img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.6s ease; transform: scale(1.04); filter: var(--grade); }
-.photo-arch img.on { opacity: 1; }
-.pill { background: rgba(255, 253, 249, 0.92); border: 1px solid var(--line); border-radius: 18px; padding: 12px 16px; box-shadow: 0 18px 40px rgba(42, 24, 32, 0.14); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); min-width: 132px; }
-.pill b { display: block; font: 600 30px/1 var(--latin); color: var(--ink); font-variant-numeric: tabular-nums; }
-.pill b small { font: 500 14px/1 var(--serif); margin-left: 3px; }
-.pill b.word { font: 700 18px/1.3 var(--serif); }
-.pill span { display: block; font-size: 12.5px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+.cta-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 14px; }
+.ha-creds { display: flex; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 18px; }
+.ha-creds li { display: grid; gap: 2px; padding-right: 22px; margin-right: 22px; border-right: 1px solid var(--line); }
+.ha-creds li:last-child { border: 0; margin: 0; padding: 0; }
+.ha-creds b { font: 700 30px/1.15 var(--serif); font-variant-numeric: tabular-nums; }
+.ha-creds b small { font-size: 15px; margin-left: 2px; }
+.ha-creds b.word { font-size: 24px; }
+.ha-creds li > span { font-size: 13.5px; color: var(--muted); }
+.ha-par { position: relative; z-index: 1; min-width: 0; }
+.ha-frame { position: relative; height: min(80svh, 800px); min-height: 520px; border-radius: min(26vw, 340px) min(26vw, 340px) 18px 18px; overflow: hidden; background: var(--sand); box-shadow: 0 40px 80px -40px rgba(60, 30, 25, 0.45); }
+.ha-frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: var(--grade); }
+.ha-frame img + img { clip-path: inset(100% 0 0 0); }
+.ha-cap { position: absolute; left: 18px; bottom: 18px; z-index: 6; background: rgba(255, 253, 249, 0.94); border-radius: 12px; padding: 10px 14px; font-size: 13.5px; line-height: 1.5; box-shadow: 0 10px 24px -14px rgba(42, 24, 32, 0.4); }
+.ha-cap b { display: block; font: 700 15px/1.4 var(--serif); }
+.ha-cl-wrap { display: block; overflow: hidden; height: 1.5em; }
+.ha-cl { display: block; }
+.ha-dots { position: absolute; right: 20px; bottom: 24px; z-index: 6; display: flex; gap: 6px; }
+.ha-dots i { position: relative; width: 22px; height: 3px; border-radius: 2px; background: rgba(255, 255, 255, 0.5); overflow: hidden; }
+.ha-dots b { position: absolute; inset: 0; background: #fff; transform: scaleX(0); transform-origin: left; }
+.ha-ghost { position: absolute; right: -1vw; top: 12%; z-index: 0; writing-mode: vertical-rl; font: 900 clamp(120px, 15vw, 230px)/1 var(--serif); letter-spacing: 0.06em; color: var(--ghost); pointer-events: none; user-select: none; }
+/* 首屏動畫接手前先藏住要逐字浮現的字（head 裡的小腳本加 .ha-pre）；2.5 秒內動畫沒接手就自己出現 */
+.ha-pre .ha-c, .ha-pre .ha-in { opacity: 0; animation: ha-show 0.01s linear 2.5s forwards; }
+@keyframes ha-show { to { opacity: 1; } }
 .still-btn { position: absolute; left: max(var(--gut-l), calc((100% - var(--wrap)) / 2 + var(--gut-l))); bottom: 18px; z-index: 2; font: 500 13px/1 var(--sans); letter-spacing: 0.04em; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 9px 14px; cursor: pointer; }
 .still-btn:hover { color: var(--wine); border-color: var(--wine); }
-
-/* 漂浮島（共用）：石頭浮在大字「餘白」前面，影子跟著漂浮縮放；島是去背 WebP，不用混色 */
-.isle-stage { --isle-w: clamp(150px, 15vw, 220px); position: relative; height: clamp(190px, 19vw, 270px); margin: 0 0 8px; display: grid; place-items: center; max-width: 540px; }
-.isle-stage .ghost { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: var(--isle-w); font: 900 clamp(84px, 9vw, 148px)/1 var(--serif); color: var(--ghost); user-select: none; pointer-events: none; }
-.isle-stage .ghost i { font-style: normal; }
-.isle { position: relative; width: var(--isle-w); z-index: 1; }
-.isle img { width: 100%; animation: isle 7s ease-in-out infinite; }
-.isle-shadow { position: absolute; left: 50%; bottom: clamp(-30px, -2.2vw, -18px); width: 62%; height: 16px; margin-left: -31%; border-radius: 50%; background: radial-gradient(closest-side, rgba(42, 24, 32, 0.22), rgba(42, 24, 32, 0)); animation: isle-sh 7s ease-in-out infinite; }
-@keyframes isle { 0%, 100% { transform: translateY(0) rotate(-1.2deg); } 50% { transform: translateY(-16px) rotate(1deg); } }
-@keyframes isle-sh { 0%, 100% { transform: scaleX(1); opacity: 1; } 50% { transform: scaleX(0.78); opacity: 0.6; } }
-@keyframes isle-soft { 0%, 100% { transform: translateY(0) rotate(-0.5deg); } 50% { transform: translateY(-10px) rotate(0.4deg); } }
-.isle-stage .stop, .isle-stage .lbl { font: 500 12.5px/1.2 var(--serif); color: var(--ink); white-space: nowrap; letter-spacing: 0.04em; }
-.isle-stage .stop b, .isle-stage .lbl b { font: italic 600 15px/1 var(--latin); color: var(--wine); margin-right: 4px; letter-spacing: 0; }
-/* V1 歷程小島：四站小字在島上方排一列，細線指到各自的物件 */
-.isle-stage.v1 { --isle-w: 100%; height: auto; max-width: 580px; padding: 44px 0 34px; margin: 0 0 4px; }
-.isle-stage.v1 .isle img { animation: none; }
-.isle-float { position: relative; animation: isle-soft 8s ease-in-out infinite; }
-.isle-stage.v1 .isle-shadow { width: 58%; margin-left: -29%; bottom: -6px; }
-.stop { position: absolute; left: var(--x); top: var(--row); transform: translate(-50%, -100%); padding: 3px 2px; text-shadow: 0 0 4px var(--paper), 0 0 2px var(--paper); transition: color 0.3s var(--ease), transform 0.3s var(--ease); }
-.stop:hover, .stop:focus-visible { color: var(--wine); transform: translate(-50%, -100%) translateY(-3px); }
-.leads { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-.leads line { stroke: var(--ink); stroke-opacity: 0.32; stroke-width: 1; vector-effect: non-scaling-stroke; }
-/* V2 過來人：一位女生坐在島邊看單子 */
-.isle-stage.v2 { --isle-w: clamp(170px, 17vw, 250px); margin-bottom: 34px; }
-/* V3 四座小島：四顆石頭斜斜往上排，虛線小路慢慢流動 */
-.isle-stage.v3 { --isle-w: 100%; height: auto; max-width: 580px; padding: 6px 0 58px; margin: 0 0 10px; }
-.isle-stage.v3 .ghost { justify-content: space-between; gap: 0; font-size: clamp(84px, 9.5vw, 150px); }
-.archi { position: relative; width: 100%; aspect-ratio: var(--ar); }
-.trail { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-.trail path { fill: none; stroke: var(--wine); stroke-opacity: 0.38; stroke-width: 1.4; stroke-dasharray: 2 7; stroke-linecap: round; vector-effect: non-scaling-stroke; animation: trail 6s linear infinite; }
-@keyframes trail { to { stroke-dashoffset: -90; } }
-.stone { position: absolute; left: var(--l); top: var(--t); width: var(--w); display: block; }
-.stone .fl2 { position: relative; display: block; animation: isle var(--dur, 7s) ease-in-out var(--dl, 0s) infinite; }
-.stone img { width: 100%; transition: transform 0.4s var(--ease); }
-.stone .sh { position: absolute; left: 50%; bottom: -12px; width: 60%; height: 10px; margin-left: -30%; border-radius: 50%; background: radial-gradient(closest-side, rgba(42, 24, 32, 0.18), rgba(42, 24, 32, 0)); }
-.stone .lbl { position: absolute; left: 50%; top: calc(100% + 14px); transform: translateX(-50%); transition: color 0.3s var(--ease); }
-.stone:hover img, .stone:focus-visible img { transform: translateY(-6px); }
-.stone:hover .lbl, .stone:focus-visible .lbl { color: var(--wine); }
-/* V3 跳躍版（2026-11-16）：女生另成一層，yubai-home.js 依石頭當下漂到的位置算落腳點；落地那顆石頭被踩得往下沉一下（.dip） */
-.stone .dip { position: relative; display: block; }
-.stone .rider { position: absolute; max-width: none; pointer-events: none; }
-.hopper { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 3; pointer-events: none; display: none; }
-.hopper img { position: absolute; left: 0; top: 0; max-width: none; height: auto; opacity: 0; will-change: transform, opacity; }
-.isle-stage.hopping .hopper { display: block; }
-.isle-stage.hopping .rider { visibility: hidden; }
-.isle-stage.v3[data-hop="a"] .archi { margin-top: 8%; }
-.stone .lbl.on { color: var(--wine); }
 
 /* ── Why：梅紫整段＋直書餘白 ── */
 .why { position: relative; overflow: hidden; background: var(--plum); color: var(--plum-ink); padding-block: clamp(72px, 10vw, 128px); isolation: isolate; }
@@ -153,6 +111,20 @@ h1, h2, h3 { font-family: var(--serif); text-wrap: balance; }
 .tcard h3 { font: 700 20px/1.35 var(--serif); margin: 10px 6px 6px; }
 .tcard p { margin: 0 6px; color: var(--muted); font-size: 14.5px; line-height: 1.7; flex: 1; }
 .tcard .more { margin: 12px 6px 0; font-size: 14px; color: var(--wine); font-weight: 500; }
+.map-sub { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; font: 700 clamp(19px, 2vw, 22px)/1.4 var(--serif); margin: 0 0 20px; }
+.map-sub small { font: 400 14px/1.6 var(--sans); color: var(--muted); }
+.cards + .map-sub { margin-top: clamp(48px, 6vw, 72px); }
+.atlas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.atlas-col { display: flex; flex-direction: column; gap: 10px; min-width: 0; background: var(--paper); border-radius: 22px; padding: 22px 22px 18px; box-shadow: 0 18px 44px rgba(42, 24, 32, 0.08); }
+.atlas-k { font: italic 500 16px/1 var(--latin); color: var(--wine); }
+.atlas-col h4 { font: 700 19px/1.45 var(--serif); }
+.atlas-col h4 a:hover { color: var(--wine); }
+.atlas-col ul { display: grid; }
+.atlas-col li a { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--line); font-size: 15px; line-height: 1.55; transition: color 0.2s; }
+.atlas-col li:last-child a { border-bottom: 0; }
+.atlas-col li a:hover { color: var(--wine); }
+.atlas-col li b { flex: none; font: 600 16px/1 var(--latin); color: var(--muted); font-variant-numeric: tabular-nums; }
+.atlas-all { margin-top: auto; padding-top: 6px; font-size: 14px; font-weight: 500; color: var(--wine); }
 
 /* ── 7 問：照片＋浮起來的清單卡（前 4 題可以勾） ── */
 .check { background: var(--paper); padding-block: clamp(72px, 10vw, 128px); }
@@ -238,9 +210,11 @@ h1, h2, h3 { font-family: var(--serif); text-wrap: balance; }
   .cards > li:nth-child(even) { margin-top: 36px; }
 }
 @media (max-width: 860px) {
-  .hero-grid, .why .hwrap { grid-template-columns: 1fr; }
-  .isle-stage { margin-inline: auto; }
-  .stage { height: clamp(420px, 110vw, 560px); margin-top: 36px; }
+  .ha-grid, .why .hwrap { grid-template-columns: 1fr; }
+  .ha-par { order: -1; }
+  .ha-frame { height: 60svh; min-height: 380px; border-radius: 46vw 46vw 16px 16px; }
+  .ha-ghost { display: none; }
+  .atlas { grid-template-columns: 1fr; }
   .why .hwrap { gap: 40px; }
   .door { width: min(78%, 360px); }
   .check .hwrap { grid-template-columns: 1fr; }
@@ -260,28 +234,19 @@ h1, h2, h3 { font-family: var(--serif); text-wrap: balance; }
   .band::after { background: linear-gradient(180deg, rgba(42, 24, 32, 0.55) 0%, rgba(42, 24, 32, 0.92) 60%); }
 }
 @media (max-width: 560px) {
-  .hero h1 { font-size: 46px; }
+  .hero { padding-top: 84px; }
+  .ha-title { font-size: clamp(54px, 16vw, 72px); }
   .hero-line span { display: inline; }
-  .l-plum { width: 66%; height: 84%; }
-  .l-photo { width: 56%; height: 70%; }
-  .pill { min-width: 0; padding: 10px 12px; }
-  .pill b { font-size: 24px; }
-  .pill b.word { font-size: 15px; }
-  .l-pill1 { left: 0; top: 4%; }
-  .l-pill3 { display: none; }
-  .v-mark { font-size: 34px; }
-  .isle-stage.v1 { padding-top: 46px; }
-  .isle-stage.v3 { padding-bottom: 62px; }
-  .isle-stage .stop, .isle-stage .lbl { font-size: 11px; }
-  .isle-stage .stop b, .isle-stage .lbl b { display: block; margin: 0 0 1px; font-size: 13px; text-align: center; }
+  .ha-creds li { padding-right: 14px; margin-right: 14px; }
+  .ha-creds b { font-size: 24px; }
+  .ha-creds b.word { font-size: 18px; }
   .still-btn { bottom: 14px; }
 }
 
 /* 暫停動態（按鈕）與系統「減少動態」：漂浮、視差、輪播全部停住 */
-.y-paused .fl, .y-paused .isle img, .y-paused .isle-shadow, .y-paused .isle-float, .y-paused .stone .fl2, .y-paused .trail path { animation: none; }
-.y-paused .photo-arch img { transition: none; }
+.y-paused .fl { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .fl, .isle img, .isle-shadow, .isle-float, .stone .fl2, .trail path { animation: none; }
-  .photo-arch img, .btn, .tcard, .tcard .thumb img, .feature img, .card img, .stone img { transition: none; }
+  .fl { animation: none; }
+  .btn, .tcard, .tcard .thumb img, .feature img, .card img, .atlas-col li a { transition: none; }
 }

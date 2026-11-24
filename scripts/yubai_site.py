@@ -204,7 +204,7 @@ def article_ld(text: str, page_path: Path, site_root: Path) -> list[dict]:
     cid = meta.get("col")
     if cid not in COLUMN_PAGES:
         return [obj]
-    # 2026-11-04 凱菲：GEO／AEO 要樹枝狀。文章標出屬於哪個欄目主幹，首頁 → 欄目 → 文章一條路徑
+    # 2026-11-04 蘇菲：GEO／AEO 要樹枝狀。文章標出屬於哪個欄目主幹，首頁 → 欄目 → 文章一條路徑
     hub = f"{SITE_URL}/{COLUMN_PAGES[cid][0]}"
     obj["isPartOf"] = {"@type": "CollectionPage", "@id": hub, "url": hub, "name": col_name(cid)}
     return [obj, {"@type": "BreadcrumbList", "itemListElement": [
@@ -368,7 +368,7 @@ def _strip(s: str) -> str:
     return html.unescape(re.sub(r"<[^>]+>", "", s)).strip()
 
 
-# ---------------------------------------------------------------- 縮圖取景點（2026-11-16 凱菲：「把文章的縮圖全部都切頭的東西優化完成」）
+# ---------------------------------------------------------------- 縮圖取景點（2026-11-16 蘇菲：「把文章的縮圖全部都切頭的東西優化完成」）
 # 文章頁主視覺有帶 object-position 時照用（人工調過的不動）；沒帶時用人臉偵測算卡片縮圖的取景點：
 # 頭頂到下巴整個進框，頭頂上方留一點空。垂直以 3:2 卡片算（首頁卡片、文章列表的主力比例）、水平以最窄的 1:1 卡片算，
 # 比它高的卡片框（4:3、1:1）同一個取景點一定也裝得下。
@@ -653,12 +653,11 @@ def render_letters_index(metas: list[dict]) -> str:
 
 
 # ---------------------------------------------------------------- 首頁
-# 2026-11-16 首頁綜合版（凱菲 11/15 核准「直接套用」）：白與米色是底，梅紫三段（首屏拱窗、Why、收尾），
-# 照片與物件浮在空中慢慢飄；文章區保留 card-grid 縮圖版（凱菲：樣張的純文字清單不要套）。
-# 樣式 assets/yubai-home.css、動態 assets/yubai-home.js（只有首頁載入，版本號 HOME_VER，不必重套全站）。
+# 2026-11-24 首頁 A 版「留白肖像」（蘇菲 11/24 選定）：首屏左文字、右邊大照片由下往上揭幕輪播，照片下的字卡同步換經歷；
+# 首屏正下方是「療程地圖」：上排五個最常被問的療程，下排三個欄目的全部分類與篇數（點了跳到欄目頁那一段）。
+# 樣式 assets/yubai-home.css、動態 assets/yubai-home.js＋assets/vendor/gsap（只有首頁載入，版本號 HOME_VER，不必重套全站）。
 
-HOME_VER = "20261116b"
-HOME_ISLE = __import__("os").environ.get("YUBAI_HOME_ISLE") or "v3"   # 首屏漂浮島：v1 歷程小島／v2 過來人／v3 四座小島（凱菲 11/16 先選 V2，問「V3 的跳躍呢」後改選 V3 跳躍 A 版）
+HOME_VER = "20261124a"
 
 TOPICS = [  # 編號、標題、一句話、圖、連結、對應 7 問第 2 題的標籤、圖說
     ("01", "鳳凰電波", "會緊，跟會拉不是同一件事。", "t-rf", "topics/thermage.html", "質地", "蘇菲手拿電波手把"),
@@ -679,83 +678,36 @@ QUESTIONS = [
     "如果效果不如預期，有沒有修正或等待方案？",
     "恢復期、風險與術後照護，我真的能配合嗎？",
 ]
-# 首屏拱窗的 4 張照片（臉的位置量過，取景對準臉）
-HERO_SLIDES = [("arch-clinic", "50% 20%", "蘇菲穿白袍在診間微笑"), ("arch-window", "45% 22%", ""),
-               ("arch-night", "41% 18%", ""), ("arch-city", "58% 28%", "")]
 FLOATS = [(8, 0, -10), (9, -3, -12), (8.5, -5, -9), (9.5, -2, -12), (8, -6, -10)]   # 每張卡各自的漂浮節奏（秒、起點、幅度 px）
-ISLE_STOPS = [("01", "推門諮詢", "consult.html"), ("02", "看懂儀器", "treatments.html"),
-              ("03", "算清楚帳", "columns/aesthetic.html"), ("04", "術後回看", "letters/index.html")]
-ISLE_V1 = ("isle-v1", 1100, 559, "浮在空中的青苔小島，一條碎石小路依序經過一扇白色的門、一支白色儀器手把、一捲收據和一面照著天空的手鏡；"
-           "一位穿梅紫裙子的女生正走在路上", [(17.0, 19.7), (42.5, 18.7), (61.8, 21.1), (77.9, 9.5)])
-ISLE_V2 = ("isle-v2", 640, 681, "一塊長著青苔和兩朵小白花的石頭浮在空中，一位穿梅紫裙子的女生坐在石頭邊上，低頭看手上的單子，身旁放著一支白色儀器手把")
-ISLE_V3 = (1.6148, "M10.5,82.1 Q22.4,29.1 34.3,35.1 Q48.2,29.1 62.1,39.3 Q74.8,2.0 87.4,8.0", [  # 左、上、寬（%）、漂浮秒數、起點、圖寬高
-    (0.0, 77.03, 20.96, 7.4, -1, 295, 204), (22.0, 21.53, 24.59, 6.6, -3, 344, 528),
-    (49.48, 33.61, 25.33, 7.9, -5, 354, 228), (74.89, 0.0, 25.11, 7.0, -2, 351, 317)])
-# V3 女生真的會跳（2026-11-16 凱菲問「V3 的跳躍呢」）：a 一路跳上去、b 跳過去再跳回來、c 原地彈跳；off＝原圖不動。
-# 第二顆換成拆掉女生的乾淨石頭，女生另成一層，由 yubai-home.js 依石頭當下漂到哪裡算落腳點；暫停或沒有 JS 時她站在第二顆上（.rider）。
-HOME_HOP = __import__("os").environ.get("YUBAI_HOME_HOP") or "a"    # 凱菲 11/16 選 A「一路跳上去」
-ISLE_V3_HOP = {
-    "stone2": ("isle-v3-2b", 57.55, 344, 216),            # 乾淨石頭：圖名、上（%，石頭位置不變）、圖寬高
-    "feet": [(0.76, 0.36), (0.5465, 0.25), (0.47, 0.40), (0.64, 0.53)],   # 每顆的落腳點（佔石頭圖寬、高的比例）
-    "feet2": {4: (0.84, 0.50)},                           # 第四顆轉身回看站的點（鏡子右邊，不擋鏡子）
-    "girl": ("isle-v3-girl", 174, 361, 23, 360),          # 站姿：圖寬高、後腳鞋底（原圖 px）
-    "air": ("isle-v3-girl-air", 168, 321, 35, 341),       # 半空：圖寬高、對到站姿腳底的點（兩張腰線對齊）
-    "scale": {"a": 0.8, "b": 1.0, "c": 1.0},              # a 要跳到最高那顆，縮小一點頭才不會碰到選單
-}
+# 首屏 A 版的 4 張照片：檔名、取景點（臉的位置）、替代文字、照片下字卡的那段經歷（{n}＝文章篇數）
+HERO_A = [("ha-1", "50% 18%", "蘇菲站在窗邊微笑", "前醫學中心護理師 5 年"),
+          ("ha-2", "45% 20%", "", "心臟醫材 10 年"),
+          ("ha-3", "55% 24%", "", "醫美診所營運總監"),
+          ("ha-4", "52% 22%", "", "{n} 篇醫美判斷長文")]
 
 
-def isle_block() -> str:
-    """首屏文字上方的漂浮島（三版擇一，HOME_ISLE）。V1、V3 的四站都可以點。"""
-    ghost = '<span class="ghost" aria-hidden="true"><i>餘</i><i>白</i></span>'
-    if HOME_ISLE == "v1":
-        k, w, h, alt, pts = ISLE_V1
-        lines = "".join(f'<line x1="{x}" y1="-0.5" x2="{x}" y2="{y2}"/>' for x, y2 in pts)
-        stops = "".join(f'<a class="stop" style="--x:{x}%;--row:-2%" href="{href}"><b>{num}</b>{label}</a>'
-                        for (x, _), (num, label, href) in zip(pts, ISLE_STOPS))
-        return (f'<div class="isle-stage v1 par" data-depth="-0.05" data-mx="-12"><div class="isle"><div class="isle-float">'
-                f'<img src="assets/home/{k}.webp" alt="{alt}" width="{w}" height="{h}" fetchpriority="high" decoding="async" />'
-                f'<svg class="leads" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">{lines}</svg>{stops}</div>'
-                f'<span class="isle-shadow" aria-hidden="true"></span></div></div>')
-    if HOME_ISLE == "v2":
-        k, w, h, alt = ISLE_V2
-        return (f'<div class="isle-stage v2 par" data-depth="-0.05" data-mx="-12">{ghost}<div class="isle">'
-                f'<img src="assets/home/{k}.webp" alt="{alt}" width="{w}" height="{h}" fetchpriority="high" decoding="async" />'
-                f'<span class="isle-shadow" aria-hidden="true"></span></div></div>')
-    ar, trail, stones = ISLE_V3
-    hop = HOME_HOP if HOME_HOP in ISLE_V3_HOP["scale"] else ""
-    hp = ISLE_V3_HOP
-    sc = hp["scale"].get(hop, 1.0)
-    gname, gw, gh, gfx, gfy = hp["girl"]
-    links = ""
-    for i, ((l, t, w, dur, dl, iw, ih), (num, label, href)) in enumerate(zip(stones, ISLE_STOPS), 1):
-        name, extra, feet = f"isle-v3-{i}", "", ""
-        if hop:
-            fx, fy = hp["feet"][i - 1]
-            feet = f' data-feet="{fx},{fy}"'
-            if i in hp["feet2"]:
-                feet += ' data-feet2="{},{}"'.format(*hp["feet2"][i])
-            if i == 2:
-                name, t, iw, ih = hp["stone2"]
-                ref = iw   # 女生的原圖 px 跟第二顆石頭同一個比例
-                rider_w = gw / ref * sc * 100
-                rider_l = fx * 100 - gfx / ref * sc * 100
-                rider_t = (fy * ih - gfy * sc) / ih * 100
-                extra = (f'<img class="rider" src="assets/home/{gname}.webp" alt="" width="{gw}" height="{gh}" decoding="async" '
-                         f'style="left:{rider_l:.2f}%;top:{rider_t:.2f}%;width:{rider_w:.2f}%" />')
-        links += (f'<a class="stone" style="--l:{l}%;--t:{t}%;--w:{w}%;--dur:{dur}s;--dl:{dl}s" href="{href}"{feet}>'
-                  f'<span class="fl2"><span class="dip"><img src="assets/home/{name}.webp" alt="" width="{iw}" height="{ih}" decoding="async" />{extra}</span></span>'
-                  f'<span class="sh" aria-hidden="true"></span><span class="lbl"><b>{num}</b>{label}</span></a>')
-    hopper, attr = "", ""
-    if hop:
-        aname, aw, ah, afx, afy = hp["air"]
-        attr = f' data-hop="{hop}"'
-        hopper = (f'<span class="hopper" aria-hidden="true" data-st="{gw},{gh},{gfx},{gfy}" data-air="{aw},{ah},{afx},{afy}" '
-                  f'data-ref="{hp["stone2"][2]}" data-scale="{sc}">'
-                  f'<img class="h-st" src="assets/home/{gname}.webp" alt="" width="{gw}" height="{gh}" decoding="async" />'
-                  f'<img class="h-air" src="assets/home/{aname}.webp" alt="" width="{aw}" height="{ah}" decoding="async" /></span>')
-    return (f'<div class="isle-stage v3 par" data-depth="-0.05" data-mx="-12"{attr}>{ghost}'
-            f'<nav class="archi" style="--ar:{ar}" aria-label="四個步驟：推門諮詢、看懂儀器、算清楚帳、術後回看">'
-            f'<svg class="trail" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="{trail}"/></svg>{links}{hopper}</nav></div>')
+def home_atlas(metas: list[dict]) -> str:
+    """療程地圖下排：三個欄目各自的分類與篇數，點了跳到欄目頁那一段（錨點見 HUB_IDS）。沒有分類的欄目改列最新幾篇。"""
+    cols = []
+    for k, (cid, (rel, eyebrow, _img, _intro)) in enumerate(COLUMN_PAGES.items()):
+        mine = [a for a in metas if a["col"] == cid]
+        if HUB_GROUPS.get(cid):
+            cnt: dict[str, int] = {}
+            for a in mine:
+                g = _hub_group(cid, a)
+                cnt[g] = cnt.get(g, 0) + 1
+            labels = [l for l, _ in HUB_GROUPS[cid]] + ["更多文章"]
+            items = "".join(f'<li><a href="{rel}#{HUB_IDS.get(l, "more")}"><span>{html.escape(l, quote=False)}</span><b>{cnt[l]}</b></a></li>'
+                            for l in labels if cnt.get(l))
+        else:
+            items = "".join(f'<li><a href="letters/{a["file"]}"><span>{html.escape(a["title"], quote=False)}</span></a></li>'
+                            for a in mine[:4])
+        cols.append(f'<article class="atlas-col reveal" style="--d:{k * 90}ms">'
+                    f'<p class="atlas-k">{eyebrow}</p>'
+                    f'<h4><a href="{rel}">{html.escape(col_name(cid), quote=False)}</a></h4>'
+                    f'<ul>{items}</ul>'
+                    f'<a class="atlas-all" href="{rel}">看這個欄目的 {len(mine)} 篇 →</a></article>')
+    return '<div class="atlas">' + "".join(cols) + "</div>"
 
 
 def render_home(metas: list[dict], shorts: list[dict] | None = None) -> str:
@@ -781,10 +733,12 @@ def render_home(metas: list[dict], shorts: list[dict] | None = None) -> str:
         f'<a class="card reveal" style="--d:{(i % 3) * 80}ms" href="letters/{a["file"]}">\n'
         f'          {jimg(a)}\n          <p class="meta">No.{a["issue"]} · {a["date"].replace("-", ".")}</p>\n'
         f'          <h3>{html.escape(a["title"], quote=False)}</h3>\n        </a>' for i, a in enumerate(rest))
-    slides = "\n              ".join(
-        f'<img{" class=" + chr(34) + "on" + chr(34) if i == 0 else ""} src="{h(k)}" alt="{alt}" style="object-position:{pos}" '
-        f'{"fetchpriority=" + chr(34) + "high" + chr(34) if i == 0 else "loading=" + chr(34) + "lazy" + chr(34)} decoding="async" />'
-        for i, (k, pos, alt) in enumerate(HERO_SLIDES))
+    # 第一張直接載入（最大內容）；其餘三張放 data-src，第一張載完 yubai-home.js 才換上，不跟首屏搶頻寬
+    slides = "\n            ".join(
+        (f'<img src="{h(k)}" alt="{alt}" style="object-position:{pos}" data-cap="{cap.format(n=n)}" fetchpriority="high" decoding="async" />' if i == 0 else
+         f'<img data-src="{h(k)}" alt="{alt}" style="object-position:{pos}" data-cap="{cap.format(n=n)}" decoding="async" />')
+        for i, (k, pos, alt, cap) in enumerate(HERO_A))
+    title = "".join(f'<span class="ha-c" aria-hidden="true">{c}</span>' for c in BRAND)
     topics = "\n        ".join(
         f'<li class="reveal" style="--d:{i * 80}ms">{fl(i)}\n'
         f'          <a class="tcard" href="{href}">\n'
@@ -823,43 +777,57 @@ def render_home(metas: list[dict], shorts: list[dict] | None = None) -> str:
 <link rel="alternate" type="application/rss+xml" title="{BRAND}" href="feed.xml" />
 <link rel="sitemap" type="application/xml" href="sitemap.xml" />
 {head_block("", home=True)}
+<script>(function(){{var d=document.documentElement;if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;try{{if(localStorage.getItem("yubai-motion")==="paused")return}}catch(e){{}}d.classList.add("ha-pre")}})();</script>
 {home_ld()}
 </head>
 <body class="home">
 {header_block("")}
 
 <main>
-  <section class="hero" aria-labelledby="hero-t">
-    <div class="hwrap hero-grid">
-      <div class="hero-text">
-        {isle_block()}
-        <p class="eyebrow reveal">Aesthetic Judgment Notes</p>
-        <h1 id="hero-t" class="reveal" style="--d:80ms">{BRAND}</h1>
-        <p class="hero-line reveal" style="--d:160ms"><span>不是叫你跟風變美，</span><span>而是先看懂療程、預算、風險與診所現場邏輯。</span></p>
-        <div class="cta-row reveal" style="--d:240ms">
+  <section class="hero hero-a" aria-labelledby="hero-t">
+    <div class="par ha-ghost" data-depth="-0.08" data-mx="18" aria-hidden="true">餘白</div>
+    <div class="hwrap ha-grid">
+      <div class="ha-text">
+        <p class="eyebrow ha-in">Aesthetic Judgment Notes</p>
+        <h1 id="hero-t" class="ha-title" aria-label="{BRAND}">{title}</h1>
+        <p class="hero-line ha-in"><span>不是叫你跟風變美，</span><span>而是先看懂療程、預算、風險與診所現場邏輯。</span></p>
+        <div class="cta-row ha-in">
           <a class="btn btn-p" href="consult.html">整理我的諮詢問題 <span class="arr" aria-hidden="true">→</span></a>
           <a class="btn btn-s" href="#topics">認識療程主題</a>
         </div>
+        <ul class="ha-creds ha-in">
+          <li><b><span class="ha-n" data-to="15">15</span><small>年</small></b><span>醫療、心臟醫材、醫美營運</span></li>
+          <li><b><span class="ha-n" data-to="{n}">{n}</span><small>篇</small></b><span>醫美判斷長文</span></li>
+          <li><b class="word">不取代診療</b><span>只幫你把問題問對</span></li>
+        </ul>
       </div>
-      <div class="stage">
-        <div class="par l-plum" data-depth="0.10" data-mx="14">
-          <div class="fl" style="--dur:11s;--amp:-10px">
-            <div class="plum-arch arch"><img src="{h("hero-plum")}" alt="" width="1536" height="1024" decoding="async" /><span class="v-mark" aria-hidden="true">餘白</span></div>
-          </div>
+      <div class="par ha-par" data-depth="0.04" data-mx="-12">
+        <div class="ha-frame">
+            {slides}
+          <p class="ha-cap"><b>蘇菲</b><span class="ha-cl-wrap"><span class="ha-cl">{HERO_A[0][3]}</span></span></p>
+          <div class="ha-dots" aria-hidden="true"><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i></div>
         </div>
-        <div class="par l-photo" data-depth="0.04" data-mx="-10">
-          <div class="fl" style="--dur:8s;--delay:-2s;--amp:-14px">
-            <div class="photo-arch arch">
-              {slides}
-            </div>
-          </div>
-        </div>
-        <div class="par l-pill1" data-depth="-0.06" data-mx="22"><div class="fl pill" style="--dur:7s;--delay:-1s;--amp:-9px"><b>15<small>年</small></b><span>醫療、器材與醫美營運</span></div></div>
-        <div class="par l-pill3" data-depth="-0.10" data-mx="-18"><div class="fl pill" style="--dur:9s;--delay:-4s;--amp:-8px"><b>{n}<small>篇</small></b><span>醫美判斷長文</span></div></div>
-        <div class="par l-pill2" data-depth="-0.08" data-mx="18"><div class="fl pill" style="--dur:10s;--delay:-6s;--amp:-11px"><b class="word">不取代診療</b><span>只幫你把問題問對</span></div></div>
       </div>
     </div>
     <button class="still-btn" type="button" aria-pressed="false">暫停動態</button>
+  </section>
+
+  <section class="map" id="topics" aria-labelledby="map-t">
+    <div class="hwrap">
+      <div class="sec-head">
+        <div>
+          <p class="eyebrow reveal">Treatment Map</p>
+          <h2 id="map-t" class="reveal" style="--d:80ms">{n} 篇，照問題分好類。</h2>
+        </div>
+        <p class="reveal" style="--d:140ms">先找到自己的問題落在哪一類，再看那一類的判斷重點。上排是最常被問的五個療程，下排是全部文章的分類。</p>
+      </div>
+      <h3 class="map-sub reveal">最常被問的五個療程<small>卡上的標籤對應 7 問第 2 題：處理的是質地、支撐、容量，還是肌肉動態</small></h3>
+      <ul class="cards">
+        {topics}
+      </ul>
+      <h3 class="map-sub reveal">全部文章，三個欄目</h3>
+      {home_atlas(metas)}
+    </div>
   </section>
 
   <section class="why" aria-labelledby="why-t">
@@ -877,21 +845,6 @@ def render_home(metas: list[dict], shorts: list[dict] | None = None) -> str:
         <p class="y-position reveal" style="--d:160ms">{POSITIONING}</p>
         <p class="reveal" style="--d:220ms">這裡不診斷、不替你決定。只把療程邏輯、風險、預算和恢復期拆開，讓你進診間前就知道該問什麼。</p>
       </div>
-    </div>
-  </section>
-
-  <section class="map" id="topics" aria-labelledby="map-t">
-    <div class="hwrap">
-      <div class="sec-head">
-        <div>
-          <p class="eyebrow reveal">Treatment Map</p>
-          <h2 id="map-t" class="reveal" style="--d:80ms">先分清楚問題，再談療程。</h2>
-        </div>
-        <p class="reveal" style="--d:140ms">卡上的標籤對應 7 問第 2 題：這個療程處理的是質地、支撐、容量，還是肌肉動態。</p>
-      </div>
-      <ul class="cards">
-        {topics}
-      </ul>
     </div>
   </section>
 
@@ -963,6 +916,7 @@ def render_home(metas: list[dict], shorts: list[dict] | None = None) -> str:
 
 {footer_block("")}
 {script_block("")}
+<script src="assets/vendor/gsap-3.12.5.min.js" defer></script>
 <script src="assets/yubai-home.js?v={HOME_VER}" defer></script>
 </body>
 </html>
@@ -996,6 +950,10 @@ HUB_GROUPS = {
           ("疫苗與感染", "疫苗|流感|發燒")],
 }
 _HUB_RX: dict = {}
+HUB_IDS = {"玻尿酸與填充": "filler", "肉毒": "botox", "電波、音波、雷射與儀器": "energy", "再生、膠原與膚質": "regen",
+           "手術與整形": "surgery", "諮詢、合約與術後保障": "consumer", "審美與長期規劃": "plan",
+           "血壓、肝指數與健康數字": "numbers", "循環與心血管": "heart", "女性與男性健康": "hormone",
+           "抗老與長壽研究": "longevity", "疫苗與感染": "vaccine", "更多文章": "more", "全部文章": "all"}
 
 
 HUB_MISC = "更多文章"   # 分枝的收容格，不是真的分枝：同在這一格不算同分枝
@@ -1035,9 +993,9 @@ def render_column_page(cid: str, metas: list[dict]) -> str:
             items.append(f'              <li><a href="../letters/{a["file"]}">{html.escape(a["title"], quote=False)}</a>'
                          f'<small>No.{a["issue"]} · {a["date"].replace("-", ".")}</small>'
                          + (f'<p>{html.escape(summ, quote=False)}</p>' if summ else "") + "</li>")
-        secs.append(f'          <h2 id="g{order.index(label) + 1}">{html.escape(label, quote=False)}<span>{len(groups[label])} 篇</span></h2>\n'
+        secs.append(f'          <h2 id="{HUB_IDS.get(label, f"g{order.index(label) + 1}")}">{html.escape(label, quote=False)}<span>{len(groups[label])} 篇</span></h2>\n'
                     f'          <ul class="y-hub-list">\n' + "\n".join(items) + "\n          </ul>")
-    toc = "".join(f'<a href="#g{k + 1}">{html.escape(l, quote=False)}</a>' for k, l in enumerate(order))
+    toc = "".join(f'<a href="#{HUB_IDS.get(l, f"g{k + 1}")}">{html.escape(l, quote=False)}</a>' for k, l in enumerate(order))
     others = "".join(f'<a href="../{COLUMN_PAGES[c][0]}">{html.escape(col_name(c), quote=False)}</a>'
                      for c in COLUMN_PAGES if c != cid)
     desc = f"{BRAND}欄目「{name}」：{intro}"
