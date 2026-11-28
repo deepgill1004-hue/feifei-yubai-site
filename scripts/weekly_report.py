@@ -24,8 +24,10 @@
 #    "bing": {"state": "ok" 或原因, "clicks": 0, "impressions": 0, "note": ""},
 #    "cf":   {"state": "ok" 或原因, "visits": 0, "pageviews": 0, "referers": [{"ref", "visits"}],
 #             "referers_complete": true, "pages": [{"path", "visits"}], "note": ""}}
-# local.json 格式：{"line": {"state": "ok" 或原因, "clicks": 0, "friends": null},
+# local.json 格式：{"line": {"state": "ok" 或原因, "clicks": 文末點擊, "total": 全站 LINE 點擊, "by_pos": {"end": 0, "fab": 0, …},
+#                           "friends": LINE 官方帳號好友數或 null, "collected_at": "…"},
 #                  "channels": [{"item", "value", "state": "ok|wait|bad", "note", "checked"}]}
+#   line 的數字來自 LINE 按鈕點擊計數的接收端 /stats（資料週週一～週日加總；pos=end 是文末），見 data/README.md
 # ai_panel/<YYYY-MM>.json：{"month": "2026-12", "asked_at": "...", "results": [{"id": "q01", "platform": "chatgpt|perplexity|google_ai|copilot",
 #                  "cited": true, "cited_page": "letters/...", "top3": ["...", "...", "..."], "has_ai_answer": true, "skipped": false, "note": ""}]}
 import argparse, datetime, json, re, subprocess, sys
@@ -112,16 +114,19 @@ def site_facts():
     line_ok = sum(1 for a in arts if (REPO / "letters" / a["f"]).exists()
                   and "line.me/R/ti/p/" in (REPO / "letters" / a["f"]).read_text(encoding="utf-8"))
     home = (REPO / "index.html").read_text(encoding="utf-8")
+    cfg = load(REPO / "data" / "analytics.json") or {}
     run = subprocess.run([sys.executable, "-B", str(REPO / "scripts" / "yubai_site.py"), "check"],
                          capture_output=True, text=True, encoding="utf-8")
     lines = (run.stdout + run.stderr).splitlines()
     warns = [l for l in lines if l.startswith("WARN")]
     errs = [l for l in lines if l.startswith("ERROR")]
     cat = {"標籤只部分出現在內文": sum("標籤" in l for l in warns), "網址含亂碼或 sophie-note": sum("sophie-note" in l for l in warns),
-           "缺人臉偵測套件（OpenCV）": sum("OpenCV" in l for l in warns)}
+           "缺人臉偵測套件（OpenCV）": sum("OpenCV" in l for l in warns), "還沒裝訪客統計": sum("還沒裝訪客統計" in l for l in warns),
+           "還沒接上 LINE 點擊計數": sum("LINE 按鈕點擊計數" in l for l in warns)}
     cat["其他"] = len(warns) - sum(cat.values())
     return {"sitemap_urls": len(locs), "robots_allow_all": allow_all, "ld_blocks": blocks, "ld_ok": ok,
             "articles": len(arts), "line_ok": line_ok, "cf_beacon": "static.cloudflareinsights.com/beacon" in home,
+            "line_endpoint": bool(str(cfg.get("line_click_endpoint") or "").strip()), "click_js_live": "yubai-click.js" in home,
             "check_errors": len(errs), "check_warns": len(warns), "warn_cat": cat, "read_on": datetime.date.today().isoformat()}
 
 
@@ -184,10 +189,15 @@ def cf_week(br):
     return out
 
 
-def line_week(local):
+def line_week(local, facts):
     ln = (local or {}).get("line") or {}
-    st = ln.get("state") or "收不到：網站沒有按鈕點擊計數，Cloudflare 網站分析也不支援自訂事件（官方 FAQ）"
-    return {"state": st, "clicks": ln.get("clicks") if st == "ok" else None, "friends": ln.get("friends")}
+    if facts["line_endpoint"]:
+        default = "這週沒讀到：LINE 按鈕點擊的接收端 /stats 沒收"
+    else:
+        default = "還沒接上：data/analytics.json 的 line_click_endpoint 是空的（接收端要在蘇菲電腦上部署）"
+    st = ln.get("state") or default
+    ok = st == "ok"
+    return {"state": st, "clicks": ln.get("clicks") if ok else None, "total": ln.get("total") if ok else None, "friends": ln.get("friends")}
 
 
 def collected(br, key):
@@ -197,7 +207,7 @@ def collected(br, key):
 def week_row(tag, data_dir, facts):
     br = load(data_dir / "data" / tag / "browser.json")
     local = load(data_dir / "data" / tag / "local.json")
-    g, c, ln = gsc_week(br), cf_week(br), line_week(local)
+    g, c, ln = gsc_week(br), cf_week(br), line_week(local, facts)
     b = (br or {}).get("bing") or {}
     q = g["queries"]
     idx = g["index"]
@@ -206,7 +216,7 @@ def week_row(tag, data_dir, facts):
            "top10_terms": sum(1 for x in q if round(x["position"]) <= 10) if g["state"] == "ok" else None,
            "top20_terms": sum(1 for x in q if round(x["position"]) <= 20) if g["state"] == "ok" else None,
            "terms_with_impressions": len(q) if g["state"] == "ok" else None,
-           "ai_visitors": c["ai"], "ai_visitors_min": c["ai_min"], "line_clicks": ln["clicks"],
+           "ai_visitors": c["ai"], "ai_visitors_min": c["ai_min"], "line_clicks": ln["clicks"], "line_total": ln["total"],
            "indexed": idx.get("indexed") if g["state"] == "ok" else None, "submitted": facts["sitemap_urls"],
            "visits": c["visits"] if c["state"] == "ok" else None,
            "gsc_state": g["state"], "bing_state": b.get("state") or "沒收到：這週沒有 Bing 數據檔", "cf_state": c["state"], "line_state": ln["state"],
@@ -403,7 +413,8 @@ def health_rows(facts, row, w):
         {"item": "訪客統計（Cloudflare）", "value": ("已裝" if facts["cf_beacon"] else "還沒裝") + (f"，{row['visits']} 次造訪" if row["visits"] is not None else ""),
          "state": "ok" if facts["cf_beacon"] and row["cf_state"] == "ok" else ("wait" if facts["cf_beacon"] else "bad"), "note": "" if row["cf_state"] == "ok" else row["cf_state"]},
         {"item": "文末加入 LINE 按鈕", "value": f"{facts['line_ok']}/{facts['articles']} 篇有", "state": "ok" if facts["line_ok"] == facts["articles"] else "bad",
-         "note": "按鈕點擊目前沒有計數" if row["line_clicks"] is None else ""},
+         "note": ("點擊計數已接上" if facts["click_js_live"] else "點擊計數：網址已填，等 apply-theme 上線") if facts["line_endpoint"]
+                 else "點擊計數還沒接上（接收端要在蘇菲電腦上部署）"},
     ]
 
 

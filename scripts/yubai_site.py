@@ -116,28 +116,45 @@ def footer_block(p: str) -> str:
 CF_BEACON_SRC = "https://static.cloudflareinsights.com/beacon.min.js"
 ANALYTICS_RE = re.compile(r"\s*<!--yubai:analytics-->.*?<!--/yubai:analytics-->", re.S)
 CF_TOKEN_RE = re.compile(r"[0-9A-Za-z]{20,64}")
+# 2026-11-24 LINE 按鈕點擊計數（Cloudflare 網站分析不支援自訂事件）：data/analytics.json 的 line_click_endpoint
+# 填接收端網址才載入 assets/yubai-click.js；不用 cookie，只送「哪一頁、哪個位置的 LINE 按鈕被點」
+CLICK_EP_RE = re.compile(r"https://[A-Za-z0-9.-]+\.[A-Za-z]{2,}(?:/[A-Za-z0-9._~/-]*)?")
+CLICK_JS = "assets/yubai-click.js"
+CLICK_VER = "20261124"
 _ANALYTICS_REPO = Path(__file__).resolve().parent.parent   # 指令列給了 --repo 時在 __main__ 換掉
 
 
-def _raw_cf_token(repo: Path) -> str:
-    """data/analytics.json 原樣的 cf_beacon_token；檔案不在回空字串，壞掉的 JSON 丟 ValueError。"""
+def _raw_analytics(repo: Path, key: str) -> str:
+    """data/analytics.json 原樣的欄位值；檔案不在回空字串，壞掉的 JSON 丟 ValueError。"""
     f = repo / "data" / "analytics.json"
     if not f.exists():
         return ""
     data = json.loads(f.read_text(encoding="utf-8"))
-    return str((data.get("cf_beacon_token") if isinstance(data, dict) else "") or "").strip()
+    return str((data.get(key) if isinstance(data, dict) else "") or "").strip()
+
+
+def _raw_cf_token(repo: Path) -> str:
+    return _raw_analytics(repo, "cf_beacon_token")
+
+
+def _raw_click_endpoint(repo: Path) -> str:
+    return _raw_analytics(repo, "line_click_endpoint")
 
 
 def analytics_block(repo: Path | None = None) -> str:
-    """全站統計代碼；沒有 token、格式不對或 JSON 壞掉都回空字串（由 check 報錯，不讓上架整個停住）。"""
+    """全站統計代碼：Cloudflare 網站分析（有 token 才放）＋LINE 按鈕點擊計數（有接收端網址才放）。
+    兩樣都沒有、格式不對或 JSON 壞掉都回空字串（由 check 報錯，不讓上架整個停住）。"""
+    repo = repo or _ANALYTICS_REPO
     try:
-        tok = _raw_cf_token(repo or _ANALYTICS_REPO)
+        tok, ep = _raw_cf_token(repo), _raw_click_endpoint(repo)
     except ValueError:
         return ""
-    if not CF_TOKEN_RE.fullmatch(tok):
-        return ""
-    return (f'<!--yubai:analytics--><script defer src="{CF_BEACON_SRC}" '
-            f"data-cf-beacon='{{\"token\": \"{tok}\"}}'></script><!--/yubai:analytics-->")
+    parts = []
+    if CF_TOKEN_RE.fullmatch(tok):
+        parts.append(f'<script defer src="{CF_BEACON_SRC}" data-cf-beacon=\'{{"token": "{tok}"}}\'></script>')
+    if CLICK_EP_RE.fullmatch(ep):
+        parts.append(f'<script defer src="/{CLICK_JS}?v={CLICK_VER}" data-endpoint="{ep}"></script>')
+    return f"<!--yubai:analytics-->{''.join(parts)}<!--/yubai:analytics-->" if parts else ""
 
 
 def ensure_analytics(text: str, block: str) -> str:
@@ -1945,15 +1962,21 @@ def check_site(repo: Path) -> tuple[list[str], list[str]]:
         if og.startswith(SITE_URL + "/") and not (repo / urllib.parse.unquote(og[len(SITE_URL) + 1:])).exists():
             errors.append(f"{name}：og:image 指到不存在的檔案 {og}")
     try:
-        raw_tok = _raw_cf_token(repo)
+        raw_tok, raw_ep = _raw_cf_token(repo), _raw_click_endpoint(repo)
     except ValueError:
-        raw_tok = ""
+        raw_tok = raw_ep = ""
         errors.append("data/analytics.json 不是合法 JSON")
     if raw_tok and not CF_TOKEN_RE.fullmatch(raw_tok):
         errors.append("data/analytics.json 的 cf_beacon_token 格式不對：只填 token 那串英數字，不要貼整段代碼")
+    if raw_ep and not CLICK_EP_RE.fullmatch(raw_ep):
+        errors.append("data/analytics.json 的 line_click_endpoint 格式不對：只填 https:// 開頭的網址，不要帶 ?、#、引號或空白")
+    if raw_ep and not (repo / CLICK_JS).exists():
+        errors.append(f"line_click_endpoint 填了，但 {CLICK_JS} 不見了")
     blk = analytics_block(repo)
-    if not blk and not raw_tok:
+    if not raw_tok:
         warns.append("還沒裝訪客統計：data/analytics.json 的 cf_beacon_token 是空的（Cloudflare 網站分析）")
+    if not raw_ep:
+        warns.append("還沒接上 LINE 按鈕點擊計數：data/analytics.json 的 line_click_endpoint 是空的（接收端要先部署）")
     for f in sorted(repo.rglob("*.html")):
         if ".git" in f.parts:
             continue
@@ -1968,9 +1991,9 @@ def check_site(repo: Path) -> tuple[list[str], list[str]]:
         if '<header class="site-header"' in _t:
             n = len(ANALYTICS_RE.findall(_t))
             if blk and (n != 1 or blk not in _t):
-                errors.append(f"{_rel}：訪客統計代碼缺少、重複或不是最新的 token（重跑 apply-theme）")
+                errors.append(f"{_rel}：訪客統計代碼缺少、重複或不是最新的設定（重跑 apply-theme）")
             elif not blk and n:
-                errors.append(f"{_rel}：data/analytics.json 沒有可用的 token，頁面卻留著統計代碼（重跑 apply-theme）")
+                errors.append(f"{_rel}：data/analytics.json 沒有可用的 token 或接收端網址，頁面卻留著統計代碼（重跑 apply-theme）")
     return errors, warns
 
 

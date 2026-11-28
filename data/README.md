@@ -27,15 +27,32 @@ python scripts/yubai_site.py apply-theme
 - 同一篇文章可以對應多支影片，文章頁會全部嵌入。
 - 縮圖固定用 `https://i.ytimg.com/vi/<id>/hqdefault.jpg`，不用另外填。
 
-## analytics.json：訪客統計（Cloudflare Web Analytics）
+## analytics.json：訪客統計（Cloudflare Web Analytics）與 LINE 按鈕點擊計數
 
-只有一個欄位 `cf_beacon_token`：Cloudflare 網站分析給的 token（一串英數字，本來就會公開在每一頁的原始碼裡，不是密碼）。
+`cf_beacon_token`：Cloudflare 網站分析給的 token（一串英數字，本來就會公開在每一頁的原始碼裡，不是密碼）。
 
 - 取得方式：Cloudflare 後台 Web Analytics → Add a site → 輸入 `sophieyubai.com` → 選手動放 JS 代碼（網站在 GitHub Pages，不用改 DNS）→ 代碼裡 `data-cf-beacon='{"token": "…"}'` 的那串。
 - 填好後跑 `python3 -B scripts/yubai_site.py apply-theme` 兩次（第二次要顯示 `changed 0 files`），再跑 `check`，沒有 ERROR 才上線。全站每一頁會在 yubai.js 後面多一段 `<!--yubai:analytics-->` 代碼。
 - 留空就不裝；清空後重跑 apply-theme 會把代碼全部拿掉。
 - check 會擋：token 格式不對（貼成整段代碼）、某頁缺代碼或重複、token 已清空但頁面還留著代碼。
 - 不用 cookie，不需要另外放同意橫幅。
+
+### line_click_endpoint：LINE 按鈕點擊計數
+
+Cloudflare 網站分析不支援自訂事件（官方 FAQ），收不到按鈕點擊，所以另外計數。填了接收端網址，apply-theme 會在同一段 `<!--yubai:analytics-->` 裡多載入 `assets/yubai-click.js`；讀者點任何 LINE 連結時送一次，連結本身不改。
+
+- 網站送出的內容（POST，`text/plain`）：`{"site":"sophieyubai.com","ev":"line","page":"/letters/….html","pos":"end"}`。只送頁面路徑和位置，不用 cookie、不送個人資料；只在 sophieyubai.com 上送，本機預覽不送。
+- 位置 `pos`：`end` 文末（加入 LINE 按鈕與「延伸整理」區，週報「文末加入 LINE 點擊」算這個）、`answer` 開頭結論框、`video` 影片卡、`sidebar` 側欄、`fab` 右下角浮動鈕、`header` 頁首、`footer` 頁尾、`page` 其他頁（首頁、諮詢頁…）。
+- 接收端：`scripts/line-click-worker/`（Cloudflare Worker＋D1，不存 IP、不存 cookie）。在蘇菲電腦上部署（要她已登入的 Cloudflare；`npx wrangler whoami` 沒登入就停下來請她處理，不輸入密碼）：
+  1. 把 `worker.js`、`schema.sql`、`wrangler.toml.example` 複製到 repo 外面（例：`../蘇菲餘白週報/line-click-worker/`），`wrangler.toml.example` 改名 `wrangler.toml`。
+  2. `npx wrangler d1 create yubai-line-click`，把給的 database_id 填進 wrangler.toml。
+  3. `npx wrangler d1 execute yubai-line-click --remote --file schema.sql`
+  4. `npx wrangler secret put STATS_TOKEN`：貼一串自己產的亂數（週報排程讀數字用），同一串存在 repo 外面，不進 repo。
+  5. `npx wrangler deploy`，拿到 `https://yubai-line-click.<子網域>.workers.dev`。Worker 名稱不要用真名；這個網址會出現在每一頁的原始碼裡。
+  6. 網址填進 `line_click_endpoint`，跑 apply-theme 兩次（第二次要 `changed 0 files`）、check 沒有 ERROR，照上架流程推上 main。
+  7. 上線後到任一篇文章點一次文末的加入 LINE，再用 `curl -H "Authorization: Bearer <STATS_TOKEN>" "<網址>/stats?days=2"` 看得到那一筆，就是通了（這一筆是測試，週報要扣掉）。
+- 每週二週報排程：讀 `/stats?days=14`，把資料週（週一～週日）`pos=end` 加總填 `local.json` 的 `line.clicks`、全部位置加總填 `line.total`、各位置填 `line.by_pos`（格式見 `scripts/weekly_report.py` 開頭）。
+- check 會擋：網址格式不對、填了網址但 `assets/yubai-click.js` 不見、某頁缺代碼或重複；還沒填時出一則 WARN 提醒。
 
 ## imgen-prompt-presets.json
 
